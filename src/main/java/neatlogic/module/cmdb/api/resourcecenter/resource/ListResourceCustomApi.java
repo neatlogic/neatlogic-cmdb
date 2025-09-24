@@ -78,15 +78,24 @@ public class ListResourceCustomApi extends PrivateApiComponentBase {
         ResourceSearchVo resourceSearch = resourceCenterResourceService.assembleResourceSearchVo(paramObj);
         List<ResourceVo> resultList = new ArrayList<>();
         StringBuilder sqlSb = new StringBuilder();
-        resourceSearch.buildConditionWhereSql(sqlSb, resourceSearch);
-        int rowNum = resourceMapper.getResourceCountByDynamicCondition(resourceSearch, sqlSb.toString());
+        //是否存在前置条件
+//        if (resourceSearch.getPreCondition() != null && resourceSearch.getPreCondition().isCustomCondition()) {
+//            StringBuilder preSqlSb = new StringBuilder();
+//            resourceSearch.getPreCondition().buildConditionWhereSql(preSqlSb, resourceSearch.getPreCondition());
+//            resourceSearch.setConditionWhereSql(preSqlSb.toString());
+//        }
+//        resourceSearch.buildConditionWhereSql(sqlSb, resourceSearch);
+//        resourceSearch.setConditionWhereSql(sqlSb.toString());
+//        int rowNum = resourceMapper.getResourceCountByDynamicCondition(resourceSearch);
+        int rowNum = resourceCenterResourceService.getResourceCount(resourceSearch);
         if (rowNum == 0) {
             return TableResultUtil.getResult(resultList, resourceSearch);
         }
         resourceSearch.setRowNum(rowNum);
-        List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(resourceSearch, sqlSb.toString());
+//        List<Long> idList = resourceMapper.getResourceIdListByDynamicCondition(resourceSearch);
+        List<Long> idList = resourceCenterResourceService.getResourceIdList(resourceSearch);
         if (CollectionUtils.isNotEmpty(idList)) {
-            List<ResourceVo> resourceList = resourceMapper.getResourceListByIdList(idList);
+            List<ResourceVo> resourceList = resourceCenterResourceService.getResourceListByIdList(idList);
             if (CollectionUtils.isNotEmpty(resourceList)) {
                 resourceCenterResourceService.addTagAndAccountInformation(resourceList);
             }

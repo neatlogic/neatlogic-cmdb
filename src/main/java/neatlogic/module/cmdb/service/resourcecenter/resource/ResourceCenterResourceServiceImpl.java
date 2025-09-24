@@ -95,7 +95,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj) {
-        if(!jsonObj.containsKey("typeId") && !jsonObj.containsKey("typeIdList")){
+        if (!jsonObj.containsKey("typeId") && !jsonObj.containsKey("typeIdList")) {
             List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
             jsonObj.put("typeIdList", ciIdList);
         }
@@ -591,25 +591,23 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int oldRowNum = 0;
         int newRowNum = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (searchVo.getPreCondition() != null) {
+                if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
+                    handleBatchSearchList(searchVo.getPreCondition());
+                    setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                }
+            }
+            if (searchVo.getIpFieldAttrId() == null && searchVo.getNameFieldAttrId() == null) {
+                handleBatchSearchList(searchVo);
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            }
             String sql = resourceBuildSqlService.buildGetResourceCountSql(searchVo);
             newRowNum = resourceMapper.getCountBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            if (noFilterCondition(searchVo)) {
-                ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-                if (resourceEntityVo != null) {
-                    ResourceEntityConfigVo config = resourceEntityVo.getConfig();
-                    if (config != null) {
-                        CiVo ciVo = ciMapper.getCiByName(config.getMainCi());
-                        if (ciVo != null) {
-                            searchVo.setViewName(ciVo.getCiTableName(false));
-                            oldRowNum = resourceMapper.getAllResourceCount(searchVo);
-                        }
-                    }
-                }
-            } else {
-                oldRowNum = resourceMapper.getResourceCount(searchVo);
-            }
+            //是否存在前置条件
+            initConditionOld(searchVo);
+            oldRowNum = resourceMapper.getResourceCount(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
             if (oldRowNum != newRowNum) {
@@ -627,6 +625,36 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return 0;
     }
 
+    /**
+     * 初始化前置条件
+     *
+     * @param searchVo 条件
+     */
+    private void initConditionOld(ResourceSearchVo searchVo) {
+        if (searchVo.getPreCondition() != null) {
+            if(searchVo.getPreCondition().isCustomCondition()) {
+                if (StringUtils.isBlank(searchVo.getPreCondition().getConditionWhereSql())) {
+                    StringBuilder preSqlSb = new StringBuilder();
+                    searchVo.getPreCondition().buildConditionWhereSql(preSqlSb, searchVo.getPreCondition());
+                    searchVo.getPreCondition().setConditionWhereSql(preSqlSb.toString());
+                }
+            }
+            if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
+                handleBatchSearchList(searchVo.getPreCondition());
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+            }
+        }
+        if (StringUtils.isBlank(searchVo.getConditionWhereSql()) && searchVo.isCustomCondition()) {
+            StringBuilder sqlSb = new StringBuilder();
+            searchVo.buildConditionWhereSql(sqlSb, searchVo);
+            searchVo.setConditionWhereSql(sqlSb.toString());
+        }
+        if (searchVo.getIpFieldAttrId() == null && searchVo.getNameFieldAttrId() == null) {
+            handleBatchSearchList(searchVo);
+            setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+        }
+    }
+
     @Override
     public List<Long> getResourceIdList(ResourceSearchVo searchVo) {
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
@@ -634,10 +662,22 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> newIdList = new ArrayList<>();
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (searchVo.getPreCondition() != null) {
+                if (searchVo.getPreCondition().getIpFieldAttrId() == null && searchVo.getPreCondition().getNameFieldAttrId() == null) {
+                    handleBatchSearchList(searchVo.getPreCondition());
+                    setIpFieldAttrIdAndNameFieldAttrId(searchVo.getPreCondition());
+                }
+            }
+            if (searchVo.getIpFieldAttrId() == null && searchVo.getNameFieldAttrId() == null) {
+                handleBatchSearchList(searchVo);
+                setIpFieldAttrIdAndNameFieldAttrId(searchVo);
+            }
             String sql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
             newIdList = resourceMapper.getIdListBySql(sql);
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            //是否存在前置条件
+            initConditionOld(searchVo);
             oldIdList = resourceMapper.getResourceIdList(searchVo);
         }
         if (Objects.equals(enable, COMPARISON_ENABLED)) {
@@ -682,26 +722,8 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList) {
-        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
-        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
-        List<ResourceVo> newResourceList = new ArrayList<>();
-        List<ResourceVo> oldResourceList = new ArrayList<>();
-        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String sql = resourceBuildSqlService.buildGetResourceListSql(idList, selectFieldNameList);
-            newResourceList = resourceMapper.getResourceListBySql(sql);
-        }
-        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            oldResourceList = resourceMapper.getResourceListByIdList(idList);
-        }
-        if (Objects.equals(enable, COMPARISON_ENABLED)) {
-            checkResourceListIsEquals(newResourceList, oldResourceList);
-        }
-        if (Objects.equals(mode, JSQLPARSER_MODE)) {
-            return newResourceList;
-        } else if (Objects.equals(mode, MYBATIS_MODE)) {
-            return oldResourceList;
-        }
-        return new ArrayList<>();
+        String sql = resourceBuildSqlService.buildGetResourceListSql(idList, selectFieldNameList);
+        return resourceMapper.getResourceListBySql(sql);
     }
 
     @Override
@@ -844,111 +866,111 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return new ArrayList<>();
     }
 
-    @Override
-    public Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo) {
-        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
-        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
-        Long newId = null;
-        Long oldId = null;
-        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String sql = resourceBuildSqlService.buildGetResourceIdByIpAndPortAndNameSql(searchVo);
-            newId = resourceMapper.getIdBySql(sql);
-        }
-        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            oldId = resourceMapper.getResourceIdByIpAndPortAndName(searchVo);
-        }
-        if (Objects.equals(enable, COMPARISON_ENABLED)) {
-            if (!Objects.equals(newId, oldId)) {
-                JSONObject resultObj = new JSONObject();
-                resultObj.put("newId", newId);
-                resultObj.put("oldId", oldId);
-                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
-            }
-        }
-        if (Objects.equals(mode, JSQLPARSER_MODE)) {
-            return newId;
-        } else if (Objects.equals(mode, MYBATIS_MODE)) {
-            return oldId;
-        }
-        return null;
-    }
+//    @Override
+//    public Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo) {
+//        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+//        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+//        Long newId = null;
+//        Long oldId = null;
+//        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+//            String sql = resourceBuildSqlService.buildGetResourceIdByIpAndPortAndNameSql(searchVo);
+//            newId = resourceMapper.getIdBySql(sql);
+//        }
+//        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+//            oldId = resourceMapper.getResourceIdByIpAndPortAndName(searchVo);
+//        }
+//        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+//            if (!Objects.equals(newId, oldId)) {
+//                JSONObject resultObj = new JSONObject();
+//                resultObj.put("newId", newId);
+//                resultObj.put("oldId", oldId);
+//                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+//            }
+//        }
+//        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+//            return newId;
+//        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+//            return oldId;
+//        }
+//        return null;
+//    }
 
-    @Override
-    public List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo) {
-        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
-        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
-        List<Long> newIdList = new ArrayList<>();
-        List<Long> oldIdList = new ArrayList<>();
-        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String sql = resourceBuildSqlService.buildGetResourceIdListByIpAndPortAndNameSql(searchVo);
-            newIdList = resourceMapper.getIdListBySql(sql);
-        }
-        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            oldIdList = resourceMapper.getResourceIdListByIpAndPortAndName(searchVo);
-        }
-        if (Objects.equals(enable, COMPARISON_ENABLED)) {
-            if (!Objects.equals(oldIdList, newIdList)) {
-                JSONObject resultObj = new JSONObject();
-                resultObj.put("idList", newIdList);
-                resultObj.put("oldIdList", oldIdList);
-                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
-            }
-        }
-        if (Objects.equals(mode, JSQLPARSER_MODE)) {
-            return newIdList;
-        } else if (Objects.equals(mode, MYBATIS_MODE)) {
-            return oldIdList;
-        }
-        return new ArrayList<>();
-    }
+//    @Override
+//    public List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo) {
+//        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+//        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+//        List<Long> newIdList = new ArrayList<>();
+//        List<Long> oldIdList = new ArrayList<>();
+//        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+//            String sql = resourceBuildSqlService.buildGetResourceIdListByIpAndPortAndNameSql(searchVo);
+//            newIdList = resourceMapper.getIdListBySql(sql);
+//        }
+//        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+//            oldIdList = resourceMapper.getResourceIdListByIpAndPortAndName(searchVo);
+//        }
+//        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+//            if (!Objects.equals(oldIdList, newIdList)) {
+//                JSONObject resultObj = new JSONObject();
+//                resultObj.put("idList", newIdList);
+//                resultObj.put("oldIdList", oldIdList);
+//                logger.error("资产清单新旧SQL获取结果不一致：{}", resultObj);
+//            }
+//        }
+//        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+//            return newIdList;
+//        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+//            return oldIdList;
+//        }
+//        return new ArrayList<>();
+//    }
 
-    @Override
-    public List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo) {
-        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
-        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
-        List<ResourceVo> newResourceList = new ArrayList<>();
-        List<ResourceVo> oldResourceList = new ArrayList<>();
-        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String sql = resourceBuildSqlService.buildGetResourceListByIpAndPortAndNameSql(searchVo);
-            newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
-        }
-        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            oldResourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
-        }
-        if (Objects.equals(enable, COMPARISON_ENABLED)) {
-            checkResourceListIsEquals(newResourceList, oldResourceList);
-        }
-        if (Objects.equals(mode, JSQLPARSER_MODE)) {
-            return newResourceList;
-        } else if (Objects.equals(mode, MYBATIS_MODE)) {
-            return oldResourceList;
-        }
-        return new ArrayList<>();
-    }
+//    @Override
+//    public List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo) {
+//        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+//        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+//        List<ResourceVo> newResourceList = new ArrayList<>();
+//        List<ResourceVo> oldResourceList = new ArrayList<>();
+//        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+//            String sql = resourceBuildSqlService.buildGetResourceListByIpAndPortAndNameSql(searchVo);
+//            newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
+//        }
+//        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+//            oldResourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+//        }
+//        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+//            checkResourceListIsEquals(newResourceList, oldResourceList);
+//        }
+//        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+//            return newResourceList;
+//        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+//            return oldResourceList;
+//        }
+//        return new ArrayList<>();
+//    }
 
-    @Override
-    public List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo) {
-        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
-        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
-        List<ResourceVo> newResourceList = new ArrayList<>();
-        List<ResourceVo> oldResourceList = new ArrayList<>();
-        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String sql = resourceBuildSqlService.buildGetResourceListByIpAndPortAndNameWithFilterSql(searchVo);
-            newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
-        }
-        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            oldResourceList = resourceMapper.getResourceListByIpAndPortAndNameWithFilter(searchVo);
-        }
-        if (Objects.equals(enable, COMPARISON_ENABLED)) {
-            checkResourceListIsEquals(newResourceList, oldResourceList);
-        }
-        if (Objects.equals(mode, JSQLPARSER_MODE)) {
-            return newResourceList;
-        } else if (Objects.equals(mode, MYBATIS_MODE)) {
-            return oldResourceList;
-        }
-        return new ArrayList<>();
-    }
+//    @Override
+//    public List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo) {
+//        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+//        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+//        List<ResourceVo> newResourceList = new ArrayList<>();
+//        List<ResourceVo> oldResourceList = new ArrayList<>();
+//        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+//            String sql = resourceBuildSqlService.buildGetResourceListByIpAndPortAndNameWithFilterSql(searchVo);
+//            newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
+//        }
+//        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+//            oldResourceList = resourceMapper.getResourceListByIpAndPortAndNameWithFilter(searchVo);
+//        }
+//        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+//            checkResourceListIsEquals(newResourceList, oldResourceList);
+//        }
+//        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+//            return newResourceList;
+//        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+//            return oldResourceList;
+//        }
+//        return new ArrayList<>();
+//    }
 
     @Override
     public List<ResourceVo> getResourceByIdList(List<Long> idList) {
@@ -1615,51 +1637,5 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             }
         }
         return flag;
-    }
-
-    private boolean noFilterCondition(ResourceSearchVo searchVo) {
-        if (StringUtils.isNotBlank(searchVo.getKeyword())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getBatchSearchList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getStateIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getVendorIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getEnvIdList())) {
-            return false;
-        }
-        if (searchVo.getExistNoEnv()) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getAppSystemIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getAppModuleIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getDefaultValue())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getInspectStatusList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getProtocolIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getTagIdList())) {
-            return false;
-        }
-        if (CollectionUtils.isNotEmpty(searchVo.getInspectJobPhaseNodeStatusList())) {
-            return false;
-        }
-        return true;
     }
 }

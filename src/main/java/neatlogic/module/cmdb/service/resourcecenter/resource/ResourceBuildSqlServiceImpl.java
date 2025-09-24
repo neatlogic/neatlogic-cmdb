@@ -173,17 +173,27 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         try {
             ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
             ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            ResourceQueryCriteriaVo preConditionQueryCriteriaVo = null;
+            ResourceSearchVo preCondition = searchVo.getPreCondition();
+            if (preCondition != null) {
+                preConditionQueryCriteriaVo = new ResourceQueryCriteriaVo(preCondition);
+                filterItemFieldNameList.addAll(getFilterItemFieldNameList(preConditionQueryCriteriaVo));
+            }
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
+            filterItemFieldNameList.addAll(getFilterItemFieldNameList(queryCriteriaVo));
+            filterItemFieldNameList.add("id");
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
             List<String> selectItemFieldNameList = new ArrayList<>();
             selectItemFieldNameList.add("id");
-            List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
-            filterItemFieldNameList.add("id");
             config.setSelectItemFieldNameList(selectItemFieldNameList);
-            config.setFilterItemFieldNameList(filterItemFieldNameList);
             Map<String, Column> fieldName2ColumnMap = new HashMap<>();
             PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
-
-            SqlVo sqlVo = getSqlVoForResource(queryCriteriaVo, fieldName2ColumnMap);
+            SqlVo sqlVo = new SqlVo();
+            if (preConditionQueryCriteriaVo != null) {
+                getSqlVoForResource(sqlVo, preConditionQueryCriteriaVo, fieldName2ColumnMap);
+            }
+            getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap);
             $sql.addSql(plainSelect, sqlVo);
             if (CollectionUtils.isNotEmpty(searchVo.getKeywordList()) && searchVo.getNameFieldAttrId() != null && searchVo.getIpFieldAttrId() != null) {
                 $sql.addOrderBy(plainSelect, $sql.fun("COUNT", "fw.word").withDistinct(true), "desc");
@@ -206,16 +216,27 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         try {
             ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
             ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            ResourceQueryCriteriaVo preConditionQueryCriteriaVo = null;
+            ResourceSearchVo preCondition = searchVo.getPreCondition();
+            if (preCondition != null) {
+                preConditionQueryCriteriaVo = new ResourceQueryCriteriaVo(preCondition);
+                filterItemFieldNameList.addAll(getFilterItemFieldNameList(preConditionQueryCriteriaVo));
+            }
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
+            filterItemFieldNameList.addAll(getFilterItemFieldNameList(queryCriteriaVo));
+            filterItemFieldNameList.add("id");
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
             List<String> selectItemFieldNameList = new ArrayList<>();
             selectItemFieldNameList.add("id");
-            List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
-            filterItemFieldNameList.add("id");
             config.setSelectItemFieldNameList(selectItemFieldNameList);
-            config.setFilterItemFieldNameList(filterItemFieldNameList);
             Map<String, Column> fieldName2ColumnMap = new HashMap<>();
             PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
-            SqlVo sqlVo = getSqlVoForResource(queryCriteriaVo, fieldName2ColumnMap);
+            SqlVo sqlVo = new SqlVo();
+            if (preConditionQueryCriteriaVo != null) {
+                getSqlVoForResource(sqlVo, preConditionQueryCriteriaVo, fieldName2ColumnMap);
+            }
+            getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap);
             $sql.addSql(plainSelect, sqlVo);
             Column column = fieldName2ColumnMap.get("id");
             $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", column.toString()).withDistinct(true));
@@ -275,8 +296,6 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
             queryCriteriaVo.setInspectJobPhaseNodeStatusList(null);
-            queryCriteriaVo.setBatchSearchList(null);
-            queryCriteriaVo.setIpFieldAttrId(null);
             List<String> selectItemFieldNameList = new ArrayList<>();
             selectItemFieldNameList.add("id");
             List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
@@ -303,8 +322,6 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
             queryCriteriaVo.setInspectJobPhaseNodeStatusList(null);
-            queryCriteriaVo.setBatchSearchList(null);
-            queryCriteriaVo.setNameFieldAttrId(null);
             List<String> selectItemFieldNameList = new ArrayList<>();
             selectItemFieldNameList.add("id");
             List<String> filterItemFieldNameList = getFilterItemFieldNameList(queryCriteriaVo);
@@ -1016,33 +1033,18 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             filterItemFieldNameList.add("id");
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
             List<String> filterItemFieldNameList1 = getFilterItemFieldNameList(queryCriteriaVo);
-            System.out.println("filterItemFieldNameList1 = " + filterItemFieldNameList1);
             filterItemFieldNameList.addAll(filterItemFieldNameList1);
             JSONObject conditionConfigObj = new JSONObject();
             conditionConfigObj.put("conditionGroupList", searchVo.getConditionGroupList());
             conditionConfigObj.put("conditionGroupRelList", searchVo.getConditionGroupRelList());
             ResourceConditionConfigVo resourceConditionConfigVo = conditionConfigObj.toJavaObject(ResourceConditionConfigVo.class);
             List<String> filterItemFieldNameList2 = resourceConditionConfigVo.getFilterItemFieldNameList();
-            System.out.println("filterItemFieldNameList2 = " + filterItemFieldNameList2);
             filterItemFieldNameList.addAll(filterItemFieldNameList2);
             config.setSelectItemFieldNameList(selectItemFieldNameList);
             config.setFilterItemFieldNameList(filterItemFieldNameList);
             Map<String, Column> fieldName2ColumnMap = new HashMap<>();
             PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
             $sql.addSelectColumn(plainSelect, $sql.fun("count", fieldName2ColumnMap.get("id").toString()).withDistinct(true));
-            /*
-            <if test="keyword != null and keyword != ''">
-                    AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-                </if>
-             */
-            if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
-                String keyword = "'%" + queryCriteriaVo.getKeyword() + "%'";
-                $sql.addWhereExpression(plainSelect, $sql.exp("(",
-                        $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", keyword),
-                        "or", $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", keyword),
-                        ")")
-                );
-            }
             SqlVo sqlVo = getSqlVoForResource(queryCriteriaVo, fieldName2ColumnMap);
             resourceConditionConfigVo.buildConditionSqlVo(sqlVo, fieldName2ColumnMap);
             $sql.addSql(plainSelect, sqlVo);
@@ -1064,34 +1066,18 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             filterItemFieldNameList.add("id");
             ResourceQueryCriteriaVo queryCriteriaVo = new ResourceQueryCriteriaVo(searchVo);
             List<String> filterItemFieldNameList1 = getFilterItemFieldNameList(queryCriteriaVo);
-            System.out.println("filterItemFieldNameList1 = " + filterItemFieldNameList1);
             filterItemFieldNameList.addAll(filterItemFieldNameList1);
             JSONObject conditionConfigObj = new JSONObject();
             conditionConfigObj.put("conditionGroupList", searchVo.getConditionGroupList());
             conditionConfigObj.put("conditionGroupRelList", searchVo.getConditionGroupRelList());
             ResourceConditionConfigVo resourceConditionConfigVo = conditionConfigObj.toJavaObject(ResourceConditionConfigVo.class);
             List<String> filterItemFieldNameList2 = resourceConditionConfigVo.getFilterItemFieldNameList();
-            System.out.println("filterItemFieldNameList2 = " + filterItemFieldNameList2);
             filterItemFieldNameList.addAll(filterItemFieldNameList2);
             config.setSelectItemFieldNameList(selectItemFieldNameList);
             config.setFilterItemFieldNameList(filterItemFieldNameList);
             Map<String, Column> fieldName2ColumnMap = new HashMap<>();
             PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
             $sql.setDistinct(plainSelect, true);
-//            $sql.addSelectColumn(plainSelect, $sql.fun("count", fieldName2ColumnMap.get("id").toString()).withDistinct(true));
-            /*
-            <if test="keyword != null and keyword != ''">
-                    AND (a.`name` LIKE CONCAT('%', #{keyword}, '%') OR a.`ip` LIKE CONCAT('%', #{keyword}, '%'))
-                </if>
-             */
-            if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
-                String keyword = "'%" + queryCriteriaVo.getKeyword() + "%'";
-                $sql.addWhereExpression(plainSelect, $sql.exp("(",
-                        $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", keyword),
-                        "or", $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", keyword),
-                        ")")
-                );
-            }
             SqlVo sqlVo = getSqlVoForResource(queryCriteriaVo, fieldName2ColumnMap);
             resourceConditionConfigVo.buildConditionSqlVo(sqlVo, fieldName2ColumnMap);
             $sql.addSql(plainSelect, sqlVo);
@@ -2578,11 +2564,25 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
             filterItemFieldNameSet.add("inspect_status");
         }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInputNodeList())) {
+            filterItemFieldNameSet.add("name");
+            filterItemFieldNameSet.add("ip");
+            filterItemFieldNameSet.add("port");
+        }
+        if (queryCriteriaVo.getConditionConfig() != null) {
+            filterItemFieldNameSet.addAll(queryCriteriaVo.getConditionConfig().getFilterItemFieldNameList());
+        }
         return new ArrayList<>(filterItemFieldNameSet);
     }
 
     private SqlVo getSqlVoForResource(ResourceQueryCriteriaVo queryCriteriaVo, Map<String, Column> fieldName2ColumnMap) {
         SqlVo sqlVo = new SqlVo();
+        getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap);
+        return sqlVo;
+    }
+
+    private void getSqlVoForResource(SqlVo sqlVo, ResourceQueryCriteriaVo queryCriteriaVo, Map<String, Column> fieldName2ColumnMap) {
+//        SqlVo sqlVo = new SqlVo();
         List<JoinVo> joinList = new ArrayList<>();
         List<ExpressionVo> whereExpressionList = new ArrayList<>();
         /*
@@ -2606,11 +2606,12 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 joinList.add($sql.join("join", "fulltextindex_field_cmdb", "ffc").withOn(expressionVo));
             }
             {
-                ExpressionVo expressionVo = $sql.exp(
-                        $sql.exp("fw.id", "=", "ffc.word_id"),
-                        "and",
-                        $sql.exp("fw.word", "in", queryCriteriaVo.getKeywordList()));
-                joinList.add($sql.join("join", "fulltextindex_word", "fw").withOn(expressionVo));
+//                ExpressionVo expressionVo = $sql.exp(
+//                        $sql.exp("fw.id", "=", "ffc.word_id"),
+//                        "and",
+//                        $sql.exp("fw.word", "in", queryCriteriaVo.getKeywordList()));
+                joinList.add($sql.join("join", "fulltextindex_word", "fw").withOn($sql.exp("fw.id", "=", "ffc.word_id")));
+                whereExpressionList.add($sql.exp("fw.word", "in", queryCriteriaVo.getKeywordList()));
             }
         }
         /*
@@ -2649,11 +2650,12 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 joinList.add($sql.join("join", "fulltextindex_field_cmdb", "ffc2").withOn(expressionVo));
             }
             {
-                ExpressionVo expressionVo = $sql.exp(
-                        $sql.exp("fw2.id", "=", "ffc2.word_id"),
-                        "and",
-                        $sql.exp("fw2.word", "in", queryCriteriaVo.getBatchSearchList()));
-                joinList.add($sql.join("join", "fulltextindex_word", "fw2").withOn(expressionVo));
+//                ExpressionVo expressionVo = $sql.exp(
+//                        $sql.exp("fw2.id", "=", "ffc2.word_id"),
+//                        "and",
+//                        $sql.exp("fw2.word", "in", queryCriteriaVo.getBatchSearchList()));
+                joinList.add($sql.join("join", "fulltextindex_word", "fw2").withOn($sql.exp("fw2.id", "=", "ffc2.word_id")));
+                whereExpressionList.add($sql.exp("fw2.word", "in", queryCriteriaVo.getBatchSearchList()));
             }
         }
         /*
@@ -2947,9 +2949,37 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
 //            System.out.println("x");
             whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("inspect_status").toString(), "in", queryCriteriaVo.getInspectStatusList()));
         }
-        sqlVo.withJoinList(joinList);
-        sqlVo.withWhereExpressionList(whereExpressionList);
-        return sqlVo;
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInputNodeList())) {
+            ExpressionVo orExp = null;
+            for (ResourceVo inputNode : queryCriteriaVo.getInputNodeList()) {
+                Column ipColumn = fieldName2ColumnMap.get("ip");
+                ExpressionVo andExp = $sql.exp(ipColumn.toString(), "=", $sql.value(inputNode.getIp()));
+                Column portColumn = fieldName2ColumnMap.get("port");
+                if (inputNode.getPort() != null) {
+                    andExp = $sql.exp(andExp, "and", $sql.exp(portColumn.toString(), "=", inputNode.getPort()));
+                } else {
+                    andExp = $sql.exp(andExp, "and", $sql.exp(portColumn.toString(), "is null"));
+                }
+                if (StringUtils.isNotBlank(inputNode.getName())) {
+                    Column nameColumn = fieldName2ColumnMap.get("name");
+                    andExp = $sql.exp(andExp, "and", $sql.exp(nameColumn.toString(), "=", $sql.value(inputNode.getName())));
+                }
+                andExp = $sql.exp("(", andExp, ")");
+                if (orExp == null) {
+                    orExp = andExp;
+                } else {
+                    orExp = $sql.exp(orExp, "or", andExp);
+                }
+            }
+            orExp = $sql.exp("(", orExp, ")");
+            whereExpressionList.add(orExp);
+        }
+        sqlVo.withAddJoinList(joinList);
+        sqlVo.withAddWhereExpressionList(whereExpressionList);
+        if (queryCriteriaVo.getConditionConfig() != null) {
+            queryCriteriaVo.getConditionConfig().buildConditionSqlVo(sqlVo, fieldName2ColumnMap);
+        }
+//        return sqlVo;
     }
 
     private SqlVo getSqlVoForInspect(ResourceQueryCriteriaVo queryCriteriaVo, Map<String, Column> fieldName2ColumnMap) {

@@ -115,13 +115,13 @@ public interface IResourceCenterResourceService {
 
     List<ResourceVo> getAppResourceListByIdList(ResourceSearchVo searchVo);
 
-    Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
+//    Long getResourceIdByIpAndPortAndName(ResourceSearchVo searchVo);
 
-    List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo);
+//    List<Long> getResourceIdListByIpAndPortAndName(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo);
+//    List<ResourceVo> getResourceListByIpAndPortAndName(ResourceSearchVo searchVo);
 
-    List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
+//    List<ResourceVo> getResourceListByIpAndPortAndNameWithFilter(ResourceSearchVo searchVo);
 
     List<ResourceVo> getResourceByIdList(List<Long> idList);
 

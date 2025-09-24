@@ -33,18 +33,15 @@ import neatlogic.framework.form.exception.AttributeValidException;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -55,7 +52,7 @@ import java.util.stream.Collectors;
 public class ResourcesHandler extends FormHandlerBase {
 
     @Resource
-    private ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
     @Resource
     private ResourceAccountMapper resourceAccountMapper;
     @Resource
@@ -151,6 +148,7 @@ public class ResourcesHandler extends FormHandlerBase {
         if ("input".equals(type)) {
             JSONArray inputNodeArray = dataObj.getJSONArray("inputNodeList");
             if (CollectionUtils.isNotEmpty(inputNodeArray)) {
+                List<String> selectFieldNameList = Arrays.asList("id", "name", "ip", "port");
                 List<ResourceVo> resourceIsNotFoundList = new ArrayList<>();
                 ResourceSearchVo searchVo = new ResourceSearchVo();
                 searchVo.setIsHasAuth(true);
@@ -161,7 +159,11 @@ public class ResourcesHandler extends FormHandlerBase {
                     nodeList.add(node);
                     if (nodeList.size() > 100) {
                         searchVo.setInputNodeList(nodeList);
-                        List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+                        List<ResourceVo> resourceList = new ArrayList<>();
+                        List<Long> idList = resourceCenterResourceService.getResourceIdList(searchVo);
+                        if (CollectionUtils.isNotEmpty(idList)) {
+                            resourceList = resourceCenterResourceService.getResourceListByIdList(idList, selectFieldNameList);
+                        }
                         List<ResourceVo> notExistsNodeList = notExistsNodeList(nodeList, resourceList);
                         resourceIsNotFoundList.addAll(notExistsNodeList);
                         nodeList.clear();
@@ -169,7 +171,11 @@ public class ResourcesHandler extends FormHandlerBase {
                 }
                 if (CollectionUtils.isNotEmpty(nodeList)) {
                     searchVo.setInputNodeList(nodeList);
-                    List<ResourceVo> resourceList = resourceMapper.getResourceListByIpAndPortAndName(searchVo);
+                    List<ResourceVo> resourceList = new ArrayList<>();
+                    List<Long> idList = resourceCenterResourceService.getResourceIdList(searchVo);
+                    if (CollectionUtils.isNotEmpty(idList)) {
+                        resourceList = resourceCenterResourceService.getResourceListByIdList(idList, selectFieldNameList);
+                    }
                     List<ResourceVo> notExistsNodeList = notExistsNodeList(nodeList, resourceList);
                     resourceIsNotFoundList.addAll(notExistsNodeList);
                     nodeList.clear();

@@ -28,7 +28,6 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityFieldMappingVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
-import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
@@ -37,7 +36,6 @@ import neatlogic.framework.cmdb.resourcecenter.datasource.core.Ordered;
 import neatlogic.framework.common.constvalue.InspectStatus;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.dto.ValueTextVo;
-import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityCachedMapper;
@@ -337,6 +335,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         resultObj.put("isVirtual", ciEntityVo.getIsVirtual());
         return resultObj;
     }
+
     @Override
     public Ordered getOrdered() {
         return Ordered.LOWEST_PRECEDENCE;
@@ -647,26 +646,10 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Override
     public List<ResourceVo> getResourceList(ResourceSearchVo searchVo) {
-        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
         List<ResourceVo> resultList = new ArrayList<>();
-        String getResourceIdListSql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
-        List<Long> idList = resourceMapper.getIdListBySql(getResourceIdListSql);
-        if (Objects.equals(enable, "1")) {
-            List<Long> oldIdList = resourceMapper.getResourceIdList(searchVo);
-            if (!Objects.equals(oldIdList, idList)) {
-                JSONObject errorObj = new JSONObject();
-                errorObj.put("idList", idList);
-                errorObj.put("oldIdList", oldIdList);
-                logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
-            }
-        }
+        List<Long> idList = resourceCenterResourceService.getResourceIdList(searchVo);
         if (CollectionUtils.isNotEmpty(idList)) {
-            String getResourceListSql = resourceBuildSqlService.buildGetResourceListSql(idList);
-            List<ResourceVo> resourceList = resourceMapper.getResourceListBySql(getResourceListSql);
-            if (Objects.equals(enable, "1")) {
-                List<ResourceVo> oldResourceList = resourceMapper.getResourceListByIdList(idList);
-                checkResourceListIsEquals(resourceList, oldResourceList);
-            }
+            List<ResourceVo> resourceList = resourceCenterResourceService.getResourceListByIdList(idList);
             //排序
             for (Long id : idList) {
                 for (ResourceVo resourceVo : resourceList) {
@@ -677,32 +660,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                 }
             }
             if (Objects.equals(searchVo.getRowNum(), 0)) {
-                String getResourceCountSql = resourceBuildSqlService.buildGetResourceCountSql(searchVo);
-                int rowNum = resourceMapper.getCountBySql(getResourceCountSql);
-                if (Objects.equals(enable, "1")) {
-                    int oldRowNum = 0;
-                    if (noFilterCondition(searchVo)) {
-                        ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
-                        if (resourceEntityVo != null) {
-                            ResourceEntityConfigVo config = resourceEntityVo.getConfig();
-                            if (config != null) {
-                                CiVo ciVo = ciMapper.getCiByName(config.getMainCi());
-                                if (ciVo != null) {
-                                    searchVo.setViewName(ciVo.getCiTableName(false));
-                                    oldRowNum = resourceMapper.getAllResourceCount(searchVo);
-                                }
-                            }
-                        }
-                    } else {
-                        oldRowNum = resourceMapper.getResourceCount(searchVo);
-                    }
-                    if (oldRowNum != rowNum) {
-                        JSONObject errorObj = new JSONObject();
-                        errorObj.put("rowNum", rowNum);
-                        errorObj.put("oldRowNum", oldRowNum);
-                        logger.error("资产清单新旧SQL获取rowNum结果不一致：{}", errorObj);
-                    }
-                }
+                int rowNum = resourceCenterResourceService.getResourceCount(searchVo);
                 searchVo.setRowNum(rowNum);
             }
         } else {
@@ -1273,6 +1231,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     /**
      * 判断是否有过滤条件
+     *
      * @param searchVo
      * @return
      */
