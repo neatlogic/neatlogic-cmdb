@@ -93,6 +93,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
     @Override
     public String buildResourceView(ResourceEntityVo resourceEntityVo) {
         String viewName = resourceEntityVo.getName();
+        ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
         String select = null;
         String error = StringUtils.EMPTY;
         try {
@@ -145,6 +146,12 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                         schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
                         List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+                        if (CollectionUtils.isEmpty(fieldNameList)) {
+                            String sceneTemplateName = originalConfig.getSceneTemplateName();
+                            if (StringUtils.isNotBlank(sceneTemplateName)) {
+                                fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+                            }
+                        }
                         Table table = new Table();
                         table.setName(viewName);
                         table.setSchemaName(TenantContext.get().getDataDbName());
@@ -2086,6 +2093,22 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             String toCi = fieldMappingVo.getToCi();
             if (StringUtils.isNotBlank(toCi)) {
                 ciNameSet.add(toCi);
+            }
+            String ciName = fieldMappingVo.getCiName();
+            if (StringUtils.isNotBlank(ciName)) {
+                ciNameSet.add(ciName);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(config.getRelLinkList())) {
+            for (ResourceEntityRelLinkVo relLinkVo : config.getRelLinkList()) {
+                String leftCi = relLinkVo.getLeftCi();
+                if (StringUtils.isNotBlank(leftCi)) {
+                    ciNameSet.add(leftCi);
+                }
+                String rightCi = relLinkVo.getRightCi();
+                if (StringUtils.isNotBlank(rightCi)) {
+                    ciNameSet.add(rightCi);
+                }
             }
         }
         Map<Long, List<AttrVo>> ciId2AttrListMap = new HashMap<>();
