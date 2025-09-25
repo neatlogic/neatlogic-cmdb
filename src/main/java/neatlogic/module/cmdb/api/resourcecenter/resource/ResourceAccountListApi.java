@@ -26,7 +26,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +42,7 @@ import javax.annotation.Resource;
 public class ResourceAccountListApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
     @Resource
     private ResourceAccountMapper resourceAccountMapper;
 
@@ -72,7 +72,7 @@ public class ResourceAccountListApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
-        if (resourceMapper.getResourceIdByResourceId(resourceId) == null) {
+        if (resourceCenterResourceService.getResourceIdByResourceId(resourceId) == null) {
             throw new ResourceNotFoundException(resourceId);
         }
         String protocol = paramObj.getString("protocol");

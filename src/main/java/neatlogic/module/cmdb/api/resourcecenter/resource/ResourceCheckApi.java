@@ -289,7 +289,7 @@ public class ResourceCheckApi extends PrivateApiComponentBase {
         ResourceSearchVo searchVo = resourceCenterResourceService.assembleResourceSearchVo(filterJson);
         searchVo.setIdList(idList);
         Long getAuthResourceList = System.currentTimeMillis();
-        List<ResourceVo> resourceVoList = resourceMapper.getAuthResourceList(searchVo);
+        List<ResourceVo> resourceVoList = resourceCenterResourceService.getAuthResourceList(searchVo);
         logger.warn((System.currentTimeMillis() - getAuthResourceList) + " ##getAuthResourceList:-------------------------------------------------------------------------------");
         System.out.println((System.currentTimeMillis() - getAuthResourceList) + " ##getAuthResourceList:-------------------------------------------------------------------------------");
         if (CollectionUtils.isNotEmpty(resourceVoList)) {

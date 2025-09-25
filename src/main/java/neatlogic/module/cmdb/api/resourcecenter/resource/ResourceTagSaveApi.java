@@ -29,8 +29,8 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 public class ResourceTagSaveApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
     @Resource
     private ResourceTagMapper resourceTagMapper;
 
@@ -83,7 +83,7 @@ public class ResourceTagSaveApi extends PrivateApiComponentBase {
         if (CollectionUtils.isEmpty(tagArray)) {
             return null;
         }
-        if (resourceMapper.getResourceIdByResourceId(resourceId) == null) {
+        if (resourceCenterResourceService.getResourceIdByResourceId(resourceId) == null) {
             throw new ResourceNotFoundException(resourceId);
         }
         List<String> tagList = tagArray.toJavaList(String.class);
