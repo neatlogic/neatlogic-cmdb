@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
+import neatlogic.framework.common.dto.BasePageVo;
 
 import java.util.List;
 
@@ -146,6 +147,12 @@ public interface ResourceBuildSqlService {
     String buildGetAppResourceTypeIdListByViewNameAndAppSystemIdSql(String viewName, Long appSystemId, Long appModuleId, Long envId, List<String> inspectStatusList);
 
     String buildGetAppSystemIdListByIdSql(String viewName, Long id);
+
+    String buildSearchVendorCountSql(BasePageVo searchVo);
+
+    String buildSearchVendorIdListSql(BasePageVo searchVo);
+
+    String buildSearchVendorListByIdListSql(List<Long> idList);
 
     // InspectMapper
     String buildGetInspectResourceListByIdListSql(List<Long> idList, List<String> selectFieldNameList);

@@ -34,6 +34,7 @@ import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceViewFieldMappingException;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtil;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtilForTiDB;
+import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.dto.DataBaseViewInfoVo;
@@ -1353,6 +1354,101 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             $sql.setDistinct(plainSelect, true);
             $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("id").toString(), "=", id));
             $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "is not null"));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchVendorCountSql(BasePageVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_vendor");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("description");
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            String keyword = searchVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+                keyword = "%" + keyword + "%";
+                Column nameColumn = fieldName2ColumnMap.get("name");
+                Column descriptionColumn = fieldName2ColumnMap.get("description");
+                $sql.addWhereExpression(plainSelect,
+                        $sql.exp("(",
+                                $sql.exp(nameColumn.toString(), "like", $sql.value(keyword)),
+                                "OR",
+                                $sql.exp(descriptionColumn.toString(), "like", $sql.value(keyword)),
+                                ")"));
+            }
+            Column column = fieldName2ColumnMap.get("id");
+            $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", column.toString()).withDistinct(true));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchVendorIdListSql(BasePageVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_vendor");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("description");
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            String keyword = searchVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+                keyword = "%" + keyword + "%";
+                Column nameColumn = fieldName2ColumnMap.get("name");
+                Column descriptionColumn = fieldName2ColumnMap.get("description");
+                $sql.addWhereExpression(plainSelect,
+                        $sql.exp("(",
+                                $sql.exp(nameColumn.toString(), "like", $sql.value(keyword)),
+                                "OR",
+                                $sql.exp(descriptionColumn.toString(), "like", $sql.value(keyword)),
+                                ")"));
+            }
+            $sql.setLimit(plainSelect, searchVo.getStartNum(), searchVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchVendorListByIdListSql(List<Long> idList) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_vendor");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_vendor");
+            List<String> selectItemFieldNameList = new ArrayList<>(fieldNameList);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(idList)) {
+                filterItemFieldNameList.add("id");
+            }
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            Column column = fieldName2ColumnMap.get("id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(column.toString(), "in", idList));
             return plainSelect.toString();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
