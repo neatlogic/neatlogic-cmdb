@@ -170,4 +170,10 @@ public interface IResourceCenterResourceService {
 
     List<ResourceVo> searchVendorListByIdList(List<Long> idList);
 
+    int searchStateCount(BasePageVo searchVo);
+
+    List<Long> searchStateIdList(BasePageVo searchVo);
+
+    List<ResourceVo> searchStateListByIdList(List<Long> idList);
+
 }
