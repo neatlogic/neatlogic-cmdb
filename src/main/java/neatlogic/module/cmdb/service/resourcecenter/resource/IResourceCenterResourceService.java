@@ -18,6 +18,7 @@ package neatlogic.module.cmdb.service.resourcecenter.resource;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.resourcecenter.*;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
+import neatlogic.framework.common.dto.BasePageVo;
 
 import java.util.List;
 import java.util.Map;
@@ -162,5 +163,11 @@ public interface IResourceCenterResourceService {
     );
 
     List<Long> getAppSystemIdListById(String viewName, Long id);
+
+    int searchVendorCount(BasePageVo searchVo);
+
+    List<Long> searchVendorIdList(BasePageVo searchVo);
+
+    List<ResourceVo> searchVendorListByIdList(List<Long> idList);
 
 }
