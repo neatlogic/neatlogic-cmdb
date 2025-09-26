@@ -1590,6 +1590,88 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         return new ArrayList<>();
     }
 
+    @Override
+    public int searchStateCount(BasePageVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        int oldRowNum = 0;
+        int newRowNum = 0;
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildSearchStateCountSql(searchVo);
+            newRowNum = resourceMapper.getCountBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldRowNum = resourceMapper.searchStateCount(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (oldRowNum != newRowNum) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("newRowNum", newRowNum);
+                errorObj.put("oldRowNum", oldRowNum);
+                logger.error("资产清单新旧SQL获取rowNum结果不一致：{}", errorObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newRowNum;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldRowNum;
+        }
+        return 0;
+    }
+
+    @Override
+    public List<Long> searchStateIdList(BasePageVo searchVo) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<Long> newIdList = new ArrayList<>();
+        List<Long> oldIdList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildSearchStateIdListSql(searchVo);
+            newIdList = resourceMapper.getIdListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldIdList = resourceMapper.searchStateIdList(searchVo);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            if (!Objects.equals(oldIdList, newIdList)) {
+                JSONObject errorObj = new JSONObject();
+                errorObj.put("newIdList", newIdList);
+                errorObj.put("oldIdList", oldIdList);
+                logger.error("资产清单新旧SQL获取idList结果不一致：{}", errorObj);
+            }
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newIdList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldIdList;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ResourceVo> searchStateListByIdList(List<Long> idList) {
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            String sql = resourceBuildSqlService.buildSearchStateListByIdListSql(idList);
+            newResourceList = resourceMapper.getResourceListBySql(sql);
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.searchStateListByIdList(idList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
+    }
+
 //    public Object example() {
 //        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
 //        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
