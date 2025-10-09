@@ -43,7 +43,6 @@ import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import neatlogic.module.cmdb.service.resourcecenter.resource.ResourceBuildSqlService;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -80,9 +79,6 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
-
-    @Resource
-    private ResourceBuildSqlService resourceBuildSqlService;
 
     private final Map<ValueTextVo, BiFunction<ResourceVo, JSONObject, Object>> headFieldHandlerMap = new LinkedHashMap<>();
 
@@ -421,7 +417,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         List<ResourceVo> resultList = new ArrayList<>();
         int rowNum = 0;
         if (searchVo.getRowNum() == 0) {
-            rowNum = resourceMapper.getAppResourceCount(searchVo);
+            rowNum = resourceCenterResourceService.getAppResourceCount(searchVo);
         } else {
             rowNum = searchVo.getRowNum();
         }
@@ -436,10 +432,10 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     continue;
                 }
                 searchVo.setCurrentPage(i);
-                List<Long> resourceIdList = resourceMapper.getAppResourceIdList(searchVo);
+                List<Long> resourceIdList = resourceCenterResourceService.getAppResourceIdList(searchVo);
                 if (CollectionUtils.isNotEmpty(resourceIdList)) {
                     searchVo.setIdList(resourceIdList);
-                    List<ResourceVo> resourceList = resourceMapper.getAppResourceListByIdList(searchVo);
+                    List<ResourceVo> resourceList = resourceCenterResourceService.getAppResourceListByIdList(searchVo);
                     resultList.addAll(resourceList);
                 }
                 if (needPage) {
@@ -453,7 +449,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public List<Long> getAppResourceIdList(ResourceSearchVo searchVo, boolean needPage) {
         List<Long> resultList = new ArrayList<>();
-        int rowNum = resourceMapper.getAppResourceCount(searchVo);
+        int rowNum = resourceCenterResourceService.getAppResourceCount(searchVo);
         if (rowNum > 0) {
             searchVo.setRowNum(rowNum);
             if (needPage) {
@@ -465,7 +461,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     continue;
                 }
                 searchVo.setCurrentPage(i);
-                List<Long> resourceIdList = resourceMapper.getAppResourceIdList(searchVo);
+                List<Long> resourceIdList = resourceCenterResourceService.getAppResourceIdList(searchVo);
                 resultList.addAll(resourceIdList);
                 if (needPage) {
                     break;
@@ -701,7 +697,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         //先找出所有有权限的配置项的模型idList
         if (!searchVo.getIsHasAuth()) {
             Set<Long> authCiIdList = ciMapper.getAllAuthCi(UserContext.get().getAuthenticationInfoVo()).stream().map(CiVo::getId).collect(Collectors.toSet());
-            authCiIdList.addAll(resourceMapper.getResourceTypeIdListByAuth(searchVo));
+            authCiIdList.addAll(resourceCenterResourceService.getResourceTypeIdListByAuth(searchVo));
             if (CollectionUtils.isEmpty(authCiIdList)) {
                 return resultList;
             }
@@ -1000,7 +996,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         List<AppModuleVo> appModuleList = resourceMapper.getAppModuleListByAppSystemId(appSystemId);
         if (CollectionUtils.isNotEmpty(appModuleList)) {
             Map<Long, Long> appEnvCountMap = new HashMap<>();
-            List<Map<String, Long>> appEnvCountMapList = resourceMapper.getAppEnvCountMapByAppSystemIdGroupByAppModuleId(appSystemId);
+            List<Map<String, Long>> appEnvCountMapList = resourceCenterResourceService.getAppEnvCountMapByAppSystemIdGroupByAppModuleId(appSystemId);
             for (Map<String, Long> map : appEnvCountMapList) {
                 Long count = map.get("count");
                 Long appModuleId = map.get("appModuleId");
@@ -1073,7 +1069,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         Map<Long, List<AppModuleVo>> appEnvId2AppModuleListMap = new HashMap<>();
         List<ResourceEntityVo> appViewList = getAppViewList();
         for (ResourceEntityVo resourceEntityVo : appViewList) {
-            List<AppEnvVo> appEnvList = resourceMapper.getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(resourceEntityVo.getName(), appSystemId, appModuleId, inspectStatusList);
+            List<AppEnvVo> appEnvList = resourceCenterResourceService.getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(resourceEntityVo.getName(), appSystemId, appModuleId, inspectStatusList);
             for (AppEnvVo appEnvVo : appEnvList) {
                 appEnvMap.put(appEnvVo.getId(), appEnvVo);
                 List<AppModuleVo> appModuleList = appEnvVo.getAppModuleList();
@@ -1123,20 +1119,20 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            stateList = resourceMapper.searchStateListByIdList(idList);
+            stateList = resourceCenterResourceService.searchStateListByIdList(idList);
         } else {
-            int rowNum = resourceMapper.searchStateCount(searchVo);
+            int rowNum = resourceCenterResourceService.searchStateCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
                 if (searchVo.getNeedPage()) {
-                    List<Long> idList = resourceMapper.searchStateIdList(searchVo);
-                    stateList = resourceMapper.searchStateListByIdList(idList);
+                    List<Long> idList = resourceCenterResourceService.searchStateIdList(searchVo);
+                    stateList = resourceCenterResourceService.searchStateListByIdList(idList);
                 } else {
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                         searchVo.setCurrentPage(currentPage);
-                        List<Long> idList = resourceMapper.searchStateIdList(searchVo);
-                        List<ResourceVo> list = resourceMapper.searchStateListByIdList(idList);
+                        List<Long> idList = resourceCenterResourceService.searchStateIdList(searchVo);
+                        List<ResourceVo> list = resourceCenterResourceService.searchStateListByIdList(idList);
                         stateList.addAll(list);
                     }
                 }
@@ -1151,20 +1147,20 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            vendorList = resourceMapper.searchVendorListByIdList(idList);
+            vendorList = resourceCenterResourceService.searchVendorListByIdList(idList);
         } else {
-            int rowNum = resourceMapper.searchVendorCount(searchVo);
+            int rowNum = resourceCenterResourceService.searchVendorCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
                 if (searchVo.getNeedPage()) {
-                    List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
-                    vendorList = resourceMapper.searchVendorListByIdList(idList);
+                    List<Long> idList = resourceCenterResourceService.searchVendorIdList(searchVo);
+                    vendorList = resourceCenterResourceService.searchVendorListByIdList(idList);
                 } else {
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                         searchVo.setCurrentPage(currentPage);
-                        List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
-                        List<ResourceVo> list = resourceMapper.searchVendorListByIdList(idList);
+                        List<Long> idList = resourceCenterResourceService.searchVendorIdList(searchVo);
+                        List<ResourceVo> list = resourceCenterResourceService.searchVendorListByIdList(idList);
                         vendorList.addAll(list);
                     }
                 }
@@ -1189,7 +1185,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         List<ResourceEntityVo> appViewList = getAppViewList();
         if (CollectionUtils.isNotEmpty(appViewList)) {
             for (ResourceEntityVo resourceEntityVo : appViewList) {
-                List<Long> typeIdList = resourceMapper.getAppResourceTypeIdListByViewNameAndAppSystemId(resourceEntityVo.getName(), appSystemId, appModuleId, envId, inspectStatusList);
+                List<Long> typeIdList = resourceCenterResourceService.getAppResourceTypeIdListByViewNameAndAppSystemId(resourceEntityVo.getName(), appSystemId, appModuleId, envId, inspectStatusList);
                 viewName2TypeIdListMap.put(resourceEntityVo.getName(), typeIdList);
             }
         }
@@ -1202,7 +1198,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         List<ResourceEntityVo> appViewList = getAppViewList();
         if (CollectionUtils.isNotEmpty(appViewList)) {
             for (ResourceEntityVo resourceEntityVo : appViewList) {
-                List<Long> list = resourceMapper.getAppSystemIdListById(resourceEntityVo.getName(), id);
+                List<Long> list = resourceCenterResourceService.getAppSystemIdListById(resourceEntityVo.getName(), id);
                 appSystemIdList.addAll(list);
             }
         }

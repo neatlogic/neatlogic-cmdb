@@ -36,6 +36,7 @@ import neatlogic.framework.tagent.dao.mapper.TagentMapper;
 import neatlogic.framework.tagent.dto.TagentVo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +64,9 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
     ResourceAccountMapper resourceAccountMapper;
     @Resource
     TagentMapper tagentMapper;
+
+    @Resource
+    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getName() {
@@ -117,12 +121,12 @@ public class GetResourceAccountApi extends PrivateApiComponentBase {
             //先找到资产
             ResourceVo resourceVo = null;
             if (resourceId == null) {
-                resourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, nodeName, nodeType);
+                resourceVo = resourceCenterResourceService.getResourceByIpAndPortAndNameAndTypeName(ip, port, nodeName, nodeType);
                 if (resourceVo == null) {
                     throw new ResourceNotFoundException(ip, port, nodeName, nodeType);
                 }
             } else {
-                resourceVo = resourceMapper.getResourceById(resourceId);
+                resourceVo = resourceCenterResourceService.getResourceById(resourceId);
                 if (resourceVo == null) {
                     throw new ResourceNotFoundException(resourceId);
                 }

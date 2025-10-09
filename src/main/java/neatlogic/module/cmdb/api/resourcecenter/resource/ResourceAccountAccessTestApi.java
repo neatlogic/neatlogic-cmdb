@@ -41,6 +41,7 @@ import neatlogic.framework.util.HttpRequestUtil;
 import neatlogic.framework.util.RegexUtils;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,9 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
 
     @Resource
     RunnerMapper runnerMapper;
+
+    @Resource
+    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
@@ -95,7 +99,7 @@ public class ResourceAccountAccessTestApi extends PrivateApiComponentBase {
         Long resourceId = paramObj.getLong("resourceId");
         Long runnerId = paramObj.getLong("runnerId");
         List<Long> accountIdList = paramObj.getJSONArray("accountIdList").toJavaList(Long.class);
-        ResourceVo resource = resourceMapper.getResourceById(resourceId);
+        ResourceVo resource = resourceCenterResourceService.getResourceById(resourceId);
         if (resource == null) {
             throw new ResourceNotFoundException(resourceId);
         }

@@ -28,8 +28,8 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ import java.util.List;
 public class ResourceTagBatchDeleteApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
     @Resource
     private ResourceTagMapper resourceTagMapper;
 
@@ -85,7 +85,7 @@ public class ResourceTagBatchDeleteApi extends PrivateApiComponentBase {
         }
 
         List<Long> resourceIdList = resourceIdArray.toJavaList(Long.class);
-        List<Long> existResourceIdList = resourceMapper.checkResourceIdListIsExists(resourceIdList);
+        List<Long> existResourceIdList = resourceCenterResourceService.checkResourceIdListIsExists(resourceIdList);
         if (resourceIdList.size() > existResourceIdList.size()) {
             List<Long> notFoundIdList = ListUtils.removeAll(resourceIdList, existResourceIdList);
             if (CollectionUtils.isNotEmpty(notFoundIdList)) {

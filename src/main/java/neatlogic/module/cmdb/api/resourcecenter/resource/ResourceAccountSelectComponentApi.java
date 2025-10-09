@@ -26,7 +26,7 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,7 +38,7 @@ import java.util.List;
 public class ResourceAccountSelectComponentApi extends PrivateApiComponentBase {
 
     @Resource
-    ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
@@ -68,8 +68,8 @@ public class ResourceAccountSelectComponentApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountComponentVo searchVo = JSON.toJavaObject(paramObj, AccountComponentVo.class);
-        List<AccountComponentVo> accountComponentVoList = resourceMapper.searchAccountComponent(searchVo);
-        Integer rowNum = resourceMapper.searchAccountComponentCount(searchVo);
+        List<AccountComponentVo> accountComponentVoList = resourceCenterResourceService.searchAccountComponent(searchVo);
+        Integer rowNum = resourceCenterResourceService.searchAccountComponentCount(searchVo);
         searchVo.setRowNum(rowNum);
         return TableResultUtil.getResult(accountComponentVoList, searchVo);
 

@@ -23,7 +23,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,7 +38,7 @@ import javax.annotation.Resource;
 public class AppEnvListApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getToken() {
@@ -67,6 +67,6 @@ public class AppEnvListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) {
         Long appSystemId = paramObj.getLong("appSystemId");
         Long appModuleId = paramObj.getLong("appModuleId");
-        return resourceMapper.getAppEnvListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
+        return resourceCenterResourceService.getAppEnvListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
     }
 }

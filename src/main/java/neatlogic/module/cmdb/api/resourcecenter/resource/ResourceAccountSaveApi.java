@@ -27,8 +27,8 @@ import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +48,7 @@ import java.util.List;
 public class ResourceAccountSaveApi extends PrivateApiComponentBase {
 
     @Resource
-    private ResourceMapper resourceMapper;
+    private IResourceCenterResourceService resourceCenterResourceService;
     @Resource
     private ResourceCenterAccountService resourceCenterAccountService;
 
@@ -75,7 +75,7 @@ public class ResourceAccountSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         Long resourceId = paramObj.getLong("resourceId");
-        if (resourceMapper.getResourceIdByResourceId(resourceId) == null) {
+        if (resourceCenterResourceService.getResourceIdByResourceId(resourceId) == null) {
             throw new ResourceNotFoundException(resourceId);
         }
         List<Long> accountIdList = new ArrayList<>();
