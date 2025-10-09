@@ -1115,43 +1115,58 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                             <when test="attrFilter.needTargetCi == true">
                                 AND
                                 <choose>
-                                    <when test="attrFilter.expression == 'like' or attrFilter.expression == 'equal'">
-                                        <choose>
-                                            <when test="!attrFilter.isStrict">
-                                                `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
-                                                <foreach collection="attrFilter.valueList" item="value" separator=","
-                                                         open="("
-                                                         close=")">
-                                                    #{value}
-                                                </foreach>
-                                            </when>
-                                            <otherwise> <!--严格模式用于唯一名匹配，防止下拉出现多个成员时匹配到某个就返回-->
-                                                `cmdb_attrentity_${attrFilter.attrId}`.from_cientity_id IN (
-                                                SELECT from_cientity_id
-                                                FROM cmdb_attrentity
-                                                WHERE attr_id = ${attrFilter.attrId}
-                                                GROUP BY from_cientity_id
-                                                HAVING
-                                                COUNT(DISTINCT CASE
-                                                WHEN to_cientity_id IN
-                                                <foreach collection="attrFilter.valueList" item="value" separator=","
-                                                         open="("
-                                                         close=")">
-                                                    #{value}
-                                                </foreach>
-                                                THEN to_cientity_id END
-                                                ) = ${attrFilter.valueList.size()}
-                                                AND COUNT(DISTINCT to_cientity_id) = ${attrFilter.valueList.size()}
-                                                )
-                                            </otherwise>
-                                        </choose>
+                                    <when test="attrFilter.expression == 'like'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
+                                        <foreach collection="attrFilter.valueList" item="value" separator=","
+                                                 open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
                                     </when>
-                                    <when test="attrFilter.expression == 'notlike' or attrFilter.expression == 'notequal'">
+                                    <when test="attrFilter.expression == 'equal'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.from_cientity_id IN (
+                                        SELECT from_cientity_id
+                                        FROM cmdb_attrentity
+                                        WHERE attr_id = ${attrFilter.attrId}
+                                        GROUP BY from_cientity_id
+                                        HAVING
+                                        COUNT(DISTINCT CASE
+                                        WHEN to_cientity_id IN
+                                        <foreach collection="attrFilter.valueList" item="value" separator=","
+                                                 open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
+                                        THEN to_cientity_id END
+                                        ) = ${attrFilter.valueList.size()}
+                                        AND COUNT(DISTINCT to_cientity_id) = ${attrFilter.valueList.size()}
+                                        )
+                                    </when>
+                                    <when test="attrFilter.expression == 'notlike'">
                                         `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id NOT IN
                                         <foreach collection="attrFilter.valueList" item="value" separator="," open="("
                                                  close=")">
                                             #{value}
                                         </foreach>
+                                    </when>
+                                    <when test="attrFilter.expression == 'notequal'">
+                                        `cmdb_attrentity_${attrFilter.attrId}`.from_cientity_id IN (
+                                        SELECT from_cientity_id
+                                        FROM cmdb_attrentity
+                                        WHERE attr_id = ${attrFilter.attrId}
+                                        GROUP BY from_cientity_id
+                                        HAVING NOT (
+                                        COUNT(DISTINCT CASE
+                                        WHEN to_cientity_id IN
+                                        <foreach collection="attrFilter.valueList" item="value" separator="," open="("
+                                                 close=")">
+                                            #{value}
+                                        </foreach>
+                                        THEN to_cientity_id END
+                                        ) = ${attrFilter.valueList.size()}
+                                        AND COUNT(DISTINCT to_cientity_id) = ${attrFilter.valueList.size()}
+                                        )
+                                        )
                                     </when>
                                     <when test="attrFilter.expression == 'is-null'">
                                         `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IS NULL
