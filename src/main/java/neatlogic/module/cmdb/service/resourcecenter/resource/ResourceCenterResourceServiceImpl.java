@@ -299,11 +299,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public void setIsIpFieldSortAndIsNameFieldSort(ResourceSearchVo searchVo) {
         if (StringUtils.isNotBlank(searchVo.getKeyword())) {
-            int ipKeywordCount = getResourceCountByIpKeyword(searchVo);
+            int ipKeywordCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
             if (ipKeywordCount > 0) {
                 searchVo.setIsIpFieldSort(1);
             } else {
-                int nameKeywordCount = getResourceCountByNameKeyword(searchVo);
+                int nameKeywordCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
                 if (nameKeywordCount > 0) {
                     searchVo.setIsNameFieldSort(1);
                 }
