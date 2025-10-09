@@ -16,8 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper">
-    <!--<cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
-  <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="30000" size="500"></cache>-->
     <resultMap id="ciEntityRelMap" type="neatlogic.framework.cmdb.dto.cientity.CiEntityTopoVo">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
@@ -1118,11 +1116,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                                 AND
                                 <choose>
                                     <when test="attrFilter.expression == 'like' or attrFilter.expression == 'equal'">
-                                        `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
-                                        <foreach collection="attrFilter.valueList" item="value" separator="," open="("
-                                                 close=")">
-                                            #{value}
-                                        </foreach>
+                                        <choose>
+                                            <when test="!attrFilter.isStrict">
+                                                `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id IN
+                                                <foreach collection="attrFilter.valueList" item="value" separator=","
+                                                         open="("
+                                                         close=")">
+                                                    #{value}
+                                                </foreach>
+                                            </when>
+                                            <otherwise> <!--严格模式用于唯一名匹配，防止下拉出现多个成员时匹配到某个就返回-->
+                                                `cmdb_attrentity_${attrFilter.attrId}`.from_cientity_id IN (
+                                                SELECT from_cientity_id
+                                                FROM cmdb_attrentity
+                                                WHERE attr_id = ${attrFilter.attrId}
+                                                GROUP BY from_cientity_id
+                                                HAVING
+                                                COUNT(DISTINCT CASE
+                                                WHEN to_cientity_id IN
+                                                <foreach collection="attrFilter.valueList" item="value" separator=","
+                                                         open="("
+                                                         close=")">
+                                                    #{value}
+                                                </foreach>
+                                                THEN to_cientity_id END
+                                                ) = ${attrFilter.valueList.size()}
+                                                AND COUNT(DISTINCT to_cientity_id) = ${attrFilter.valueList.size()}
+                                                )
+                                            </otherwise>
+                                        </choose>
                                     </when>
                                     <when test="attrFilter.expression == 'notlike' or attrFilter.expression == 'notequal'">
                                         `cmdb_attrentity_${attrFilter.attrId}`.to_cientity_id NOT IN

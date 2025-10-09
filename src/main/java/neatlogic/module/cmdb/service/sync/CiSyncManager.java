@@ -324,6 +324,7 @@ public class CiSyncManager {
                     filterVo.setType(attr.getType());
                     filterVo.setAttrId(syncMappingVo.getAttrId());
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
+                    filterVo.setIsStrict(true);
                     String v = dataObj.getString(syncMappingVo.getField(parentKey));
                     if (Boolean.FALSE.equals(attr.isNeedTargetCi())) {
                         if (StringUtils.isNotBlank(v)) {

@@ -1412,6 +1412,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 if (attrEntityTransactionVo != null) {
                     AttrFilterVo filterVo = new AttrFilterVo();
                     filterVo.setAttrId(attrId);
+                    filterVo.setIsStrict(true);//严格模式
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
                     filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
                         if (d != null) {
