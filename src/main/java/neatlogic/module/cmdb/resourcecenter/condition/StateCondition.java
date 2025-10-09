@@ -1,13 +1,13 @@
 package neatlogic.module.cmdb.resourcecenter.condition;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.resourcecenter.condition.ResourcecenterConditionBase;
 import neatlogic.framework.cmdb.resourcecenter.table.ScenceIpobjectDetailTable;
 import neatlogic.framework.common.constvalue.FormHandlerType;
 import neatlogic.framework.dto.condition.ConditionVo;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Component
 public class StateCondition extends ResourcecenterConditionBase {
     @Resource
-    ResourceMapper resourceMapper;
+    IResourceCenterResourceService resourceCenterResourceService;
     private String formHandlerType = FormHandlerType.SELECT.toString();
     @Override
     public String getName() {
@@ -41,7 +41,7 @@ public class StateCondition extends ResourcecenterConditionBase {
                 valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
             }
             if(CollectionUtils.isNotEmpty(valueList)) {
-                List<ResourceVo> states = resourceMapper.searchStateListByIdList(valueList);
+                List<ResourceVo> states = resourceCenterResourceService.searchStateListByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(states)) {
                     return states.stream().map(ResourceVo::getDescription).collect(Collectors.toList());
                 }

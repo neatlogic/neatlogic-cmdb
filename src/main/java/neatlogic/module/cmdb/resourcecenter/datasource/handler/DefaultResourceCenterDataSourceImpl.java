@@ -43,7 +43,6 @@ import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
-import neatlogic.module.cmdb.service.resourcecenter.resource.ResourceBuildSqlService;
 import neatlogic.module.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -80,9 +79,6 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
-
-    @Resource
-    private ResourceBuildSqlService resourceBuildSqlService;
 
     private final Map<ValueTextVo, BiFunction<ResourceVo, JSONObject, Object>> headFieldHandlerMap = new LinkedHashMap<>();
 
@@ -1123,20 +1119,20 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            stateList = resourceMapper.searchStateListByIdList(idList);
+            stateList = resourceCenterResourceService.searchStateListByIdList(idList);
         } else {
-            int rowNum = resourceMapper.searchStateCount(searchVo);
+            int rowNum = resourceCenterResourceService.searchStateCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
                 if (searchVo.getNeedPage()) {
-                    List<Long> idList = resourceMapper.searchStateIdList(searchVo);
-                    stateList = resourceMapper.searchStateListByIdList(idList);
+                    List<Long> idList = resourceCenterResourceService.searchStateIdList(searchVo);
+                    stateList = resourceCenterResourceService.searchStateListByIdList(idList);
                 } else {
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                         searchVo.setCurrentPage(currentPage);
-                        List<Long> idList = resourceMapper.searchStateIdList(searchVo);
-                        List<ResourceVo> list = resourceMapper.searchStateListByIdList(idList);
+                        List<Long> idList = resourceCenterResourceService.searchStateIdList(searchVo);
+                        List<ResourceVo> list = resourceCenterResourceService.searchStateListByIdList(idList);
                         stateList.addAll(list);
                     }
                 }
@@ -1151,20 +1147,20 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            vendorList = resourceMapper.searchVendorListByIdList(idList);
+            vendorList = resourceCenterResourceService.searchVendorListByIdList(idList);
         } else {
-            int rowNum = resourceMapper.searchVendorCount(searchVo);
+            int rowNum = resourceCenterResourceService.searchVendorCount(searchVo);
             if (rowNum > 0) {
                 searchVo.setRowNum(rowNum);
                 if (searchVo.getNeedPage()) {
-                    List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
-                    vendorList = resourceMapper.searchVendorListByIdList(idList);
+                    List<Long> idList = resourceCenterResourceService.searchVendorIdList(searchVo);
+                    vendorList = resourceCenterResourceService.searchVendorListByIdList(idList);
                 } else {
                     int pageCount = searchVo.getPageCount();
                     for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                         searchVo.setCurrentPage(currentPage);
-                        List<Long> idList = resourceMapper.searchVendorIdList(searchVo);
-                        List<ResourceVo> list = resourceMapper.searchVendorListByIdList(idList);
+                        List<Long> idList = resourceCenterResourceService.searchVendorIdList(searchVo);
+                        List<ResourceVo> list = resourceCenterResourceService.searchVendorListByIdList(idList);
                         vendorList.addAll(list);
                     }
                 }

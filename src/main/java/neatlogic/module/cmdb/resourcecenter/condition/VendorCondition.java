@@ -1,12 +1,12 @@
 package neatlogic.module.cmdb.resourcecenter.condition;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.resourcecenter.condition.ResourcecenterConditionBase;
 import neatlogic.framework.cmdb.resourcecenter.table.ScenceIpobjectDetailTable;
 import neatlogic.framework.dto.condition.ConditionVo;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Component
 public class VendorCondition extends ResourcecenterConditionBase {
     @Resource
-    ResourceMapper resourceMapper;
+    IResourceCenterResourceService resourceCenterResourceService;
 
     @Override
     public String getName() {
@@ -40,7 +40,7 @@ public class VendorCondition extends ResourcecenterConditionBase {
                 valueList = JSON.parseArray(JSON.toJSONString(value), Long.class);
             }
             if(CollectionUtils.isNotEmpty(valueList)) {
-                List<ResourceVo> vendors = resourceMapper.searchVendorListByIdList(valueList);
+                List<ResourceVo> vendors = resourceCenterResourceService.searchVendorListByIdList(valueList);
                 if (CollectionUtils.isNotEmpty(vendors)) {
                     return vendors.stream().map(ResourceVo::getName).collect(Collectors.toList());
                 }
