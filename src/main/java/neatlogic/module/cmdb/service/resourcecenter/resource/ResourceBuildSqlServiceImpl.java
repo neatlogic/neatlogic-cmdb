@@ -34,6 +34,7 @@ import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceViewFieldMappingException;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtil;
 import neatlogic.framework.cmdb.utils.ResourceViewGenerateSqlUtilForTiDB;
+import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.dto.DataBaseViewInfoVo;
@@ -93,6 +94,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
     @Override
     public String buildResourceView(ResourceEntityVo resourceEntityVo) {
         String viewName = resourceEntityVo.getName();
+        ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
         String select = null;
         String error = StringUtils.EMPTY;
         try {
@@ -145,6 +147,12 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                     EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
                         schemaMapper.deleteView(TenantContext.get().getDataDbName() + "." + viewName);
                         List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(viewName);
+                        if (CollectionUtils.isEmpty(fieldNameList)) {
+                            String sceneTemplateName = originalConfig.getSceneTemplateName();
+                            if (StringUtils.isNotBlank(sceneTemplateName)) {
+                                fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+                            }
+                        }
                         Table table = new Table();
                         table.setName(viewName);
                         table.setSchemaName(TenantContext.get().getDataDbName());
@@ -1354,6 +1362,196 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
     }
 
     @Override
+    public String buildSearchVendorCountSql(BasePageVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_vendor");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("description");
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            String keyword = searchVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+                keyword = "%" + keyword + "%";
+                Column nameColumn = fieldName2ColumnMap.get("name");
+                Column descriptionColumn = fieldName2ColumnMap.get("description");
+                $sql.addWhereExpression(plainSelect,
+                        $sql.exp("(",
+                                $sql.exp(nameColumn.toString(), "like", $sql.value(keyword)),
+                                "OR",
+                                $sql.exp(descriptionColumn.toString(), "like", $sql.value(keyword)),
+                                ")"));
+            }
+            Column column = fieldName2ColumnMap.get("id");
+            $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", column.toString()).withDistinct(true));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchVendorIdListSql(BasePageVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_vendor");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("description");
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            String keyword = searchVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+                keyword = "%" + keyword + "%";
+                Column nameColumn = fieldName2ColumnMap.get("name");
+                Column descriptionColumn = fieldName2ColumnMap.get("description");
+                $sql.addWhereExpression(plainSelect,
+                        $sql.exp("(",
+                                $sql.exp(nameColumn.toString(), "like", $sql.value(keyword)),
+                                "OR",
+                                $sql.exp(descriptionColumn.toString(), "like", $sql.value(keyword)),
+                                ")"));
+            }
+            $sql.setLimit(plainSelect, searchVo.getStartNum(), searchVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchVendorListByIdListSql(List<Long> idList) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_vendor");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_vendor");
+            List<String> selectItemFieldNameList = new ArrayList<>(fieldNameList);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(idList)) {
+                filterItemFieldNameList.add("id");
+            }
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            Column column = fieldName2ColumnMap.get("id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(column.toString(), "in", idList));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchStateCountSql(BasePageVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_state");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("description");
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            String keyword = searchVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+                keyword = "%" + keyword + "%";
+                Column nameColumn = fieldName2ColumnMap.get("name");
+                Column descriptionColumn = fieldName2ColumnMap.get("description");
+                $sql.addWhereExpression(plainSelect,
+                        $sql.exp("(",
+                                $sql.exp(nameColumn.toString(), "like", $sql.value(keyword)),
+                                "OR",
+                                $sql.exp(descriptionColumn.toString(), "like", $sql.value(keyword)),
+                                ")"));
+            }
+            Column column = fieldName2ColumnMap.get("id");
+            $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", column.toString()).withDistinct(true));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchStateIdListSql(BasePageVo searchVo) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_state");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            filterItemFieldNameList.add("id");
+            filterItemFieldNameList.add("name");
+            filterItemFieldNameList.add("description");
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            List<String> selectItemFieldNameList = new ArrayList<>();
+            selectItemFieldNameList.add("id");
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            String keyword = searchVo.getKeyword();
+            if (StringUtils.isNotBlank(keyword)) {
+                keyword = "%" + keyword + "%";
+                Column nameColumn = fieldName2ColumnMap.get("name");
+                Column descriptionColumn = fieldName2ColumnMap.get("description");
+                $sql.addWhereExpression(plainSelect,
+                        $sql.exp("(",
+                                $sql.exp(nameColumn.toString(), "like", $sql.value(keyword)),
+                                "OR",
+                                $sql.exp(descriptionColumn.toString(), "like", $sql.value(keyword)),
+                                ")"));
+            }
+            $sql.setLimit(plainSelect, searchVo.getStartNum(), searchVo.getPageSize());
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public String buildSearchStateListByIdListSql(List<Long> idList) {
+        try {
+            ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_state");
+            ResourceEntityConfigVo config = getResourceEntityConfigVo(resourceEntityVo);
+            List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_state");
+            List<String> selectItemFieldNameList = new ArrayList<>(fieldNameList);
+            List<String> filterItemFieldNameList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(idList)) {
+                filterItemFieldNameList.add("id");
+            }
+            config.setSelectItemFieldNameList(selectItemFieldNameList);
+            config.setFilterItemFieldNameList(filterItemFieldNameList);
+            Map<String, Column> fieldName2ColumnMap = new HashMap<>();
+            PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            Column column = fieldName2ColumnMap.get("id");
+            $sql.addWhereExpression(plainSelect, $sql.exp(column.toString(), "in", idList));
+            return plainSelect.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
     public String buildGetInspectResourceListByIdListSql(List<Long> idList, List<String> selectFieldNameList) {
         try {
             ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName("scence_ipobject_detail");
@@ -2086,6 +2284,22 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             String toCi = fieldMappingVo.getToCi();
             if (StringUtils.isNotBlank(toCi)) {
                 ciNameSet.add(toCi);
+            }
+            String ciName = fieldMappingVo.getCiName();
+            if (StringUtils.isNotBlank(ciName)) {
+                ciNameSet.add(ciName);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(config.getRelLinkList())) {
+            for (ResourceEntityRelLinkVo relLinkVo : config.getRelLinkList()) {
+                String leftCi = relLinkVo.getLeftCi();
+                if (StringUtils.isNotBlank(leftCi)) {
+                    ciNameSet.add(leftCi);
+                }
+                String rightCi = relLinkVo.getRightCi();
+                if (StringUtils.isNotBlank(rightCi)) {
+                    ciNameSet.add(rightCi);
+                }
             }
         }
         Map<Long, List<AttrVo>> ciId2AttrListMap = new HashMap<>();
