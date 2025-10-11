@@ -16,7 +16,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityCachedMapper">
-    <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="60000" size="1000" readOnly="true"></cache>
+    <cache type="neatlogic.framework.dao.cache.NeatLogicCache" flushInterval="60000" size="1000">
+        <!-- 二选一：TTI 或 TTL（都配的话以 TTL 为准，见下方实现） -->
+        <property name="timeToIdleSeconds" value="300"/>
+        <!-- <property name="timeToLiveSeconds" value="300"/> -->
+        <!-- Ehcache 堆内条目数 -->
+        <property name="heapEntries" value="1000"/>
+        <property name="readOnly" value="true"/>
+    </cache>
+
     <select id="getCiEntityBaseInfoById" parameterType="java.lang.Long"
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT cientity.id,
