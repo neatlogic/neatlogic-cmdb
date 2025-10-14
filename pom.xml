@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <relativePath>../neatlogic-parent</relativePath>
     </parent>
     <artifactId>neatlogic-cmdb</artifactId>
-    <version>0.3.0.0-SNAPSHOT</version>
+    <version>3.4.0</version>
     <build>
         <resources>
             <resource>
