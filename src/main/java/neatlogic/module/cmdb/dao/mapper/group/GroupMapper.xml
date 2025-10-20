@@ -332,7 +332,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         update cmdb_group
         set status    = #{status},
             server_id = #{serverId},
-            error     = #{error}
+            error     = #{error, typeHandler=CompressHandler}
         where id = #{id}
     </update>
 

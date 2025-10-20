@@ -9,6 +9,6 @@
 
     <insert id="replaceSnapshotContent">
         INSERT IGNORE INTO `cmdb_cientity_snapshot` (`hash`, `content`)
-        VALUES (#{hash}, #{content});
+        VALUES (#{hash}, #{content, typeHandler=CompressHandler});
     </insert>
 </mapper>

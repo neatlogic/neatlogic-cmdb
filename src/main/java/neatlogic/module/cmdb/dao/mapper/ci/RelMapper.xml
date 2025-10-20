@@ -570,7 +570,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <insert id="insertRelativeRel" parameterType="neatlogic.framework.cmdb.dto.ci.RelativeRelVo">
         insert ignore into cmdb_relativerel (rel_id, relative_rel_id, from_path, to_path, path_hash)
-        values (#{relId}, #{relativeRelId}, #{fromPath}, #{toPath}, #{hash})
+        values (#{relId}, #{relativeRelId}, #{fromPath, typeHandler=CompressHandler}, #{toPath, typeHandler=CompressHandler}, #{hash})
     </insert>
 
     <delete id="deleteRelById" parameterType="java.lang.Long">

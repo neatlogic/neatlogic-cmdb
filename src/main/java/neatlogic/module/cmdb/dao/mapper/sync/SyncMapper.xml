@@ -532,7 +532,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         update cmdb_sync_policy
         set ci_collection_id = #{ciCollectionId},
             is_active        = #{isActive},
-            `condition`      = #{conditionStr},
+            `condition`      = #{conditionStr, typeHandler=CompressHandler},
             name             = #{name}
         WHERE id = #{id}
     </update>
@@ -564,7 +564,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <insert id="insertSyncPolicy" parameterType="neatlogic.framework.cmdb.dto.sync.SyncPolicyVo">
         insert into cmdb_sync_policy (id, ci_id, ci_collection_id, is_active, `condition`, name)
-        VALUES (#{id}, #{ciId}, #{ciCollectionId}, #{isActive}, #{conditionStr}, #{name})
+        VALUES (#{id}, #{ciId}, #{ciCollectionId}, #{isActive}, #{conditionStr, typeHandler=CompressHandler}, #{name})
     </insert>
 
     <delete id="deleteSyncScheduleByPolicyId" parameterType="java.lang.Long">
