@@ -569,10 +569,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <insert id="insertCustomViewTemplate" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewTemplateVo">
         INSERT INTO cmdb_customview_template
             (`customview_id`, `name`, `template`, `config`, `is_active`)
-        VALUES (#{customViewId}, #{name}, #{template}, #{config}, #{isActive})
+        VALUES (#{customViewId}, #{name}, #{template, typeHandler=CompressHandler}, #{config, typeHandler=CompressHandler}, #{isActive})
         ON DUPLICATE KEY UPDATE `name`      = #{name},
-                                `template`  = #{template},
-                                `config`    = #{config},
+                                `template`  = #{template, typeHandler=CompressHandler},
+                                `config`    = #{config, typeHandler=CompressHandler},
                                 `is_active` = #{isActive}
     </insert>
 
@@ -663,7 +663,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{sort},
                 #{isHidden},
                 #{isPrimary},
-                #{conditionStr})
+                #{conditionStr, typeHandler=CompressHandler})
     </insert>
 
     <insert id="insertCustomViewAttr" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo">
@@ -687,7 +687,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{sort},
                 #{isHidden},
                 #{isPrimary},
-                #{conditionStr})
+                #{conditionStr, typeHandler=CompressHandler})
     </insert>
 
     <insert id="insertCustomViewLink" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewLinkVo">

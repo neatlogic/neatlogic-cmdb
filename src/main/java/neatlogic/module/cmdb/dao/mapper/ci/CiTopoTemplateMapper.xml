@@ -41,7 +41,7 @@
         set name       = #{name},
             is_active  = #{isActive},
             is_default = #{isDefault},
-            config     = #{configStr}
+            config     = #{configStr, typeHandler=CompressHandler}
         where id = #{id}
     </update>
 
@@ -57,7 +57,7 @@
                 #{name},
                 #{isDefault},
                 #{isActive},
-                #{configStr})
+                #{configStr, typeHandler=CompressHandler})
     </insert>
 
     <delete id="deleteCiTopoTemplateById" parameterType="java.lang.Long">

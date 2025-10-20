@@ -493,7 +493,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         </if>
         a.`account` = #{account},
         <if test="passwordCipher != null">
-            a.`password` = #{passwordCipher},
+            a.`password` = #{passwordCipher, typeHandler=CompressHandler},
         </if>
         a.protocol_id = #{protocolId},
         <if test="isDefault != null">
@@ -506,7 +506,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
 
     <update id="updateAccountPasswordById">
         update `cmdb_resourcecenter_account`
-        set password = #{password}
+        set password = #{password, typeHandler=CompressHandler}
         where id = #{id}
     </update>
     <update id="resetAccountDefaultByProtocolIdAndAccount">
@@ -537,7 +537,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         #{name},
         #{account},
         <if test="passwordCipher != null">
-            #{passwordCipher},
+            #{passwordCipher, typeHandler=CompressHandler},
         </if>
         #{protocolId},
         #{type},

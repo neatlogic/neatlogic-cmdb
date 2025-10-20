@@ -86,22 +86,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     <insert id="insertResourceEntity"
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         INSERT INTO cmdb_resourcecenter_entity (`name`, `label`, `status`, `error`, `init_time`, `ci_id`, `config`, `description`)
-        VALUES (#{name}, #{label}, #{status}, #{error}, NOW(3), #{ciId}, #{configStr}, #{description})
+        VALUES (#{name}, #{label}, #{status}, #{error, typeHandler=CompressHandler}, NOW(3), #{ciId}, #{configStr, typeHandler=CompressHandler}, #{description, typeHandler=CompressHandler})
         ON DUPLICATE KEY UPDATE
         <if test="label != null">
             `label` = #{label},
         </if>
         <if test="error != null">
-            `error` = #{error},
+            `error` = #{error, typeHandler=CompressHandler},
         </if>
         <if test="status != null">
             `status` = #{status},
         </if>
         <if test="configStr != null">
-            `config` = #{configStr},
+            `config` = #{configStr, typeHandler=CompressHandler},
         </if>
         <if test="description != null">
-            `description`= #{description},
+            `description`= #{description, typeHandler=CompressHandler},
         </if>
         <if test="ciId != null">
             `ci_id` = #{ciId},
@@ -156,9 +156,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         UPDATE cmdb_resourcecenter_entity
         SET `status`    = #{status},
             `label`     = #{label},
-            `error`     = #{error},
-            `config`       = #{configStr},
-            `description`= #{description},
+            `error`     = #{error, typeHandler=CompressHandler},
+            `config`       = #{configStr, typeHandler=CompressHandler},
+            `description`= #{description, typeHandler=CompressHandler},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
     </update>
@@ -167,7 +167,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             parameterType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
         UPDATE cmdb_resourcecenter_entity
         SET `status`    = #{status},
-            `error`     = #{error},
+            `error`     = #{error, typeHandler=CompressHandler},
             `init_time` = NOW(3)
         WHERE `name` = #{name}
     </update>
@@ -177,8 +177,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         UPDATE cmdb_resourcecenter_entity
         SET
             `label`= #{label},
-            `description`= #{description},
-            `config`= #{configStr},
+            `description`= #{description, typeHandler=CompressHandler},
+            `config`= #{configStr, typeHandler=CompressHandler},
             `ci_id`= #{ciId},
             `init_time` = NOW(3)
         WHERE `name` = #{name}

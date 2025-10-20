@@ -250,7 +250,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         set label       = #{label},
             is_active   = #{isActive},
             is_multiple = #{isMultiple},
-            description = #{description}
+            description = #{description, typeHandler=CompressHandler}
         where id = #{id}
     </update>
 
@@ -280,7 +280,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{label},
                 #{isActive},
                 #{isMultiple},
-                #{description},
+                #{description, typeHandler=CompressHandler},
                 0)
     </insert>
 
