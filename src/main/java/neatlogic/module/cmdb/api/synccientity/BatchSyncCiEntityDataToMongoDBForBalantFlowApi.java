@@ -48,7 +48,9 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @AuthAction(action = ADMIN.class)
@@ -123,6 +126,9 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
         defaultJson.put("integrationRequestMaxCount", 10000);
         defaultJson.put("pageSize", 1000);
         defaultJson.put("needSyncData", true);
+        defaultJson.put("collectionName", "COLLECT_BALANTFLOWCIENTITY");
+        defaultJson.put("needDeleteCollection", false);
+        defaultJson.put("expireAfterHours", 24);
         return defaultJson;
     }
 
@@ -146,7 +152,15 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
         JSONArray batchList = paramObj.getJSONArray("batchList");
         Boolean needSyncData = paramObj.getBoolean("needSyncData");
         needSyncData = needSyncData != null && needSyncData;
+        String collectionName = paramObj.getString("collectionName");
+        Boolean needDeleteCollection = paramObj.getBoolean("needDeleteCollection");
+        needDeleteCollection = needDeleteCollection != null && needDeleteCollection;
+        Integer expireAfterHours = paramObj.getInteger("expireAfterHours");
+        expireAfterHours = expireAfterHours != null ? expireAfterHours : 24;
         if (CollectionUtils.isNotEmpty(batchList)) {
+            if (StringUtils.isNotBlank(collectionName)) {
+                createCollection(collectionName, needDeleteCollection, expireAfterHours);
+            }
             JSONArray tbodyList = new JSONArray();
             for (int i = 0; i < batchList.size(); i++) {
                 JSONObject jsonObj = batchList.getJSONObject(i);
@@ -206,7 +220,7 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
                                     if (MapUtils.isNotEmpty(columnObj)) {
                                         Long ciId = columnObj.getLong("ciId");
                                         Long attrId = columnObj.getLong("attrId");
-                                        String label = columnObj.getString("label");
+//                                        String label = columnObj.getString("label");
                                         attrId2CiIdMap.put(attrId, ciId);
                                     }
                                 }
@@ -242,7 +256,7 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
     ) {
         JSONArray dictionaryList = new JSONArray();
         Set<Long> balantflowCiIdSet = new HashSet<>();
-        Map<Long, String> attrId2AttrLabelMap = new HashMap<>();
+//        Map<Long, String> attrId2AttrLabelMap = new HashMap<>();
         Map<Long, JSONArray> ciId2AttrListMap = new LinkedHashMap<>();
         if (CollectionUtils.isNotEmpty(columnList)) {
             for (int i = 0; i < columnList.size(); i++) {
@@ -259,7 +273,7 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
                     attrObj.put("type", "String");
                     attrObj.put("attrId", attrId);
                     ciId2AttrListMap.computeIfAbsent(ciId, key -> new JSONArray()).add(attrObj);
-                    attrId2AttrLabelMap.put(attrId, label);
+//                    attrId2AttrLabelMap.put(attrId, label);
                 }
             }
         }
@@ -321,7 +335,8 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
                         balantflowObj.put("customViewName", customViewName);
                         dictionaryObj.put("balantflow", balantflowObj);
                         JSONObject filterObj = new JSONObject();
-                        filterObj.put("dictionaryName", dictionaryName);
+                        filterObj.put("_OBJ_CATEGORY", _OBJ_CATEGORY);
+                        filterObj.put("_OBJ_TYPE", _OBJ_TYPE);
                         dictionaryObj.put("filter", filterObj);
                         dictionaryList.add(dictionaryObj);
                     }
@@ -436,6 +451,29 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
         }
     }
 
+    private void createCollection(String collectionName, boolean needDeleteCollection, int expireAfterHours) {
+        boolean collectionExists = mongoTemplate.collectionExists(collectionName);
+        if (collectionExists && needDeleteCollection) {
+            mongoTemplate.dropCollection(collectionName);
+            collectionExists = false;
+        }
+        // 检查集合是否已存在
+        if (!collectionExists) {
+            // 创建集合
+            mongoTemplate.createCollection(collectionName);
+            Index index = new Index()
+                    .named("idx_obj_category_type")
+                    .on("_OBJ_CATEGORY", Sort.Direction.ASC)
+                    .on("_OBJ_TYPE", Sort.Direction.ASC);
+            mongoTemplate.indexOps(collectionName).ensureIndex(index);
+            // 创建过期索引(TTL)
+            mongoTemplate.indexOps(collectionName)
+                    .ensureIndex(new Index().named("idx_ttl")
+                            .on("insertTime", Sort.Direction.ASC)
+                            .expire(TimeUnit.HOURS.toSeconds(expireAfterHours)) // 几小时后自动删除(秒)
+                    );
+        }
+    }
 
     private void savePageData(
             JSONArray resultList,
@@ -603,7 +641,8 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
         String _OBJ_TYPE = dictionaryObj.getString("_OBJ_TYPE");
         dataObj.put("_OBJ_TYPE", _OBJ_TYPE);
         dataObj.put("dictionaryName", dictionaryObj.getString("name"));
-        dataObj.put("insertTime", localDateTime.format(dateTimeFormatter));
+        dataObj.put("insertDate", localDateTime.format(dateTimeFormatter));
+        dataObj.put("insertTime", localDateTime);
         dataObj.put("balantflowCiEntityId", balantflowCiEntityId);
         return dataObj;
     }
