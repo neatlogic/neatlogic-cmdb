@@ -220,7 +220,7 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
                                     if (MapUtils.isNotEmpty(columnObj)) {
                                         Long ciId = columnObj.getLong("ciId");
                                         Long attrId = columnObj.getLong("attrId");
-                                        String label = columnObj.getString("label");
+//                                        String label = columnObj.getString("label");
                                         attrId2CiIdMap.put(attrId, ciId);
                                     }
                                 }
@@ -256,7 +256,7 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
     ) {
         JSONArray dictionaryList = new JSONArray();
         Set<Long> balantflowCiIdSet = new HashSet<>();
-        Map<Long, String> attrId2AttrLabelMap = new HashMap<>();
+//        Map<Long, String> attrId2AttrLabelMap = new HashMap<>();
         Map<Long, JSONArray> ciId2AttrListMap = new LinkedHashMap<>();
         if (CollectionUtils.isNotEmpty(columnList)) {
             for (int i = 0; i < columnList.size(); i++) {
@@ -273,7 +273,7 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
                     attrObj.put("type", "String");
                     attrObj.put("attrId", attrId);
                     ciId2AttrListMap.computeIfAbsent(ciId, key -> new JSONArray()).add(attrObj);
-                    attrId2AttrLabelMap.put(attrId, label);
+//                    attrId2AttrLabelMap.put(attrId, label);
                 }
             }
         }
