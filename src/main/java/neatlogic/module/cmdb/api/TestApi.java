@@ -34,7 +34,6 @@ public class TestApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         System.out.println(paramObj);
-        Thread.sleep(30000L);
         return paramObj;
     }
 
