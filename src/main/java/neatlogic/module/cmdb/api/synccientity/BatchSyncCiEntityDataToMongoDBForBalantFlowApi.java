@@ -138,6 +138,9 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
             @Param(name = "pageSize", type = ApiParamType.INTEGER, defaultValue = "1000", desc = "common.pagesize"),
             @Param(name = "integrationRequestMaxCount", type = ApiParamType.INTEGER, defaultValue = "10000", desc = "集成请求最大次数，默认是10000"),
             @Param(name = "needSyncData", type = ApiParamType.BOOLEAN, defaultValue = "false", desc = "是否需要同步数据，值为false时只同步mongodb中的dictionary数据"),
+            @Param(name = "collectionName", type = ApiParamType.STRING, desc = "保存配置项数据集合名称"),
+            @Param(name = "needDeleteCollection", type = ApiParamType.BOOLEAN, defaultValue = "false", desc = "是否需要删除配置项数据集合，值为true时会先删除集合再重新创建集合"),
+            @Param(name = "expireAfterHours", type = ApiParamType.INTEGER, defaultValue = "24", desc = "配置项数据过期时间，单位小时，默认是24小时"),
     })
     @Output({
 

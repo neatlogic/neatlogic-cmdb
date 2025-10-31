@@ -53,53 +53,56 @@ public class MatrixCmdbCiAttrTypeHandler extends MatrixAttrTypeBase {
 
     @Override
     public Set<String> getRealValueBatch(MatrixAttributeVo matrixAttributeVo, Map<String, String> valueMap) {
-        JSONObject config = matrixAttributeVo.getConfig();
-        String label = null;
-        Long ciId = null;
-        try {
-            if (MapUtils.isNotEmpty(config)) {
-                JSONObject cmdbCi = config.getJSONObject("cmdbCi");
-                label = cmdbCi.getString("label");
-                ciId = cmdbCi.getLong("ciId");
-            }
-
-            if (label == null || ciId == null) {
-                return Collections.emptySet();
-            }
-            Object component = PrivateApiComponentFactory.getInstance("neatlogic.module.cmdb.api.cientity.ListCiEntityDataForSelectApi");
-            Method method = component.getClass().getMethod("myDoService", JSONObject.class);
-            JSONObject param = new JSONObject();
-            param.put("ciId", ciId);
-            param.put("label", label);
-            param.put("defaultValue", new ArrayList<>(valueMap.keySet()));
-            Object resultObj = method.invoke(component, param);
-            if (resultObj != null) {
-                JSONObject result = JSON.parseObject(JSON.toJSONString(resultObj));
-                JSONArray dataList = result.getJSONArray("tbodyList");
-                if (CollectionUtils.isNotEmpty(dataList)) {
-                    for (Map.Entry<String, String> entry : valueMap.entrySet()) {
-                        String key = entry.getKey();
-                        for (int i = 0; i < dataList.size(); i++) {
-                            JSONObject data = dataList.getJSONObject(i);
-                            String value = data.getString("value");
-                            if (Objects.equals(key, value)) {
-                                valueMap.put(value, value);
-                            }
-                        }
-                        if (StringUtils.isBlank(entry.getValue())) {
-                            valueMap.remove(key);
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            Throwable target = ex;
-            //如果是反射抛得异常，则需循环拆包，把真实得异常类找出来
-            while (target instanceof InvocationTargetException) {
-                target = ((InvocationTargetException) target).getTargetException();
-            }
-            String error = ex.getMessage() == null ? ExceptionUtils.getStackTrace(ex) : ex.getMessage();
-            logger.error(error);
+//        JSONObject config = matrixAttributeVo.getConfig();
+//        String label = null;
+//        Long ciId = null;
+//        try {
+//            if (MapUtils.isNotEmpty(config)) {
+//                JSONObject cmdbCi = config.getJSONObject("cmdbCi");
+//                label = cmdbCi.getString("label");
+//                ciId = cmdbCi.getLong("ciId");
+//            }
+//
+//            if (label == null || ciId == null) {
+//                return Collections.emptySet();
+//            }
+//            Object component = PrivateApiComponentFactory.getInstance("neatlogic.module.cmdb.api.cientity.ListCiEntityDataForSelectApi");
+//            Method method = component.getClass().getMethod("myDoService", JSONObject.class);
+//            JSONObject param = new JSONObject();
+//            param.put("ciId", ciId);
+//            param.put("label", label);
+//            param.put("defaultValue", new ArrayList<>(valueMap.keySet()));
+//            Object resultObj = method.invoke(component, param);
+//            if (resultObj != null) {
+//                JSONObject result = JSON.parseObject(JSON.toJSONString(resultObj));
+//                JSONArray dataList = result.getJSONArray("tbodyList");
+//                if (CollectionUtils.isNotEmpty(dataList)) {
+//                    for (Map.Entry<String, String> entry : valueMap.entrySet()) {
+//                        String key = entry.getKey();
+//                        for (int i = 0; i < dataList.size(); i++) {
+//                            JSONObject data = dataList.getJSONObject(i);
+//                            String value = data.getString("value");
+//                            if (Objects.equals(key, value)) {
+//                                valueMap.put(value, value);
+//                            }
+//                        }
+//                        if (StringUtils.isBlank(entry.getValue())) {
+//                            valueMap.remove(key);
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception ex) {
+//            Throwable target = ex;
+//            //如果是反射抛得异常，则需循环拆包，把真实得异常类找出来
+//            while (target instanceof InvocationTargetException) {
+//                target = ((InvocationTargetException) target).getTargetException();
+//            }
+//            String error = ex.getMessage() == null ? ExceptionUtils.getStackTrace(ex) : ex.getMessage();
+//            logger.error(error);
+//        }
+        for (Map.Entry<String, String> entry : valueMap.entrySet()) {
+            valueMap.put(entry.getKey(), entry.getKey());
         }
         return Collections.emptySet();
     }
