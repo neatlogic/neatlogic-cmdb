@@ -24,6 +24,7 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.alertlevel.AlertLevelType;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -40,7 +41,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-@SystemUser("autoexec")
+@AuthUser(SystemUser.AUTOEXEC)
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class UpdateCiEntityInspectStatusApi extends PrivateApiComponentBase {

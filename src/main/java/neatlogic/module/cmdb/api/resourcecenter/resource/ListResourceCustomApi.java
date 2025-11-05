@@ -21,6 +21,7 @@ import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-@SystemUser("autoexec")
+@AuthUser(SystemUser.AUTOEXEC)
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListResourceCustomApi extends PrivateApiComponentBase {

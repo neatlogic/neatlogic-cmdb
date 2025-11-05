@@ -23,6 +23,7 @@ import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -33,7 +34,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 
 @Service
-@SystemUser("autoexec")
+@AuthUser(SystemUser.AUTOEXEC)
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class UpdateCiEntityMonitorStatusApi extends PrivateApiComponentBase {
