@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {

@@ -41,6 +41,7 @@ import javax.annotation.Resource;
  * @since 2022/7/11 16:14
  **/
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBase {

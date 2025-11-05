@@ -55,6 +55,7 @@ import java.util.Objects;
  * 6、通过（账号id）找账号，找到后return
  */
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetResourceAccountApi extends PrivateApiComponentBase {

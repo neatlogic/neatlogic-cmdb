@@ -33,6 +33,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class UpdateCiEntityMonitorStatusApi extends PrivateApiComponentBase {

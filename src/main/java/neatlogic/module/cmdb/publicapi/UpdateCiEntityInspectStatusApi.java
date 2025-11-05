@@ -40,6 +40,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@SystemUser("autoexec")
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class UpdateCiEntityInspectStatusApi extends PrivateApiComponentBase {
