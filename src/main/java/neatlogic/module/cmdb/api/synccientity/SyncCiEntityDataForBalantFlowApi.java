@@ -48,6 +48,7 @@ import neatlogic.framework.cmdb.exception.rel.RelNotFoundException;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.InputFrom;
+import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.exception.integration.IntegrationHandlerNotFoundException;
@@ -82,6 +83,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AuthAction(action = ADMIN.class)
+@AuthUser(SystemUser.SYSTEM)
 @OperationType(type = OperationTypeEnum.OPERATE)
 //@Transactional
 public class SyncCiEntityDataForBalantFlowApi extends PrivateApiComponentBase {
