@@ -64,6 +64,11 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
     }
 
     @Override
+    public boolean isMcp() {
+        return true;
+    }
+
+    @Override
     public String getName() {
         return "nmcac.getcientityapi.getname";
     }
