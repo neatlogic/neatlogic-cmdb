@@ -547,14 +547,6 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
                     JSONArray subset = fieldObj.getJSONArray("subset");
                     if (CollectionUtils.isNotEmpty(subset)) {
                         JSONObject jsonObj = new JSONObject();
-                        JSONObject subDictionaryObj = ciId2DictionaryMap.get(ciId);
-                        if (MapUtils.isNotEmpty(subDictionaryObj)) {
-                            String _OBJ_CATEGORY = subDictionaryObj.getString("_OBJ_CATEGORY");
-                            jsonObj.put("_OBJ_CATEGORY", _OBJ_CATEGORY);
-                            String _OBJ_TYPE = subDictionaryObj.getString("_OBJ_TYPE");
-                            jsonObj.put("_OBJ_TYPE", _OBJ_TYPE);
-                        }
-                        JSONArray jsonArray = new JSONArray();
                         for (int j = 0; j < subset.size(); j++) {
                             JSONObject subObj = subset.getJSONObject(j);
                             if (MapUtils.isNotEmpty(subObj)) {
@@ -624,8 +616,18 @@ public class BatchSyncCiEntityDataToMongoDBForBalantFlowApi extends PrivateApiCo
                                 }
                             }
                         }
-                        jsonArray.add(jsonObj);
-                        dataObj.put(name, jsonArray);
+                        if (MapUtils.isNotEmpty(jsonObj)) {
+                            JSONObject subDictionaryObj = ciId2DictionaryMap.get(ciId);
+                            if (MapUtils.isNotEmpty(subDictionaryObj)) {
+                                String _OBJ_CATEGORY = subDictionaryObj.getString("_OBJ_CATEGORY");
+                                jsonObj.put("_OBJ_CATEGORY", _OBJ_CATEGORY);
+                                String _OBJ_TYPE = subDictionaryObj.getString("_OBJ_TYPE");
+                                jsonObj.put("_OBJ_TYPE", _OBJ_TYPE);
+                            }
+                            JSONArray jsonArray = new JSONArray();
+                            jsonArray.add(jsonObj);
+                            dataObj.put(name, jsonArray);
+                        }
                     } else {
                         Long attrId = fieldObj.getLong("attrId");
                         for (int k = 0; k < attrList.size(); k++) {
