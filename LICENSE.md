@@ -2,10 +2,11 @@
 
 Portions of this software are licensed as follows:
 
-Source code files that are located in a directory containing cs in its name are NOT licensed under the Sustainable Use License.
-To use source code files that are located in a directory containing cs in its name, you must hold a valid NeatLogic Enterprise License, specifically granting access to such source code files and as defined in “LICENSE_EE.md”.
-All third-party components incorporated into the NeatLogic Software are licensed under the original license provided by the owner of the applicable component.
-Content outside of the above mentioned files or restrictions is available under the “NeatLogic Sustainable Use License” defined below.
+Source code files located in directories containing cs are not covered by the Sustainable Use License (SUL).
+To use source code files under any directory containing cs, you must hold a valid NeatLogic Enterprise License, which explicitly grants access to such source code files.
+Details are provided in LICENSE_EE.md.
+All third-party components integrated into the NeatLogic software are governed by their original licenses provided by their respective copyright holders.
+All other content not subject to the above files or restrictions is covered by the Sustainable Use License (SUL) defined below.
 
 ## Sustainable Use License (SUL)
 
@@ -24,10 +25,10 @@ The licensor grants you a non-exclusive, royalty-free, worldwide, non-sublicensa
 You may use or modify the software only for your own internal business purposes or for non-commercial or personal use.
 You may distribute the software or provide it to others only if you do so free of charge and for non-commercial purposes.
 You may not:
-	1.	Offer the software, in original or modified form, as a hosted or managed service to third parties;
-	2.	Integrate or embed the software into a product that provides similar functionality or competes with NeatLogic;
-	3.	Redistribute, rebrand, or sell the software, in whole or in part, for commercial gain;
-	4.	Alter, remove, or obscure any licensing, copyright, or other notices of the licensor in the software.
+1.	Offer the software, in original or modified form, as a hosted or managed service to third parties;
+2.	Integrate or embed the software into a product that provides similar functionality or competes with NeatLogic;
+3.	Redistribute, rebrand, or sell the software, in whole or in part, for commercial gain;
+4.	Alter, remove, or obscure any licensing, copyright, or other notices of the licensor in the software.
 
 Any use of the licensor’s trademarks is subject to applicable law.
 
@@ -70,7 +71,7 @@ As far as the law allows, the software comes “as is,” without any warranty o
 	•	Use: anything you do with the software requiring your license.
 	•	Trademark: trademarks, service marks, and similar rights.
 
-### Notice
+### Notice:
 This license is source-available but not an open-source license approved by the Open Source Initiative (OSI).
 It is designed to ensure sustainable use, transparency, and fair compensation for the creators of NeatLogic.
 
