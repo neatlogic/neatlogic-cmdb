@@ -415,7 +415,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
     </delete>
 
     <delete id="deleteAttrById" parameterType="java.lang.Long">
-        DELETE a,b,c,d,e,f
+        DELETE a,b,c,d,e
         FROM `cmdb_attr` a
                  LEFT JOIN `cmdb_ci_unique` b ON a.id = b.attr_id
                  LEFT JOIN `cmdb_customview_attr` c on a.id = c.attr_id
