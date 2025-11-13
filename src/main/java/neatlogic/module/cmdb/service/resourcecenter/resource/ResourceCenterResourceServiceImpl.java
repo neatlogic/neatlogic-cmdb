@@ -30,12 +30,9 @@ import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.config.ConfigManager;
-import neatlogic.framework.dao.mapper.DataBaseViewInfoMapper;
-import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
@@ -77,16 +74,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     private AttrMapper attrMapper;
 
     @Resource
-    private GlobalAttrMapper globalAttrMapper;
-
-    @Resource
     private ResourceEntityMapper resourceEntityMapper;
-
-    @Resource
-    private SchemaMapper schemaMapper;
-
-    @Resource
-    private DataBaseViewInfoMapper dataBaseViewInfoMapper;
 
     @Resource
     private ResourceBuildSqlService resourceBuildSqlService;
@@ -600,7 +588,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             }
             String sql = resourceBuildSqlService.buildGetResourceCountSql(searchVo);
-            newRowNum = resourceMapper.getCountBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newRowNum = resourceMapper.getCountBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             //是否存在前置条件
@@ -671,7 +661,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
                 setIpFieldAttrIdAndNameFieldAttrId(searchVo);
             }
             String sql = resourceBuildSqlService.buildGetResourceIdListSql(searchVo);
-            newIdList = resourceMapper.getIdListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             //是否存在前置条件
@@ -702,7 +694,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<ResourceVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceListSql(idList);
-            newResourceList = resourceMapper.getResourceListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getResourceListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.getResourceListByIdList(idList);
@@ -721,7 +715,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Override
     public List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList) {
         String sql = resourceBuildSqlService.buildGetResourceListSql(idList, selectFieldNameList);
-        return resourceMapper.getResourceListBySql(sql);
+        if (StringUtils.isNotBlank(sql)) {
+            return resourceMapper.getResourceListBySql(sql);
+        }
+        return new ArrayList<>();
     }
 
     @Override
@@ -732,7 +729,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int oldCount = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceCountByNameKeywordSql(searchVo);
-            newCount = resourceMapper.getCountBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newCount = resourceMapper.getCountBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldCount = resourceMapper.getResourceCountByNameKeyword(searchVo);
@@ -761,7 +760,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int oldCount = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceCountByIpKeywordSql(searchVo);
-            newCount = resourceMapper.getCountBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newCount = resourceMapper.getCountBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldCount = resourceMapper.getResourceCountByIpKeyword(searchVo);
@@ -790,7 +791,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int oldCount = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAppResourceCountSql(searchVo);
-            newCount = resourceMapper.getCountBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newCount = resourceMapper.getCountBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldCount = resourceMapper.getAppResourceCount(searchVo);
@@ -819,7 +822,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAppResourceIdListSql(searchVo);
-            newIdList = resourceMapper.getIdListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldIdList = resourceMapper.getAppResourceIdList(searchVo);
@@ -848,7 +853,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<ResourceVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAppResourceListByIdListSql(searchVo);
-            newResourceList = resourceMapper.getResourceListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getResourceListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.getAppResourceListByIdList(searchVo);
@@ -978,7 +985,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<ResourceVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceByIdListSql(idList);
-            newResourceList = resourceMapper.getResourceListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getResourceListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.getResourceByIdList(idList);
@@ -1002,7 +1011,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<ResourceVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAuthResourceListSql(searchVo);
-            newResourceList = resourceMapper.getResourceListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getResourceListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.getAuthResourceList(searchVo);
@@ -1026,7 +1037,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         ResourceVo oldResourceVo = null;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceByIdSql(id);
-            newResourceVo = resourceMapper.getResourceBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceVo = resourceMapper.getResourceBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceVo = resourceMapper.getResourceById(id);
@@ -1058,7 +1071,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         Long oldId = null;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceIdByResourceIdSql(id);
-            newId = resourceMapper.getIdBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newId = resourceMapper.getIdBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldId = resourceMapper.getResourceIdByResourceId(id);
@@ -1087,7 +1102,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildCheckResourceIdListIsExistsSql(idList);
-            newIdList = resourceMapper.getIdListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldIdList = resourceMapper.checkResourceIdListIsExists(idList);
@@ -1116,7 +1133,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceIdListByAppSystemIdAndModuleIdAndEnvIdSql(resourceVo);
-            newIdList = resourceMapper.getIdListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldIdList = resourceMapper.getResourceIdListByAppSystemIdAndModuleIdAndEnvId(resourceVo);
@@ -1145,7 +1164,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<ResourceVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceListByTypeIdListAndIpListSql(typeIdList, ipList);
-            newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getResourceSimpleListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.getResourceListByTypeIdListAndIpList(typeIdList, ipList);
@@ -1169,7 +1190,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         ResourceVo oldResourceVo = null;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceByIpAndPortAndNameAndTypeNameSql(ip, port, name, typeName);
-            newResourceVo = resourceMapper.getResourceSimpleBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceVo = resourceMapper.getResourceSimpleBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceVo = resourceMapper.getResourceByIpAndPortAndNameAndTypeName(ip, port, name, typeName);
@@ -1201,7 +1224,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         ResourceVo oldResourceVo = null;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetResourceByIpAndPortSql(ip, port);
-            newResourceVo = resourceMapper.getResourceSimpleBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceVo = resourceMapper.getResourceSimpleBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceVo = resourceMapper.getResourceByIpAndPort(ip, port);
@@ -1233,7 +1258,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<AccountComponentVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildSearchAccountComponentSql(accountComponentVo);
-            newResourceList = resourceMapper.searchAccountComponentListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.searchAccountComponentListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.searchAccountComponent(accountComponentVo);
@@ -1277,7 +1304,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int oldCount = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildSearchAccountComponentCountSql(accountComponentVo);
-            newCount = resourceMapper.getCountBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newCount = resourceMapper.getCountBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldCount = resourceMapper.searchAccountComponentCount(accountComponentVo);
@@ -1306,7 +1335,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<AppEnvVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusListSql(viewName, appSystemId, appModuleId, inspectStatusList);
-            newResourceList = resourceMapper.getAppEnvListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getAppEnvListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(viewName, appSystemId, appModuleId, inspectStatusList);
@@ -1350,7 +1381,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<AppEnvVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAppEnvListByAppSystemIdAndAppModuleIdSql(appSystemId, appModuleId);
-            newResourceList = resourceMapper.getAppEnvListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getAppEnvListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.getAppEnvListByAppSystemIdAndAppModuleId(appSystemId, appModuleId);
@@ -1394,7 +1427,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Map<String, Long>> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAppEnvCountMapByAppSystemIdGroupByAppModuleIdSql(appSystemId);
-            newResourceList = resourceMapper.getMapListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getMapListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.getAppEnvCountMapByAppSystemIdGroupByAppModuleId(appSystemId);
@@ -1425,8 +1460,10 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> newIdList = new ArrayList<>();
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
-            String getResourceIdListSql = resourceBuildSqlService.buildGetResourceTypeIdListByAuthSql(searchVo);
-            newIdList = resourceMapper.getIdListBySql(getResourceIdListSql);
+            String sql = resourceBuildSqlService.buildGetResourceTypeIdListByAuthSql(searchVo);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldIdList = resourceMapper.getResourceTypeIdListByAuth(searchVo);
@@ -1455,7 +1492,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAppResourceTypeIdListByViewNameAndAppSystemIdSql(viewName, appSystemId, appModuleId, envId, inspectStatusList);
-            newIdList = resourceMapper.getIdListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldIdList = resourceMapper.getAppResourceTypeIdListByViewNameAndAppSystemId(viewName, appSystemId, appModuleId, envId, inspectStatusList);
@@ -1484,7 +1523,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildGetAppSystemIdListByIdSql(viewName, id);
-            newIdList = resourceMapper.getIdListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldIdList = resourceMapper.getAppSystemIdListById(viewName, id);
@@ -1513,7 +1554,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int newRowNum = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildSearchVendorCountSql(searchVo);
-            newRowNum = resourceMapper.getCountBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newRowNum = resourceMapper.getCountBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldRowNum = resourceMapper.searchVendorCount(searchVo);
@@ -1542,7 +1585,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildSearchVendorIdListSql(searchVo);
-            newIdList = resourceMapper.getIdListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldIdList = resourceMapper.searchVendorIdList(searchVo);
@@ -1571,7 +1616,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<ResourceVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildSearchVendorListByIdListSql(idList);
-            newResourceList = resourceMapper.getResourceListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getResourceListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.searchVendorListByIdList(idList);
@@ -1595,7 +1642,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         int newRowNum = 0;
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildSearchStateCountSql(searchVo);
-            newRowNum = resourceMapper.getCountBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newRowNum = resourceMapper.getCountBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldRowNum = resourceMapper.searchStateCount(searchVo);
@@ -1624,7 +1673,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<Long> oldIdList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildSearchStateIdListSql(searchVo);
-            newIdList = resourceMapper.getIdListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newIdList = resourceMapper.getIdListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldIdList = resourceMapper.searchStateIdList(searchVo);
@@ -1653,7 +1704,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         List<ResourceVo> oldResourceList = new ArrayList<>();
         if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             String sql = resourceBuildSqlService.buildSearchStateListByIdListSql(idList);
-            newResourceList = resourceMapper.getResourceListBySql(sql);
+            if (StringUtils.isNotBlank(sql)) {
+                newResourceList = resourceMapper.getResourceListBySql(sql);
+            }
         }
         if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
             oldResourceList = resourceMapper.searchStateListByIdList(idList);
