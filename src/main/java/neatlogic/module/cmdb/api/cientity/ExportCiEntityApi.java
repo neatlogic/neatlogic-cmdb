@@ -222,7 +222,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
 
             String fileNameEncode = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
             if (request.getHeader("User-Agent").toLowerCase().contains("msie") || request.getHeader("User-Agent").contains("Gecko")) {
-                fileNameEncode = URLEncoder.encode(fileNameEncode, "UTF-8");// IE浏览器
+                fileNameEncode = URLEncoder.encode(fileNameEncode, StandardCharsets.UTF_8);// IE浏览器
             } else {
                 fileNameEncode = new String(fileNameEncode.replace(" ", "").getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
             }
