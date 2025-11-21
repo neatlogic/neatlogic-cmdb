@@ -31,8 +31,6 @@ public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
 
     String getResourceEntityConfigByName(String name);
 
-    List<Long> getAllResourceTypeCiIdList(ResourceSearchVo searchVo);
-
     int getResourceEntityViewDataCount(String name);
 
     List<Map<String, Object>> getResourceEntityViewDataList(@Param("name") String name, @Param("startNum") int startNum, @Param("pageSize") int pageSize);
@@ -42,8 +40,6 @@ public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
     AssetListDisplayVo getAssetListDisplay();
 
     void insertResourceEntity(ResourceEntityVo resourceEntityVo);
-
-    void insertResourceTypeCi(Long ciId);
 
     int insertApplicationListDisplay(ApplicationListDisplayVo applicationListDisplayVo);
 
@@ -56,6 +52,4 @@ public interface ResourceEntityMapper extends IResourceEntityCrossoverMapper {
     void updateResourceEntityLabelAndDescription(ResourceEntityVo resourceEntityVo);
 
     void deleteResourceEntityByName(String name);
-
-    void deleteResourceTypeCi();
 }

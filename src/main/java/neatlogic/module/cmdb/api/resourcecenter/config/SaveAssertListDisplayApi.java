@@ -78,13 +78,6 @@ public class SaveAssertListDisplayApi extends PrivateApiComponentBase {
         if (ciVo == null) {
             throw new CiNotFoundException(rootCiName);
         }
-        List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
-        if (!ciIdList.contains(ciVo.getId())) {
-            if (CollectionUtils.isNotEmpty(ciIdList)) {
-                resourceEntityMapper.deleteResourceTypeCi();
-            }
-            resourceEntityMapper.insertResourceTypeCi(ciVo.getId());
-        }
         resourceEntityMapper.insertAssetListDisplay(assetListDisplayVo);
         return null;
     }

@@ -37,6 +37,7 @@ import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
+import neatlogic.module.cmdb.service.resourcecenter.ResourceEntityService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -79,10 +80,17 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     @Resource
     private ResourceBuildSqlService resourceBuildSqlService;
 
+    @Resource
+    private ResourceEntityService resourceEntityService;
+
     @Override
     public ResourceSearchVo assembleResourceSearchVo(JSONObject jsonObj) {
         if (!jsonObj.containsKey("typeId") && !jsonObj.containsKey("typeIdList")) {
-            List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
+            List<Long> ciIdList = new ArrayList<>();
+            CiVo rootCiVo = resourceEntityService.getViewRootCi("scence_ipobject_detail");
+            if (rootCiVo != null) {
+                ciIdList.add(rootCiVo.getId());
+            }
             jsonObj.put("typeIdList", ciIdList);
         }
         return assembleResourceSearchVo(jsonObj, true);
