@@ -183,11 +183,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{tagId}
             </foreach>
         </if>
-        <if test="keywordList != null and keywordList.size() > 0">
+        <!--<if test="keywordList != null and keywordList.size() > 0">
             AND fw.word IN
             <foreach collection="keywordList" item="item" open="(" close=")" separator=",">
                 #{item}
             </foreach>
+        </if>-->
+        <if test="keyword != null and keyword != ''">
+            AND (a.`name` LIKE CONCAT(#{keyword}, '%') OR a.`ip` LIKE CONCAT(#{keyword}, '%'))
         </if>
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             AND fw2.word IN
@@ -274,11 +277,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 #{tagId}
             </foreach>
         </if>
-        <if test="preCondition.keywordList != null and preCondition.keywordList.size() > 0">
+        <!--<if test="preCondition.keywordList != null and preCondition.keywordList.size() > 0">
             AND fw.word IN
             <foreach collection="preCondition.keywordList" item="item" open="(" close=")" separator=",">
                 #{item}
             </foreach>
+        </if>-->
+        <if test="preCondition.keyword != null and preCondition.keyword != ''">
+            AND (a.`name` LIKE CONCAT(#{preCondition.keyword}, '%') OR a.`ip` LIKE CONCAT(#{preCondition.keyword}, '%'))
         </if>
     </sql>
 
@@ -307,10 +313,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        <if test="keywordList != null and keywordList.size() > 0">
+        <!--<if test="keywordList != null and keywordList.size() > 0">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{nameFieldAttrId}
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-        </if>
+        </if>-->
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
             <choose>
@@ -352,10 +358,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        <if test="keywordList != null and keywordList.size() > 0">
+        <!--<if test="keywordList != null and keywordList.size() > 0">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{ipFieldAttrId}
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-        </if>
+        </if>-->
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
         JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
         <choose>
@@ -394,11 +400,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        <if test="(keywordList != null and keywordList.size() > 0) or (preCondition != null and preCondition.keywordList != null and preCondition.keywordList.size() > 0)">
+        <!--<if test="(keywordList != null and keywordList.size() > 0) or (preCondition != null and preCondition.keywordList != null and preCondition.keywordList.size() > 0)">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId},
             #{ipFieldAttrId})
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-        </if>
+        </if>-->
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
             <choose>
@@ -430,9 +436,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             resultType="java.lang.Long">
         SELECT m.`id` FROM (
         SELECT DISTINCT a.`id`
-        <if test="keywordList != null and keywordList.size() > 0">
+        <!--<if test="keywordList != null and keywordList.size() > 0">
             ,count(distinct fw.word) as match_count
-        </if>
+        </if>-->
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
         LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
@@ -451,11 +457,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        <if test="(keywordList != null and keywordList.size() > 0) or (preCondition != null and preCondition.keywordList != null and preCondition.keywordList.size() > 0)">
+        <!--<if test="(keywordList != null and keywordList.size() > 0) or (preCondition != null and preCondition.keywordList != null and preCondition.keywordList.size() > 0)">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId},
             #{ipFieldAttrId})
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-        </if>
+        </if>-->
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             JOIN fulltextindex_field_cmdb ffc2 ON ffc2.target_id = a.id
             <choose>
@@ -480,13 +486,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </if>
             </if>
         </where>
-        <if test="keywordList != null and keywordList.size() > 0">
+        <!--<if test="keywordList != null and keywordList.size() > 0">
             group by a.id
-        </if>
+        </if>-->
         <trim prefix="ORDER BY" suffixOverrides=",">
-            <if test="keywordList != null and keywordList.size() > 0">
+            <!--<if test="keywordList != null and keywordList.size() > 0">
                 match_count DESC,
-            </if>
+            </if>-->
             a.`id` DESC
         </trim>
         LIMIT #{startNum}, #{pageSize}
@@ -1568,10 +1574,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 </otherwise>
             </choose>
         </if>
-        <if test="keywordList != null and keywordList.size() > 0">
+        <!--<if test="keywordList != null and keywordList.size() > 0">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field = #{nameFieldAttrId}
             JOIN fulltextindex_word fw ON ffc.word_id = fw.id
-        </if>
+        </if>-->
         <where>
             <include refid="resource_ipobject_where"/>
         </where>

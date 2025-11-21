@@ -198,9 +198,9 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             }
             getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap);
             $sql.addSql(plainSelect, sqlVo);
-            if (CollectionUtils.isNotEmpty(searchVo.getKeywordList()) && searchVo.getNameFieldAttrId() != null && searchVo.getIpFieldAttrId() != null) {
-                $sql.addOrderBy(plainSelect, $sql.fun("COUNT", "fw.word").withDistinct(true), "desc");
-            }
+//            if (CollectionUtils.isNotEmpty(searchVo.getKeywordList()) && searchVo.getNameFieldAttrId() != null && searchVo.getIpFieldAttrId() != null) {
+//                $sql.addOrderBy(plainSelect, $sql.fun("COUNT", "fw.word").withDistinct(true), "desc");
+//            }
             Column idColumn = fieldName2ColumnMap.get("id");
             // 分组
             $sql.addGroupBy(plainSelect, idColumn.toString());
@@ -2805,23 +2805,33 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             )
         </if>
          */
-        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getKeywordList()) && (queryCriteriaVo.getNameFieldAttrId() != null || queryCriteriaVo.getIpFieldAttrId() != null)) {
-//            System.out.println("a");
-            {
-                ExpressionVo expressionVo = $sql.exp(
-                        $sql.exp("ffc.target_id", "=", fieldName2ColumnMap.get("id").toString()),
-                        "and",
-                        $sql.exp("ffc.target_field", "in", Arrays.asList(queryCriteriaVo.getNameFieldAttrId(), queryCriteriaVo.getIpFieldAttrId())));
-                joinList.add($sql.join("join", "fulltextindex_field_cmdb", "ffc").withOn(expressionVo));
-            }
-            {
+//        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getKeywordList()) && (queryCriteriaVo.getNameFieldAttrId() != null || queryCriteriaVo.getIpFieldAttrId() != null)) {
+////            System.out.println("a");
+//            {
 //                ExpressionVo expressionVo = $sql.exp(
-//                        $sql.exp("fw.id", "=", "ffc.word_id"),
+//                        $sql.exp("ffc.target_id", "=", fieldName2ColumnMap.get("id").toString()),
 //                        "and",
-//                        $sql.exp("fw.word", "in", queryCriteriaVo.getKeywordList()));
-                joinList.add($sql.join("join", "fulltextindex_word", "fw").withOn($sql.exp("fw.id", "=", "ffc.word_id")));
-                whereExpressionList.add($sql.exp("fw.word", "in", queryCriteriaVo.getKeywordList()));
-            }
+//                        $sql.exp("ffc.target_field", "in", Arrays.asList(queryCriteriaVo.getNameFieldAttrId(), queryCriteriaVo.getIpFieldAttrId())));
+//                joinList.add($sql.join("join", "fulltextindex_field_cmdb", "ffc").withOn(expressionVo));
+//            }
+//            {
+//                joinList.add($sql.join("join", "fulltextindex_word", "fw").withOn($sql.exp("fw.id", "=", "ffc.word_id")));
+//                whereExpressionList.add($sql.exp("fw.word", "in", queryCriteriaVo.getKeywordList()));
+//            }
+//        }
+        /*
+        <if test="keyword != null and keyword != ''">
+                AND (a.`name` LIKE CONCAT(#{keyword}, '%') OR a.`ip` LIKE CONCAT(#{keyword}, '%'))
+        </if>
+         */
+        if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
+            String keyword = queryCriteriaVo.getKeyword() + "%";
+            whereExpressionList.add($sql.exp(
+                    "(",
+                    $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", $sql.value(keyword)),
+                    "OR",
+                    $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", $sql.value(keyword)),
+                    ")"));
         }
         /*
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
