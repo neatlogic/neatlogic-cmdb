@@ -266,7 +266,10 @@ public class AttrExpressionRebuildManager {
                 expressionAttrList.removeIf(attrVo -> attrIdList.stream().noneMatch(aid -> aid.equals(attrVo.getId())));
             }
             if (CollectionUtils.isNotEmpty(expressionAttrList)) {
-                CiEntityVo newCiEntityVo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), ciEntityVo.getId());
+                /*
+                 * 最多返回100个关系和属性
+                 */
+                CiEntityVo newCiEntityVo = ciEntityService.getCiEntityById(ciEntityVo.getCiId(), ciEntityVo.getId(), 100, 100);
                 if (newCiEntityVo == null) {
                     //如果cmdb_attrexpression_rebuild_audit表中的配置项已经找不到，直接退出
                     return;
@@ -327,6 +330,9 @@ public class AttrExpressionRebuildManager {
                                     List<String> expressionValueList = new ArrayList<>();
                                     for (RelEntityVo relEntity : relEntityList) {
                                         CiEntityVo relCiEntityVo;
+                                        /*
+                                        最多返回100个关系对象，避免查询过慢
+                                         */
                                         if (relEntity.getDirection().equals(RelDirectionType.FROM.getValue())) {
                                             relCiEntityVo = ciEntityService.getCiEntityById(relEntity.getToCiId(), relEntity.getToCiEntityId());
                                         } else {
