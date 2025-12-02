@@ -30,12 +30,10 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.SnowflakeUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @Service
 @AuthAction(action = RESOURCECENTER_MODIFY.class)
@@ -82,13 +80,6 @@ public class SaveAssertListDisplayApi extends PrivateApiComponentBase {
         CiVo ciVo = ciMapper.getCiByName(rootCiName);
         if (ciVo == null) {
             throw new CiNotFoundException(rootCiName);
-        }
-        List<Long> ciIdList = resourceEntityMapper.getAllResourceTypeCiIdList();
-        if (!ciIdList.contains(ciVo.getId())) {
-            if (CollectionUtils.isNotEmpty(ciIdList)) {
-                resourceEntityMapper.deleteResourceTypeCi();
-            }
-            resourceEntityMapper.insertResourceTypeCi(ciVo.getId());
         }
         resourceEntityMapper.insertAssetListDisplay(assetListDisplayVo);
         return null;

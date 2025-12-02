@@ -47,10 +47,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         WHERE `name` = #{value}
     </select>
 
-    <select id="getAllResourceTypeCiIdList" resultType="java.lang.Long">
-        SELECT `ci_id` FROM `cmdb_resourcecenter_type_ci`
-    </select>
-
     <select id="getResourceEntityViewDataCount" parameterType="java.lang.String" resultType="int">
         SELECT count(1) FROM @{DATA_SCHEMA}.`${name}`
     </select>
@@ -107,11 +103,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
             `ci_id` = #{ciId},
         </if>
         `init_time` = NOW(3)
-    </insert>
-
-    <insert id="insertResourceTypeCi" parameterType="java.lang.Long">
-        INSERT INTO `cmdb_resourcecenter_type_ci` (`ci_id`)
-        VALUES (#{value})
     </insert>
 
     <insert id="insertApplicationListDisplay" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo">
@@ -188,9 +179,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         DELETE
         FROM cmdb_resourcecenter_entity
         WHERE name = #{value}
-    </delete>
-
-    <delete id="deleteResourceTypeCi">
-        DELETE FROM `cmdb_resourcecenter_type_ci`
     </delete>
 </mapper>
