@@ -13,12 +13,16 @@
 package neatlogic.module.cmdb.attrvaluehandler.handler;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.common.util.RC4Util;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -119,9 +123,19 @@ public class PasswordValueHandler implements IAttrValueHandler {
     @Override
     public void transferValueListToDisplay(AttrVo attrVo, JSONArray valueList) {
         if (CollectionUtils.isNotEmpty(valueList)) {
+            // 在自定义视图数据中valueList值有可能是["{RC4}da1bab,{RC4}dc11a1addcdb"]
             for (int i = 0; i < valueList.size(); i++) {
                 String value = valueList.getString(i);
-                valueList.set(i, RC4Util.decrypt(value));
+                if (value.contains(",")) {
+                    List<String> strList = new ArrayList<>();
+                    String[] split = value.split(",");
+                    for (String str : split) {
+                        strList.add(RC4Util.decrypt(str));
+                    }
+                    valueList.set(i, String.join(",", strList));
+                } else {
+                    valueList.set(i, RC4Util.decrypt(value));
+                }
             }
         }
     }
