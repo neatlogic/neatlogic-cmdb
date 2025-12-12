@@ -4,7 +4,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper">
     <!-- 缓存5分钟 -->
-    <cache type="neatlogic.framework.dao.cache.NeatLogicConcurrentSafeCache" flushInterval="300000" size="100"/>
+    <!-- flushInterval、size、readOnly、blocking属性对ehcache不起作用 -->
+    <cache type="neatlogic.framework.dao.cache.NeatLogicConcurrentSafeCache">
+        <!-- 二选一：TTI 或 TTL（都配的话以 TTL 为准，见下方实现） -->
+        <!-- 缓存项在未被访问时的最长存活时间, 基于访问时间的过期 -->
+        <!-- <property name="timeToIdleSeconds" value="300"/> -->
+        <!-- 缓存项从创建到过期的总时间, 基于创建时间的过期 -->
+        <property name="timeToLiveSeconds" value="300"/>
+        <!-- Ehcache 堆内条目数 -->
+        <property name="heapEntries" value="100"/>
+    </cache>
 
     <select id="getResourceEntityByName" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo">
