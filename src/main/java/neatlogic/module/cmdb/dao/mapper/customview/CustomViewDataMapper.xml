@@ -283,10 +283,9 @@
                 </foreach>
             </if>
         </where>
-        LIMIT
+        ) t ON a.id = t.id LIMIT
         #{startNum},
-        #{pageSizePlus}
-        ) t ON a.id = t.id
+        #{pageSize}
     </select>
 
     <select id="searchCustomViewData" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo"
