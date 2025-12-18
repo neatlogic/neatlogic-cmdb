@@ -40,6 +40,8 @@ public interface CustomViewMapper {
 
     List<CustomViewCiVo> getCustomViewCiByCustomViewId(Long customViewId);
 
+    List<CustomViewCiVo> getCustomViewCiBaseInfoByCustomViewId(Long customViewId);
+
     List<CustomViewAttrVo> getCustomViewAttrByCustomViewId(CustomViewAttrVo customViewAttrVo);
 
     List<CustomViewAttrVo> getCustomViewAttrByUuidList(List<String> uuidList);

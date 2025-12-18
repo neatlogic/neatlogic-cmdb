@@ -359,6 +359,20 @@
         </collection>
     </resultMap>
 
+    <select id="getCustomViewCiBaseInfoByCustomViewId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.customview.CustomViewCiVo">
+        SELECT a.customview_id  AS customViewId,
+               a.`uuid`,
+               a.ci_id          AS ciId,
+               a.`sort`,
+               a.is_hidden      AS isHidden,
+               a.is_start       AS isStart,
+               a.alias          AS alias,
+               a.is_aggregation AS isAggregation
+        FROM cmdb_customview_ci a
+        WHERE a.customview_id = #{value}
+    </select>
+
     <select id="getCustomViewCiByCustomViewId" parameterType="java.lang.Long"
             resultMap="customViewCiMap">
         SELECT a.customview_id      AS customViewId,
@@ -368,6 +382,7 @@
                a.is_hidden          AS isHidden,
                a.is_start           AS isStart,
                a.alias              AS alias,
+               a.is_aggregation     AS isAggregation,
                b.name               AS attrName,
                b.alias              AS attrAlias,
                b.attr_id            AS attrId,
@@ -601,8 +616,8 @@
     </insert>
 
     <insert id="insertCustomViewCi" parameterType="neatlogic.framework.cmdb.dto.customview.CustomViewCiVo">
-        INSERT INTO cmdb_customview_ci (customview_id, uuid, ci_id, sort, is_hidden, is_start, alias)
-        VALUES (#{customViewId}, #{uuid}, #{ciId}, #{sort}, #{isHidden}, #{isStart}, #{alias})
+        INSERT INTO cmdb_customview_ci (customview_id, uuid, ci_id, sort, is_hidden, is_start, is_aggregation, alias)
+        VALUES (#{customViewId}, #{uuid}, #{ciId}, #{sort}, #{isHidden}, #{isStart}, #{isAggregation}, #{alias})
     </insert>
 
     <insert id="insertCustomViewConstAttr"

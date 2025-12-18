@@ -239,10 +239,13 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
             }
         }
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
-        customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
-        customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
-        customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr")).collect(Collectors.toList()));
+        customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).toList());
+        customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).toList());
+        customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr")).toList());
         customViewConditionVo.setFieldList(customViewConditionFieldList);
+
+        List<CustomViewCiVo> viewCiList = customViewMapper.getCustomViewCiBaseInfoByCustomViewId(customViewConditionVo.getCustomViewId());
+        customViewConditionVo.setCiList(viewCiList);
 
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewData(customViewConditionVo);
         int rowNum = customViewDataMapper.searchCustomViewDataCount(customViewConditionVo);

@@ -95,13 +95,15 @@
                                 <choose>
                                     <when test="attrFilter.type == 'attr'">
                                         `${attrFilter.attrUuid}_hash` IN
-                                        <foreach collection="attrFilter.valueStringList" item="valueString" open="(" close=")" separator=",">
+                                        <foreach collection="attrFilter.valueStringList" item="valueString" open="("
+                                                 close=")" separator=",">
                                             #{valueString,typeHandler=Md5Handler}
                                         </foreach>
                                     </when>
                                     <otherwise>
                                         `${attrFilter.attrUuid}` IN
-                                        <foreach collection="attrFilter.valueStringList" item="valueString" open="(" close=")" separator=",">
+                                        <foreach collection="attrFilter.valueStringList" item="valueString" open="("
+                                                 close=")" separator=",">
                                             #{valueString}
                                         </foreach>
                                     </otherwise>
@@ -205,13 +207,57 @@
         SELECT
         id
         <if test="fieldList != null and fieldList.size() > 0">
-            ,
-            <foreach collection="fieldList" item="field" separator=",">
-                GROUP_CONCAT(distinct `${field.name}`) AS `${field.name}`,
-                MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
+            <foreach collection="fieldList" item="field">
+                <choose>
+                    <when test="hasAggregation">
+                        ,GROUP_CONCAT(distinct `${field.name}`) AS `${field.name}`
+                    </when>
+                    <otherwise>
+                        ,`${field.name}`
+                    </otherwise>
+                </choose>
+                <!--MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`-->
             </foreach>
+            <if test="(groupBy != null and groupBy != '') or (attrFilterList != null and attrFilterList.size() > 0)">
+                <foreach collection="fieldList" item="field">
+                    <choose>
+                        <when test="groupBy != null and groupBy != '' and field.name == groupBy">
+                            <choose>
+                                <when test="hasAggregation">
+                                    ,MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
+                                </when>
+                                <otherwise>
+                                    ,MD5(`${field.name}`) AS `${field.name}_hash`
+                                </otherwise>
+                            </choose>
+                        </when>
+                        <when test="attrFilterList != null and attrFilterList.size() > 0 and @neatlogic.framework.cmdb.dao.ognl.IsAttrInFilterAttrList@isExists(field,attrFilterList)">
+                            <choose>
+                                <when test="hasAggregation">
+                                    ,MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
+                                </when>
+                                <otherwise>
+                                    ,MD5(`${field.name}`) AS `${field.name}_hash`
+                                </otherwise>
+                            </choose>
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
         </if>
-        FROM ${viewName} GROUP BY id ) x
+        FROM ${viewName}
+        <if test="hasAggregation">
+            <trim prefix="GROUP BY" prefixOverrides=",">
+                <if test="ciList != null and ciList.size() > 0">
+                    <foreach collection="ciList" item="ci">
+                        <if test="ci.isAggregation == 1">
+                            ,`${ci.uuid}_id`
+                        </if>
+                    </foreach>
+                </if>
+            </trim>
+        </if>
+        ) x
         <include refid="searchCustomViewDataCondition"></include>
     </sql>
 

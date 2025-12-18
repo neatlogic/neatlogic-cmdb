@@ -30,7 +30,6 @@ import neatlogic.module.cmdb.service.customview.CustomViewDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +76,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         return null;
     }
 
+
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "视图id", isRequired = true),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "高级搜索条件")
@@ -86,6 +86,8 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
     @Description(desc = "查询自定义视图数据")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        //最大导出数量
+        final int MAX_COUNT = 100000;
         try {
             if (!exportLock.tryLock()) {
                 throw new CiEntityIsExportingException();
@@ -155,23 +157,27 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
             Workbook workbook = builder.build();
 
             customViewConditionVo.setCustomViewId(customViewId);
-            customViewConditionVo.setPageSize(100);
+            customViewConditionVo.setPageSize(1000);
             customViewConditionVo.setCurrentPage(1);
             List<Map<String, Object>> dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
             String fileNameEncode = customViewVo.getName() + ".xlsx";
             if (request.getHeader("User-Agent").toLowerCase().contains("msie") || request.getHeader("User-Agent").contains("Gecko")) {
-                fileNameEncode = URLEncoder.encode(fileNameEncode, "UTF-8");// IE浏览器
+                fileNameEncode = URLEncoder.encode(fileNameEncode, StandardCharsets.UTF_8);// IE浏览器
             } else {
                 fileNameEncode = new String(fileNameEncode.replace(" ", "").getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
             }
             response.setContentType("application/vnd.ms-excel;charset=utf-8");
             response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");
+            int k = 0;
             try (OutputStream os = response.getOutputStream()) {
                 while (CollectionUtils.isNotEmpty(dataList)) {
                     //由于展示页面的特殊性，查询sql用的是pageSizePlus，所以要去掉最后一条数据
                     for (int i = 0; i < Math.min(customViewConditionVo.getPageSize(), dataList.size()); i++) {
+                        k += 1;
                         sheetBuilder.addData(dataList.get(i));
-                        ((SXSSFSheet) workbook.getSheetAt(0)).flushRows();
+                        if (k >= MAX_COUNT) {
+                            break;
+                        }
                     }
                     customViewConditionVo.setCurrentPage(customViewConditionVo.getCurrentPage() + 1);
                     dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
