@@ -79,7 +79,7 @@ public class LegalValidScheduleJob extends JobBase {
         Long legalValidId = (Long) jobObject.getData("legalValidId");
         LegalValidVo legalValidVo = legalValidMapper.getLegalValidById(legalValidId);
         if (legalValidVo != null) {
-            LegalValidManager.doValid(legalValidVo);
+            LegalValidManager.doValid(legalValidVo, true);
         } else {
             schedulerManager.unloadJob(jobObject);
         }

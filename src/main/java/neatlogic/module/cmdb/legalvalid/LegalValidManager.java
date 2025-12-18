@@ -97,72 +97,84 @@ public class LegalValidManager {
         illegalCiEntityMapper = _illegalCiEntityMapper;
     }
 
+    public static void doValid(LegalValidVo legalValidVo, boolean isSync) {
+        if (isSync) {
+            validMain(legalValidVo);
+        } else {
+            doValid(legalValidVo);
+        }
+    }
+
+    private static void validMain(LegalValidVo legalValidVo) {
+        CiEntityVo pCiEntityVo = new CiEntityVo();
+        pCiEntityVo.setCiId(legalValidVo.getCiId());
+        pCiEntityVo.setPageSize(100);
+        //以下搜索只是检查是否存在，因此不需要join关联属性和关系
+        pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        pCiEntityVo.setRelIdList(new ArrayList<Long>() {{
+            this.add(0L);
+        }});
+        CiVo ciVo = ciMapper.getCiBaseInfoById(legalValidVo.getCiId());
+        List<CiEntityVo> unlegalCiEntityList = new ArrayList<>();
+        List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
+        while (CollectionUtils.isNotEmpty(ciEntityList)) {
+            for (CiEntityVo ciEntityVo : ciEntityList) {
+                //查找完整的配置项信息
+                ciEntityVo.setLimitAttrEntity(false);
+                ciEntityVo.setLimitRelEntity(false);
+                ciEntityVo = ciEntityService.getCiEntityById(ciEntityVo);
+                illegalCiEntityMapper.deleteCiEntityIllegal(ciEntityVo.getId(), legalValidVo.getId());
+                if (legalValidVo.getType().equals(LegalValidType.CI.getValue())) {
+                    List<ApiRuntimeException> errorList = validateCiEntity(ciEntityVo);
+                    if (CollectionUtils.isNotEmpty(errorList)) {
+                        JSONArray errorMsgList = new JSONArray();
+                        for (ApiRuntimeException ex : errorList) {
+                            errorMsgList.add(ex.getMessage());
+                        }
+                        IllegalCiEntityVo illegalCiEntityVo = new IllegalCiEntityVo();
+                        illegalCiEntityVo.setCiId(ciEntityVo.getCiId());
+                        illegalCiEntityVo.setCiEntityId(ciEntityVo.getId());
+                        illegalCiEntityVo.setLegalValidId(legalValidVo.getId());
+                        illegalCiEntityVo.setError(errorMsgList);
+                        illegalCiEntityMapper.insertCiEntityIllegal(illegalCiEntityVo);
+                        unlegalCiEntityList.add(ciEntityVo);
+                    }
+                } else if (legalValidVo.getType().equals(LegalValidType.CUSTOM.getValue())) {
+                    List<ApiRuntimeException> errorList = validateCiEntity(ciEntityVo, legalValidVo.getRule());
+                    if (CollectionUtils.isNotEmpty(errorList)) {
+                        JSONArray errorMsgList = new JSONArray();
+                        for (ApiRuntimeException ex : errorList) {
+                            errorMsgList.add(ex.getMessage());
+                        }
+                        IllegalCiEntityVo illegalCiEntityVo = new IllegalCiEntityVo();
+                        illegalCiEntityVo.setCiId(ciEntityVo.getCiId());
+                        illegalCiEntityVo.setCiEntityId(ciEntityVo.getId());
+                        illegalCiEntityVo.setLegalValidId(legalValidVo.getId());
+                        illegalCiEntityVo.setError(errorMsgList);
+                        illegalCiEntityMapper.insertCiEntityIllegal(illegalCiEntityVo);
+                        unlegalCiEntityList.add(ciEntityVo);
+                    }
+                }
+            }
+            pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
+            ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
+        }
+        //发送通知
+        if (CollectionUtils.isNotEmpty(unlegalCiEntityList) && ciVo != null) {
+            NotifyPolicyUtil.executeAsync(CmdbNotifyPolicyHandler.class, CmdbNotifyTriggerType.CIENTITYINVALID, new HashMap<String, Object>() {{
+                this.put("ciVo", ciVo);
+                this.put("ciEntityList", unlegalCiEntityList);
+            }});
+        }
+    }
+
     public static void doValid(LegalValidVo legalValidVo) {
         CachedThreadPool.execute(new NeatLogicThread("LEGAL-VALID-" + legalValidVo.getId()) {
             @Override
             protected void execute() {
-                CiEntityVo pCiEntityVo = new CiEntityVo();
-                pCiEntityVo.setCiId(legalValidVo.getCiId());
-                pCiEntityVo.setPageSize(100);
-                //以下搜索只是检查是否存在，因此不需要join关联属性和关系
-                pCiEntityVo.setAttrIdList(new ArrayList<Long>() {{
-                    this.add(0L);
-                }});
-                pCiEntityVo.setRelIdList(new ArrayList<Long>() {{
-                    this.add(0L);
-                }});
-                CiVo ciVo = ciMapper.getCiBaseInfoById(legalValidVo.getCiId());
-                List<CiEntityVo> unlegalCiEntityList = new ArrayList<>();
-                List<CiEntityVo> ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
-                while (CollectionUtils.isNotEmpty(ciEntityList)) {
-                    for (CiEntityVo ciEntityVo : ciEntityList) {
-                        //查找完整的配置项信息
-                        ciEntityVo.setLimitAttrEntity(false);
-                        ciEntityVo.setLimitRelEntity(false);
-                        ciEntityVo = ciEntityService.getCiEntityById(ciEntityVo);
-                        illegalCiEntityMapper.deleteCiEntityIllegal(ciEntityVo.getId(), legalValidVo.getId());
-                        if (legalValidVo.getType().equals(LegalValidType.CI.getValue())) {
-                            List<ApiRuntimeException> errorList = validateCiEntity(ciEntityVo);
-                            if (CollectionUtils.isNotEmpty(errorList)) {
-                                JSONArray errorMsgList = new JSONArray();
-                                for (ApiRuntimeException ex : errorList) {
-                                    errorMsgList.add(ex.getMessage());
-                                }
-                                IllegalCiEntityVo illegalCiEntityVo = new IllegalCiEntityVo();
-                                illegalCiEntityVo.setCiId(ciEntityVo.getCiId());
-                                illegalCiEntityVo.setCiEntityId(ciEntityVo.getId());
-                                illegalCiEntityVo.setLegalValidId(legalValidVo.getId());
-                                illegalCiEntityVo.setError(errorMsgList);
-                                illegalCiEntityMapper.insertCiEntityIllegal(illegalCiEntityVo);
-                                unlegalCiEntityList.add(ciEntityVo);
-                            }
-                        } else if (legalValidVo.getType().equals(LegalValidType.CUSTOM.getValue())) {
-                            List<ApiRuntimeException> errorList = validateCiEntity(ciEntityVo, legalValidVo.getRule());
-                            if (CollectionUtils.isNotEmpty(errorList)) {
-                                JSONArray errorMsgList = new JSONArray();
-                                for (ApiRuntimeException ex : errorList) {
-                                    errorMsgList.add(ex.getMessage());
-                                }
-                                IllegalCiEntityVo illegalCiEntityVo = new IllegalCiEntityVo();
-                                illegalCiEntityVo.setCiId(ciEntityVo.getCiId());
-                                illegalCiEntityVo.setCiEntityId(ciEntityVo.getId());
-                                illegalCiEntityVo.setLegalValidId(legalValidVo.getId());
-                                illegalCiEntityVo.setError(errorMsgList);
-                                illegalCiEntityMapper.insertCiEntityIllegal(illegalCiEntityVo);
-                                unlegalCiEntityList.add(ciEntityVo);
-                            }
-                        }
-                    }
-                    pCiEntityVo.setCurrentPage(pCiEntityVo.getCurrentPage() + 1);
-                    ciEntityList = ciEntityService.searchCiEntity(pCiEntityVo);
-                }
-                //发送通知
-                if (CollectionUtils.isNotEmpty(unlegalCiEntityList) && ciVo != null) {
-                    NotifyPolicyUtil.executeAsync(CmdbNotifyPolicyHandler.class, CmdbNotifyTriggerType.CIENTITYINVALID, new HashMap<String, Object>() {{
-                        this.put("ciVo", ciVo);
-                        this.put("ciEntityList", unlegalCiEntityList);
-                    }});
-                }
+                validMain(legalValidVo);
             }
         });
     }
