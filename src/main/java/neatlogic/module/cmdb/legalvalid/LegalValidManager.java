@@ -45,6 +45,7 @@ import neatlogic.framework.cmdb.validator.core.IValidator;
 import neatlogic.framework.cmdb.validator.core.ValidatorFactory;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.util.NotifyPolicyUtil;
+import neatlogic.framework.util.javascript.JavascriptResult;
 import neatlogic.framework.util.javascript.JavascriptUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -61,10 +62,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -234,7 +232,15 @@ public class LegalValidManager {
                 paramObj.put("data", dataObj);
                 paramObj.put("condition", conditionObj);
                 try {
-                    JavascriptUtil.runExpression(paramObj, script.toString(), errorList);
+                    Map<String, JavascriptResult> resultMap = new HashMap<>();
+                    JavascriptUtil.runExpression(paramObj, script.toString(), resultMap);
+                    if (MapUtils.isNotEmpty(resultMap)) {
+                        for (Map.Entry<String, JavascriptResult> entry : resultMap.entrySet()) {
+                            if (entry.getValue().getError() != null) {
+                                errorList.add(entry.getValue().getError());
+                            }
+                        }
+                    }
                 } catch (Exception e) {
                     errorList.add(new ApiRuntimeException(e.getMessage()));
                 }
