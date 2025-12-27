@@ -119,6 +119,12 @@
         where id = #{value}
     </select>
 
+    <select id="getCiIdByCiEntityId" parameterType="java.lang.Long" resultType="java.lang.Long" useCache="false">
+        select ci_id
+        from cmdb_cientity
+        where id = #{value}
+    </select>
+
     <select id="getCiBaseInfoByCiEntityIdList" resultType="neatlogic.framework.cmdb.dto.ci.CiVo" useCache="false">
         SELECT
         DISTINCT

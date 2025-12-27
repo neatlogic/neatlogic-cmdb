@@ -242,9 +242,7 @@ public class BatchImportHandler {
                 if (ciVo == null) {
                     throw new CiNotFoundException(ciId);
                 }
-                if (ciVo.getIsAbstract().equals(1)) {
-                    throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, ciVo.getLabel());
-                }
+
                 if (ciVo.getIsVirtual().equals(1)) {
                     throw new CiIsVirtualException(ciVo.getName());
                 }
@@ -541,17 +539,39 @@ public class BatchImportHandler {
 
                                         try {
                                             if (action.equals("append") && ciEntityId == null) {
+                                                if (ciVo.getIsAbstract().equals(1)) {
+                                                    throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, ciVo.getLabel());
+                                                }
                                                 ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                                                 ciEntityService.saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
                                                 successCount += 1;
                                             } else if (action.equals("update") && ciEntityId != null) {
+                                                if (ciVo.getIsAbstract().equals(1)) {
+                                                    //如果导入模型是抽象模型，则查询配置项的真实模型
+                                                    Long realCiId = ciMapper.getCiIdByCiEntityId(ciEntityId);
+                                                    if (realCiId == null) {
+                                                        throw new CiEntityNotFoundException(ciEntityId);
+                                                    }
+                                                    ciEntityTransactionVo.setCiId(realCiId);
+                                                }
                                                 ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                                                 ciEntityService.saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
                                                 successCount += 1;
                                             } else if (action.equals("all")) {
                                                 if (ciEntityId != null) {
+                                                    if (ciVo.getIsAbstract().equals(1)) {
+                                                        //如果导入模型是抽象模型，则查询配置项的真实模型
+                                                        Long realCiId = ciMapper.getCiIdByCiEntityId(ciEntityId);
+                                                        if (realCiId == null) {
+                                                            throw new CiEntityNotFoundException(ciEntityId);
+                                                        }
+                                                        ciEntityTransactionVo.setCiId(realCiId);
+                                                    }
                                                     ciEntityTransactionVo.setAction(TransactionActionType.UPDATE.getValue());
                                                 } else {
+                                                    if (ciVo.getIsAbstract().equals(1)) {
+                                                        throw new CiIsAbstractedException(CiIsAbstractedException.Type.DATA, ciVo.getLabel());
+                                                    }
                                                     ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                                                 }
                                                 ciEntityService.saveCiEntity(ciEntityTransactionVo);
