@@ -176,8 +176,14 @@
                 #{item}
             </foreach>
         </if>-->
-        <if test="keyword != null and keyword != ''">
+        <!--<if test="keyword != null and keyword != ''">
             AND (a.`name` LIKE CONCAT(#{keyword}, '%') OR a.`ip` LIKE CONCAT(#{keyword}, '%'))
+        </if>-->
+        <if test="keywordList != null and keywordList.size() > 0">
+            AND
+            <foreach collection="keywordList" item="keywordItem" open="(" close=")" separator="OR">
+                a.`name` LIKE CONCAT(#{keywordItem}, '%') OR a.`ip` LIKE CONCAT(#{keywordItem}, '%')
+            </foreach>
         </if>
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
             AND fw2.word IN
@@ -270,8 +276,14 @@
                 #{item}
             </foreach>
         </if>-->
-        <if test="preCondition.keyword != null and preCondition.keyword != ''">
+        <!--<if test="preCondition.keyword != null and preCondition.keyword != ''">
             AND (a.`name` LIKE CONCAT(#{preCondition.keyword}, '%') OR a.`ip` LIKE CONCAT(#{preCondition.keyword}, '%'))
+        </if>-->
+        <if test="preCondition.keywordList != null and preCondition.keywordList.size() > 0">
+            AND
+            <foreach collection="preCondition.keywordList" item="keywordItem" open="(" close=")" separator="OR">
+                a.`name` LIKE CONCAT(#{keywordItem}, '%') OR a.`ip` LIKE CONCAT(#{keywordItem}, '%')
+            </foreach>
         </if>
     </sql>
 
