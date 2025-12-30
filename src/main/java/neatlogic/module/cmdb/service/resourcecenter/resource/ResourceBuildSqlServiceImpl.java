@@ -2824,14 +2824,40 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
                 AND (a.`name` LIKE CONCAT(#{keyword}, '%') OR a.`ip` LIKE CONCAT(#{keyword}, '%'))
         </if>
          */
-        if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
-            String keyword = queryCriteriaVo.getKeyword() + "%";
-            whereExpressionList.add($sql.exp(
-                    "(",
-                    $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", $sql.value(keyword)),
-                    "OR",
-                    $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", $sql.value(keyword)),
-                    ")"));
+//        if (StringUtils.isNotBlank(queryCriteriaVo.getKeyword())) {
+//            String keyword = queryCriteriaVo.getKeyword() + "%";
+//            whereExpressionList.add($sql.exp(
+//                    "(",
+//                    $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", $sql.value(keyword)),
+//                    "OR",
+//                    $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", $sql.value(keyword)),
+//                    ")"));
+//        }
+        /*
+        <if test="keywordList != null and keywordList.size() > 0">
+                AND
+                <foreach collection="keywordList" item="keywordItem" open="(" close=")" separator="OR">
+                a.`name` LIKE CONCAT(#{keywordItem}, '%') OR a.`ip` LIKE CONCAT(#{keywordItem}, '%')
+            </foreach>
+        </if>
+         */
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getKeywordList())) {
+            ExpressionVo orExp = null;
+            for (String keyword : queryCriteriaVo.getKeywordList()) {
+                if (orExp == null) {
+                    orExp = $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", $sql.value(keyword + "%"));
+                } else {
+                    orExp = $sql.exp(
+                            orExp,
+                            "OR",
+                            $sql.exp(fieldName2ColumnMap.get("name").toString(), "like", $sql.value(keyword + "%")));
+                }
+                orExp = $sql.exp(
+                        orExp,
+                        "OR",
+                        $sql.exp(fieldName2ColumnMap.get("ip").toString(), "like", $sql.value(keyword + "%")));
+            }
+            whereExpressionList.add($sql.exp("(", orExp, ")"));
         }
         /*
         <if test="batchSearchList != null and batchSearchList.size() > 0 and searchField != null and searchField != ''">
