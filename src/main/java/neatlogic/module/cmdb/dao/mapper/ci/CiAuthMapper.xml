@@ -3,7 +3,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.ci.CiAuthMapper">
-
+    <cache-ref namespace="neatlogic.module.cmdb.dao.mapper.ci.CiMapper"/>
     <select id="getCiAuthByCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiAuthVo"
             useCache="true">
         SELECT `ci_id`     AS ciId,
