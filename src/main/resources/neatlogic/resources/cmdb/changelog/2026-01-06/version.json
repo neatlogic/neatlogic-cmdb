@@ -1,0 +1,12 @@
+{
+  "content": [
+    {
+      "type": "新增功能",
+      "detail": [
+        {
+          "msg": "1、将cmdb_cientity_transaction表name字段改成text类型"
+        }
+      ]
+    }
+  ]
+}
