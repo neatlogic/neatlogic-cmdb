@@ -12,7 +12,6 @@
 
 package neatlogic.module.cmdb.auditconfig.handler;
 
-import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auditconfig.core.AuditCleanerBase;
 import neatlogic.framework.healthcheck.dao.mapper.DatabaseFragmentMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -36,8 +35,9 @@ public class TransactionAuditCleaner extends AuditCleanerBase {
     @Override
     protected void myClean(int dayBefore) {
         transactionMapper.deleteTransactionByDayBefore(dayBefore);
-        databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_transaction");
-        databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_cientity_transaction");
-        databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_transactiongroup");
+        //先注释，预防执行时间过长
+        //databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_transaction");
+        //databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_cientity_transaction");
+        //databaseFragmentMapper.rebuildTable(TenantContext.get().getDbName(), "cmdb_transactiongroup");
     }
 }
