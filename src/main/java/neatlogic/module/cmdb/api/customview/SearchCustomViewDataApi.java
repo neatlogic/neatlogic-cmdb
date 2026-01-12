@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.cmdb.enums.customview.SearchMode;
+import neatlogic.framework.cmdb.exception.customview.CustomViewCiChangeException;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.exception.type.ParamNotExistsException;
@@ -32,6 +33,7 @@ import neatlogic.module.cmdb.dao.mapper.customview.CustomViewMapper;
 import neatlogic.module.cmdb.service.customview.CustomViewDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -112,20 +114,27 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         }
         customViewConditionVo.setCustomViewId(customViewVo.getId());
         JSONObject returnObj = new JSONObject();
-
-        if (customViewConditionVo.getSearchMode().equals(SearchMode.NORMAL.getValue())) {
-            returnObj.put("dataList", customViewDataService.searchCustomViewData(customViewConditionVo));
-            returnObj.put("dataCount", customViewConditionVo.getRowNum());
-            returnObj.put("dataLimit", customViewConditionVo.getLimit());
-        } else if (customViewConditionVo.getSearchMode().equals(SearchMode.GROUP.getValue())) {
-            if (StringUtils.isBlank(customViewConditionVo.getGroupBy())) {
-                throw new ParamNotExistsException("groupBy");
+        try {
+            if (customViewConditionVo.getSearchMode().equals(SearchMode.NORMAL.getValue())) {
+                returnObj.put("dataList", customViewDataService.searchCustomViewData(customViewConditionVo));
+                returnObj.put("dataCount", customViewConditionVo.getRowNum());
+                returnObj.put("dataLimit", customViewConditionVo.getLimit());
+            } else if (customViewConditionVo.getSearchMode().equals(SearchMode.GROUP.getValue())) {
+                if (StringUtils.isBlank(customViewConditionVo.getGroupBy())) {
+                    throw new ParamNotExistsException("groupBy");
+                }
+                returnObj.put("dataList", customViewDataService.searchCustomViewDataGroup(customViewConditionVo));
+                returnObj.put("dataCount", customViewConditionVo.getRowNum());
+                returnObj.put("dataLimit", customViewConditionVo.getLimit());
+            } else {
+                returnObj.put("dataList", customViewDataService.searchCustomViewDataFlatten(customViewConditionVo));
             }
-            returnObj.put("dataList", customViewDataService.searchCustomViewDataGroup(customViewConditionVo));
-            returnObj.put("dataCount", customViewConditionVo.getRowNum());
-            returnObj.put("dataLimit", customViewConditionVo.getLimit());
-        } else {
-            returnObj.put("dataList", customViewDataService.searchCustomViewDataFlatten(customViewConditionVo));
+        } catch (Exception e) {
+            if (e instanceof UncategorizedSQLException) {
+                throw new CustomViewCiChangeException(customViewVo.getName());
+            } else {
+                throw e;
+            }
         }
         if (CollectionUtils.isNotEmpty(returnObj.getJSONArray("dataList")) && mode.equals("api")) {
             List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
