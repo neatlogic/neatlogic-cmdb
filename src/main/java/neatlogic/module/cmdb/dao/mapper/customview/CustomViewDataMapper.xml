@@ -205,7 +205,7 @@
     <sql id="searchCustomViewDataSql">
         select * from (
         SELECT
-        id
+        ANY_VALUE(id) as id
         <if test="fieldList != null and fieldList.size() > 0">
             <foreach collection="fieldList" item="field">
                 <choose>
