@@ -218,32 +218,44 @@
                 </choose>
                 <!--MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`-->
             </foreach>
-            <if test="(groupBy != null and groupBy != '') or (attrFilterList != null and attrFilterList.size() > 0)">
-                <foreach collection="fieldList" item="field">
-                    <choose>
-                        <when test="groupBy != null and groupBy != '' and field.name == groupBy">
-                            <choose>
-                                <when test="hasAggregation">
-                                    ,MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
-                                </when>
-                                <otherwise>
-                                    ,MD5(`${field.name}`) AS `${field.name}_hash`
-                                </otherwise>
-                            </choose>
-                        </when>
-                        <when test="attrFilterList != null and attrFilterList.size() > 0 and @neatlogic.framework.cmdb.dao.ognl.IsAttrInFilterAttrList@isExists(field,attrFilterList)">
-                            <choose>
-                                <when test="hasAggregation">
-                                    ,MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
-                                </when>
-                                <otherwise>
-                                    ,MD5(`${field.name}`) AS `${field.name}_hash`
-                                </otherwise>
-                            </choose>
-                        </when>
-                    </choose>
-                </foreach>
-            </if>
+            <foreach collection="fieldList" item="field">
+                <choose>
+                    <when test="hasAggregation">
+                        ,MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
+                    </when>
+                    <otherwise>
+                        ,MD5(`${field.name}`) AS `${field.name}_hash`
+                    </otherwise>
+                </choose>
+            </foreach>
+            <!--
+           <if test="(groupBy != null and groupBy != '') or (attrFilterList != null and attrFilterList.size() > 0)">
+               <foreach collection="fieldList" item="field">
+                   <choose>
+                       <when test="groupBy != null and groupBy != '' and field.name == groupBy">
+                           <choose>
+                               <when test="hasAggregation">
+                                   ,MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
+                               </when>
+                               <otherwise>
+                                   ,MD5(`${field.name}`) AS `${field.name}_hash`
+                               </otherwise>
+                           </choose>
+                       </when>
+                       <when test="attrFilterList != null and attrFilterList.size() > 0 and @neatlogic.framework.cmdb.dao.ognl.IsAttrInFilterAttrList@isExists(field,attrFilterList)">
+                           <choose>
+                               <when test="hasAggregation">
+                                   ,MD5(GROUP_CONCAT(distinct `${field.name}`)) AS `${field.name}_hash`
+                               </when>
+                               <otherwise>
+                                   ,MD5(`${field.name}`) AS `${field.name}_hash`
+                               </otherwise>
+                           </choose>
+                       </when>
+                   </choose>
+               </foreach>
+           </if>
+           -->
         </if>
         FROM ${viewName}
         <if test="hasAggregation">
