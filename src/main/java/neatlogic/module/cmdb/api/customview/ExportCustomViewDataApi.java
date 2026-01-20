@@ -86,7 +86,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
     })
     @Output({@Param(name = "dataList", type = ApiParamType.JSONARRAY, desc = "结果集"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页大小")})
-    @Description(desc = "查询自定义视图数据")
+    @Description(desc = "导出自定义视图数据")
     @Override
     public Object myDoService(JSONObject paramObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
         //最大导出数量
