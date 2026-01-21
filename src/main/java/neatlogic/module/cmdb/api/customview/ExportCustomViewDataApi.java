@@ -25,7 +25,7 @@ import neatlogic.framework.dao.mapper.UserExportFileMapper;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
-import neatlogic.framework.userexportfile.core.UserExportFileManager;
+import neatlogic.framework.userexportfile.core.ExportFileManager;
 import neatlogic.framework.userexportfile.exception.UserExportTimeCostTooLongException;
 import neatlogic.framework.util.FileUtil;
 import neatlogic.framework.util.excel.ExcelBuilder;
@@ -99,14 +99,14 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
 //            if (!exportLock.tryLock()) {
 //                throw new CiEntityIsExportingException();
 //            }
-            CustomViewConditionVo customViewConditionVo = JSON.toJavaObject(paramObj, CustomViewConditionVo.class);
-            Long customViewId = paramObj.getLong("id");
-            CustomViewVo customViewVo = customViewMapper.getCustomViewById(customViewId);
-            if (customViewVo == null) {
-                throw new CustomViewNotFoundException(customViewId);
-            }
-            UserExportFileManager userExportFileManager = new UserExportFileManager(CmdbUserExportFileType.CUSTOMVIEW_DATA, customViewVo.getName(), ".xlsx", "application/vnd.ms-excel;charset=utf-8");
-            userExportFileManager.generateData(() -> {
+        CustomViewConditionVo customViewConditionVo = JSON.toJavaObject(paramObj, CustomViewConditionVo.class);
+        Long customViewId = paramObj.getLong("id");
+        CustomViewVo customViewVo = customViewMapper.getCustomViewById(customViewId);
+        if (customViewVo == null) {
+            throw new CustomViewNotFoundException(customViewId);
+        }
+        ExportFileManager exportFileManager = new ExportFileManager(CmdbUserExportFileType.CUSTOMVIEW_DATA, customViewVo.getName(), ".xlsx", "application/vnd.ms-excel;charset=utf-8");
+        exportFileManager.generateData(() -> (out)->{
             CustomViewAttrVo pCustomViewAttrVo = new CustomViewAttrVo();
             pCustomViewAttrVo.setCustomViewId(customViewId);
             pCustomViewAttrVo.setIsHidden(0);
@@ -182,37 +182,38 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
                 customViewConditionVo.setCurrentPage(customViewConditionVo.getCurrentPage() + 1);
                 dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
             }
-            return workbook;
-            });
-            userExportFileManager.setUniqueKey(RequestContext.get().getUrl());
-            try (DeferredFileOutputStream deferredFileOutputStream = userExportFileManager.export()) {
-                if (deferredFileOutputStream != null) {
-                    try (OutputStream os = response.getOutputStream()) {
-                        response.setContentType(userExportFileManager.getContentType());
-                        String filename = FileUtil.getEncodedFileName(userExportFileManager.getPrefix() + userExportFileManager.getSuffix());
-                        response.setHeader("Content-Disposition", " attachment; filename=\"" + filename + "\"");
-                        if (deferredFileOutputStream.isInMemory()) {
-                            try (InputStream inputStream = new ByteArrayInputStream(deferredFileOutputStream.getData())) {
-                                IOUtils.copyLarge(inputStream, os);
-                            }
-                        } else {
-                            try (InputStream inputStream = new BufferedInputStream(new FileInputStream(deferredFileOutputStream.getFile()))) {
-                                IOUtils.copyLarge(inputStream, os);
-                            }
+            workbook.write(out);
+            //return workbook.;
+        });
+        exportFileManager.setUniqueKey(RequestContext.get().getUrl());
+        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export()) {
+            if (deferredFileOutputStream != null) {
+                try (OutputStream os = response.getOutputStream()) {
+                    response.setContentType(exportFileManager.getContentType());
+                    String filename = FileUtil.getEncodedFileName(exportFileManager.getPrefix() + exportFileManager.getSuffix());
+                    response.setHeader("Content-Disposition", " attachment; filename=\"" + filename + "\"");
+                    if (deferredFileOutputStream.isInMemory()) {
+                        try (InputStream inputStream = new ByteArrayInputStream(deferredFileOutputStream.getData())) {
+                            IOUtils.copyLarge(inputStream, os);
                         }
-                    } catch (Exception e) {
-                        logger.warn(e.getMessage(), e);
-                    } finally {
-                        File tempFile = deferredFileOutputStream.getFile();
-                        if (tempFile.exists()) {
-                            boolean delete = tempFile.delete();
+                    } else {
+                        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(deferredFileOutputStream.getFile()))) {
+                            IOUtils.copyLarge(inputStream, os);
                         }
                     }
-                } else {
-                    throw new UserExportTimeCostTooLongException();
+                } catch (Exception e) {
+                    logger.warn(e.getMessage(), e);
+                } finally {
+                    File tempFile = deferredFileOutputStream.getFile();
+                    if (tempFile.exists()) {
+                        boolean delete = tempFile.delete();
+                    }
                 }
+            } else {
+                throw new UserExportTimeCostTooLongException();
             }
-            return null;
+        }
+        return null;
 //        } finally {
 //            if (exportLock.isLocked() && exportLock.isHeldByCurrentThread()) {
 //                exportLock.unlock();
