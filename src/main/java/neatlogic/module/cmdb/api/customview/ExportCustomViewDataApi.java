@@ -22,7 +22,6 @@ import neatlogic.framework.cmdb.enums.CmdbUserExportFileType;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.constvalue.MimeType;
-import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
@@ -52,14 +51,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase {
     private static final Logger logger = LoggerFactory.getLogger(ExportCustomViewDataApi.class);
-    private final ReentrantLock exportLock = new ReentrantLock();
+//    private final ReentrantLock exportLock = new ReentrantLock();
     @Resource
     private CustomViewDataService customViewDataService;
 
