@@ -21,7 +21,8 @@ import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.enums.CmdbUserExportFileType;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.dao.mapper.UserExportFileMapper;
+import neatlogic.framework.common.constvalue.MimeType;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
@@ -63,10 +65,6 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
 
     @Resource
     private CustomViewMapper customViewMapper;
-
-    @Resource
-    private UserExportFileMapper userExportFileMapper;
-
 
     @Override
     public String getToken() {
@@ -105,8 +103,11 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         if (customViewVo == null) {
             throw new CustomViewNotFoundException(customViewId);
         }
-        ExportFileManager exportFileManager = new ExportFileManager(CmdbUserExportFileType.CUSTOMVIEW_DATA, customViewVo.getName(), ".xlsx", "application/vnd.ms-excel;charset=utf-8");
-        exportFileManager.generateData(() -> (out)->{
+        ExportFileManager exportFileManager = new ExportFileManager(CmdbUserExportFileType.CUSTOMVIEW_DATA)
+                .withName(customViewVo.getName() + ".xlsx")
+                .withMimeType(MimeType.XLS)
+                .withUniqueKey(RequestContext.get().getUrl());
+        exportFileManager.generateData((outputStream) -> {
             CustomViewAttrVo pCustomViewAttrVo = new CustomViewAttrVo();
             pCustomViewAttrVo.setCustomViewId(customViewId);
             pCustomViewAttrVo.setIsHidden(0);
@@ -182,15 +183,13 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
                 customViewConditionVo.setCurrentPage(customViewConditionVo.getCurrentPage() + 1);
                 dataList = customViewDataService.searchCustomViewData(customViewConditionVo);
             }
-            workbook.write(out);
-            //return workbook.;
+            workbook.write(outputStream);
         });
-        exportFileManager.setUniqueKey(RequestContext.get().getUrl());
-        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export()) {
+        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export(5, TimeUnit.SECONDS)) {
             if (deferredFileOutputStream != null) {
                 try (OutputStream os = response.getOutputStream()) {
-                    response.setContentType(exportFileManager.getContentType());
-                    String filename = FileUtil.getEncodedFileName(exportFileManager.getPrefix() + exportFileManager.getSuffix());
+                    response.setContentType(exportFileManager.getMimeType().getValue());
+                    String filename = FileUtil.getEncodedFileName(exportFileManager.getName());
                     response.setHeader("Content-Disposition", " attachment; filename=\"" + filename + "\"");
                     if (deferredFileOutputStream.isInMemory()) {
                         try (InputStream inputStream = new ByteArrayInputStream(deferredFileOutputStream.getData())) {
