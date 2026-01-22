@@ -104,6 +104,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
         ExportFileManager exportFileManager = new ExportFileManager(CmdbUserExportFileType.CUSTOMVIEW_DATA)
                 .withName(customViewVo.getName() + ".xlsx")
                 .withMimeType(MimeType.XLS)
+                .withAwait(5, TimeUnit.SECONDS)
                 .withUniqueKey(RequestContext.get().getUrl());
         exportFileManager.generateData(outputStream -> {
             CustomViewAttrVo pCustomViewAttrVo = new CustomViewAttrVo();
@@ -183,7 +184,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
             }
             workbook.write(outputStream);
         });
-        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export(5, TimeUnit.SECONDS)) {
+        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export()) {
             if (deferredFileOutputStream != null) {
                 try (OutputStream os = response.getOutputStream()) {
                     response.setContentType(exportFileManager.getMimeType().getValue());
