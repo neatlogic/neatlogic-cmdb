@@ -57,7 +57,7 @@ import java.util.concurrent.TimeUnit;
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase {
     private static final Logger logger = LoggerFactory.getLogger(ExportCustomViewDataApi.class);
-//    private final ReentrantLock exportLock = new ReentrantLock();
+    //    private final ReentrantLock exportLock = new ReentrantLock();
     @Resource
     private CustomViewDataService customViewDataService;
 
@@ -105,7 +105,7 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
                 .withName(customViewVo.getName() + ".xlsx")
                 .withMimeType(MimeType.XLS)
                 .withUniqueKey(RequestContext.get().getUrl());
-        exportFileManager.generateData((outputStream) -> {
+        exportFileManager.generateData(outputStream -> {
             CustomViewAttrVo pCustomViewAttrVo = new CustomViewAttrVo();
             pCustomViewAttrVo.setCustomViewId(customViewId);
             pCustomViewAttrVo.setIsHidden(0);
