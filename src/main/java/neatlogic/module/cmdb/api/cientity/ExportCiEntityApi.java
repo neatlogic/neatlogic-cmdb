@@ -15,6 +15,7 @@ package neatlogic.module.cmdb.api.cientity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.threadlocal.RequestContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
@@ -23,17 +24,21 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
+import neatlogic.framework.cmdb.enums.CmdbUserExportFileType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
-import neatlogic.framework.cmdb.exception.cientity.CiEntityIsExportingException;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.constvalue.MimeType;
+import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.userexportfile.core.ExportFileManager;
 import neatlogic.framework.util.$;
+import neatlogic.framework.util.FileUtil;
 import neatlogic.framework.util.excel.ExcelBuilder;
 import neatlogic.framework.util.excel.SheetBuilder;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -43,6 +48,8 @@ import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.cmdb.service.group.GroupService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -54,19 +61,16 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @AuthAction(action = CIENTITY_EXPORT.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     private static final Logger logger = LoggerFactory.getLogger(ExportCiEntityApi.class);
-    private final ReentrantLock exportLock = new ReentrantLock();
+//    private final ReentrantLock exportLock = new ReentrantLock();
 
     @Resource
     private CiEntityService ciEntityService;
@@ -107,10 +111,10 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
     @Description(desc = "nmcac.exportcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        try {
-            if (!exportLock.tryLock()) {
-                throw new CiEntityIsExportingException();
-            }
+//        try {
+//            if (!exportLock.tryLock()) {
+//                throw new CiEntityIsExportingException();
+//            }
             JSONArray idList = jsonObj.getJSONArray("idList");
             CiEntityVo ciEntityVo = JSON.toJavaObject(jsonObj, CiEntityVo.class);
             JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
@@ -135,6 +139,11 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
             }
             Long ciId = jsonObj.getLong("ciId");
             CiVo ciVo = ciMapper.getCiById(ciId);
+        ExportFileManager exportFileManager = new ExportFileManager(CmdbUserExportFileType.CIENTITY_DATA)
+                .withName(ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx")
+                .withMimeType(MimeType.XLS)
+                .withUniqueKey(RequestContext.get().getUrl());
+        exportFileManager.generateData((outputStream) -> {
             CiViewVo ciViewVo = new CiViewVo();
             ciViewVo.setCiId(ciEntityVo.getCiId());
             List<CiViewVo> ciViewList = RelUtil.ClearCiViewRepeatRel(ciViewMapper.getCiViewByCiId(ciViewVo), ciViewVo.getCiId());
@@ -220,16 +229,16 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
             ciEntityList = ciEntityService.searchCiEntity(ciEntityVo);
         }*/
 
-            String fileNameEncode = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
-            if (request.getHeader("User-Agent").toLowerCase().contains("msie") || request.getHeader("User-Agent").contains("Gecko")) {
-                fileNameEncode = URLEncoder.encode(fileNameEncode, StandardCharsets.UTF_8);// IE浏览器
-            } else {
-                fileNameEncode = new String(fileNameEncode.replace(" ", "").getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-            }
-            response.setContentType("application/vnd.ms-excel;charset=utf-8");
-            response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");
+//            String fileNameEncode = ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx";
+//            if (request.getHeader("User-Agent").toLowerCase().contains("msie") || request.getHeader("User-Agent").contains("Gecko")) {
+//                fileNameEncode = URLEncoder.encode(fileNameEncode, StandardCharsets.UTF_8);// IE浏览器
+//            } else {
+//                fileNameEncode = new String(fileNameEncode.replace(" ", "").getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+//            }
+//            response.setContentType("application/vnd.ms-excel;charset=utf-8");
+//            response.setHeader("Content-Disposition", " attachment; filename=\"" + fileNameEncode + "\"");
             int sum = 0;
-            try (OutputStream os = response.getOutputStream()) {
+//            try (OutputStream os = response.getOutputStream()) {
                 while (CollectionUtils.isNotEmpty(ciEntityList)) {
                     for (CiEntityVo entity : ciEntityList) {
                         Map<String, Object> dataMap = new HashMap<>();
@@ -308,21 +317,49 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                     }
                 }
                 //System.out.println("总共：" + sum);
-                workbook.write(os);
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            } finally {
-                if (workbook != null) {
-                    ((SXSSFWorkbook) workbook).dispose(); // 清理内存缓存
-                    workbook.close();
+                workbook.write(outputStream);
+        });
+        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export(5, TimeUnit.SECONDS)) {
+            if (deferredFileOutputStream != null) {
+                try (OutputStream os = response.getOutputStream()) {
+                    response.setContentType(exportFileManager.getMimeType().getValue());
+                    String filename = FileUtil.getEncodedFileName(exportFileManager.getName());
+                    response.setHeader("Content-Disposition", " attachment; filename=\"" + filename + "\"");
+                    if (deferredFileOutputStream.isInMemory()) {
+                        try (InputStream inputStream = new ByteArrayInputStream(deferredFileOutputStream.getData())) {
+                            IOUtils.copyLarge(inputStream, os);
+                        }
+                    } else {
+                        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(deferredFileOutputStream.getFile()))) {
+                            IOUtils.copyLarge(inputStream, os);
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.warn(e.getMessage(), e);
+                } finally {
+                    File tempFile = deferredFileOutputStream.getFile();
+                    if (tempFile.exists()) {
+                        boolean delete = tempFile.delete();
+                    }
                 }
-            }
-            return null;
-        } finally {
-            if (exportLock.isLocked() && exportLock.isHeldByCurrentThread()) {
-                exportLock.unlock();
+            } else {
+                response.setStatus(ResponseCode.EXPORT_TIMEOUT.getCode());
             }
         }
+//            } catch (IOException e) {
+//                logger.error(e.getMessage(), e);
+//            } finally {
+//                if (workbook != null) {
+//                    ((SXSSFWorkbook) workbook).dispose(); // 清理内存缓存
+//                    workbook.close();
+//                }
+//            }
+            return null;
+//        } finally {
+//            if (exportLock.isLocked() && exportLock.isHeldByCurrentThread()) {
+//                exportLock.unlock();
+//            }
+//        }
     }
 
 
