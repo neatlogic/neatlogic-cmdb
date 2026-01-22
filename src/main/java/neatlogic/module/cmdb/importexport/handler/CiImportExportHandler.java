@@ -34,26 +34,6 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
     @Resource
     private CiMapper ciMapper;
 
-//    @Resource
-//    private FileMapper fileMapper;
-//
-//    @Resource
-//    private AttrMapper attrMapper;
-//
-//    @Resource
-//    private CiViewMapper ciViewMapper;
-//
-//    @Resource
-//    private RelMapper relMapper;
-//
-//    @Resource
-//    private CiAuthMapper ciAuthMapper;
-//
-//    @Resource
-//    private CiService ciService;
-//
-//    @Resource
-//    private AttrService attrService;
 
     @Override
     public ImportExportHandlerType getType() {
@@ -73,7 +53,7 @@ public class CiImportExportHandler extends ImportExportHandlerBase {
 
     @Override
     public boolean checkIsExists(ImportExportBaseInfoVo importExportBaseInfoVo) {
-        CiVo ciVo = ciMapper.getCiById((Long)importExportBaseInfoVo.getPrimaryKey());
+        CiVo ciVo = ciMapper.getCiById((Long) importExportBaseInfoVo.getPrimaryKey());
         if (ciVo == null) {
             if (StringUtils.isNotBlank(importExportBaseInfoVo.getName())) {
                 throw new CiNotFoundException(importExportBaseInfoVo.getName() + "[" + importExportBaseInfoVo.getPrimaryKey() + "]");

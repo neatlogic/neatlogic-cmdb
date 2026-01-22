@@ -88,7 +88,6 @@ public class BatchImportHandler {
 
     private static CiMapper ciMapper;
 
-    private AttrValueHandlerFactory attrValueHandlerFactory;
 
     @Autowired
     private void setGlobalAttrMapper(GlobalAttrMapper _globalAttrMapper) {
@@ -168,11 +167,6 @@ public class BatchImportHandler {
         } else {
             return "";
         }
-    }
-
-    @Autowired
-    public void setAttrValueHandlerFactory(AttrValueHandlerFactory attrValueHandlerFactory) {
-        this.attrValueHandlerFactory = attrValueHandlerFactory;
     }
 
 
@@ -581,13 +575,13 @@ public class BatchImportHandler {
                                             }
                                         } catch (Exception e) {
                                             failedCount += 1;
-                                            logger.error(e.getMessage(), e);
+                                            logger.warn(e.getMessage(), e);
                                             rowError.put(r, e.getMessage());
                                         }
                                     }
                                 } catch (Exception e) {
                                     failedCount += 1;
-                                    logger.error(e.getMessage(), e);
+                                    logger.warn(e.getMessage(), e);
                                     rowError.put(r, e.getMessage());
                                 } finally {
                                     // String err = "";
@@ -626,7 +620,7 @@ public class BatchImportHandler {
             } catch (Exception e) {
                 importAuditVo.setError((StringUtils.isBlank(importAuditVo.getError()) ? ""
                         : importAuditVo.getError() + "<br>") + (e instanceof ApiRuntimeException ? ((ApiRuntimeException) e).getMessage() : e.getMessage()));
-                logger.error(e.getMessage(), e);
+                logger.warn(e.getMessage(), e);
             } finally {
                 try {
                     if (wb != null) {
