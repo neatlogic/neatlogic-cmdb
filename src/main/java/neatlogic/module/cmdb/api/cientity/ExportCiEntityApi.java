@@ -142,6 +142,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
         ExportFileManager exportFileManager = new ExportFileManager(CmdbUserExportFileType.CIENTITY_DATA)
                 .withName(ciVo.getId() + "_" + ciVo.getLabel() + ".xlsx")
                 .withMimeType(MimeType.XLS)
+                .withAwait(5, TimeUnit.SECONDS)
                 .withUniqueKey(RequestContext.get().getUrl());
         exportFileManager.generateData((outputStream) -> {
             CiViewVo ciViewVo = new CiViewVo();
@@ -319,7 +320,7 @@ public class ExportCiEntityApi extends PrivateBinaryStreamApiComponentBase {
                 //System.out.println("总共：" + sum);
                 workbook.write(outputStream);
         });
-        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export(5, TimeUnit.SECONDS)) {
+        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export()) {
             if (deferredFileOutputStream != null) {
                 try (OutputStream os = response.getOutputStream()) {
                     response.setContentType(exportFileManager.getMimeType().getValue());
