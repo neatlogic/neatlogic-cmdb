@@ -184,33 +184,40 @@ public class ExportCustomViewDataApi extends PrivateBinaryStreamApiComponentBase
             }
             workbook.write(outputStream);
         });
-        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.export()) {
-            if (deferredFileOutputStream != null) {
-                try (OutputStream os = response.getOutputStream()) {
-                    response.setContentType(exportFileManager.getMimeType().getValue());
-                    String filename = FileUtil.getEncodedFileName(exportFileManager.getName());
-                    response.setHeader("Content-Disposition", " attachment; filename=\"" + filename + "\"");
-                    if (deferredFileOutputStream.isInMemory()) {
-                        try (InputStream inputStream = new ByteArrayInputStream(deferredFileOutputStream.getData())) {
-                            IOUtils.copyLarge(inputStream, os);
-                        }
-                    } else {
-                        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(deferredFileOutputStream.getFile()))) {
-                            IOUtils.copyLarge(inputStream, os);
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.warn(e.getMessage(), e);
-                } finally {
-                    File tempFile = deferredFileOutputStream.getFile();
-                    if (tempFile.exists()) {
-                        boolean delete = tempFile.delete();
-                    }
-                }
-            } else {
+        try (OutputStream os = response.getOutputStream()) {
+            response.setContentType(exportFileManager.getMimeType().getValue());
+            response.setHeader("Content-Disposition", " attachment; filename=\"" + FileUtil.getEncodedFileName(exportFileManager.getName()) + "\"");
+            if (!exportFileManager.exportTo(os)) {
                 response.setStatus(ResponseCode.EXPORT_TIMEOUT.getCode());
             }
         }
+//        try (DeferredFileOutputStream deferredFileOutputStream = exportFileManager.exportTo()) {
+//            if (deferredFileOutputStream != null) {
+//                try (OutputStream os = response.getOutputStream()) {
+//                    response.setContentType(exportFileManager.getMimeType().getValue());
+//                    String filename = FileUtil.getEncodedFileName(exportFileManager.getName());
+//                    response.setHeader("Content-Disposition", " attachment; filename=\"" + filename + "\"");
+//                    if (deferredFileOutputStream.isInMemory()) {
+//                        try (InputStream inputStream = new ByteArrayInputStream(deferredFileOutputStream.getData())) {
+//                            IOUtils.copyLarge(inputStream, os);
+//                        }
+//                    } else {
+//                        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(deferredFileOutputStream.getFile()))) {
+//                            IOUtils.copyLarge(inputStream, os);
+//                        }
+//                    }
+//                } catch (Exception e) {
+//                    logger.warn(e.getMessage(), e);
+//                } finally {
+//                    File tempFile = deferredFileOutputStream.getFile();
+//                    if (tempFile.exists()) {
+//                        boolean delete = tempFile.delete();
+//                    }
+//                }
+//            } else {
+//                response.setStatus(ResponseCode.EXPORT_TIMEOUT.getCode());
+//            }
+//        }
         return null;
 //        } finally {
 //            if (exportLock.isLocked() && exportLock.isHeldByCurrentThread()) {
