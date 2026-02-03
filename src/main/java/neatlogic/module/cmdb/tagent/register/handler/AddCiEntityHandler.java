@@ -14,18 +14,19 @@ package neatlogic.module.cmdb.tagent.register.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo;
 import neatlogic.framework.cmdb.enums.sync.CollectMode;
 import neatlogic.framework.tagent.dto.TagentVo;
 import neatlogic.framework.tagent.register.core.AfterRegisterBase;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.sync.CiSyncManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -41,7 +42,7 @@ public class AddCiEntityHandler extends AfterRegisterBase {
     @Resource
     private SyncMapper syncMapper;
     @Resource
-    private ResourceMapper resourceMapper;
+    private MongoTemplate mongoTemplate;
 
     /**
      * 需要满足以下条件才能完成同步：
@@ -55,14 +56,13 @@ public class AddCiEntityHandler extends AfterRegisterBase {
     @Override
     public void myExecute(TagentVo tagentVo) {
         String tagentStr;
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             tagentStr = JSON.toJSONString(tagentVo);
             logger.debug("AddCiEntityHandler init! {}", tagentStr);
         }
         if (StringUtils.isNotBlank(tagentVo.getOsType()) && StringUtils.isNotBlank(tagentVo.getIp())) {
-            //ip在scence_os视图中不存在才同步入cmdb
-            ResourceVo resourceVo = resourceMapper.getOSByIp(tagentVo.getIp());
-            if (resourceVo == null) {
+            //ip在_virtualized_tagent_unique_ip不存在才同步入cmdb
+            if (!isOsIpExistsInCollection(tagentVo.getIp())) {
                 List<SyncCiCollectionVo> tmpList = syncMapper.getSyncCiCollectionByCollectionName(tagentVo.getOsType());
                 List<SyncCiCollectionVo> ciCollectionList = tmpList.stream().filter(d -> d.getCollectMode().equals(CollectMode.INITIATIVE.getValue())).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(ciCollectionList)) {
@@ -79,17 +79,35 @@ public class AddCiEntityHandler extends AfterRegisterBase {
                         logger.debug("AddCiEntityHandler sync mongodb to cmdb start! {},{}", JSON.toJSONString(dataObj), JSON.toJSONString(ciCollectionList));
                     }
                     CiSyncManager.doSync(dataObj, ciCollectionList);
-                }else{
-                    if(logger.isDebugEnabled()) {
+                } else {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("AddCiEntityHandler os collectMode is not initiative, no need to sync! ");
                     }
                 }
-            }else{
-                if(logger.isDebugEnabled()) {
-                    logger.debug("AddCiEntityHandler os exist, no need to sync! ");
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("AddCiEntityHandler _virtualized_tagent_unique_ip exist {}, no need to sync! ", tagentVo.getIp());
                 }
             }
         }
 
+    }
+
+    /**
+     *
+     * 构建查询条件：
+     * 1. _virtualized_tagent_unique_ip 字段存在
+     * 2. osIp 是否存在
+     *
+     * @param osIp 操作系统ip
+     *
+     */
+    public boolean isOsIpExistsInCollection(String osIp) {
+        String collectionName = "_virtualized_tagent_unique_ip";
+        if (!mongoTemplate.collectionExists(collectionName)) {
+            return false;
+        }
+        Query query = Query.query(Criteria.where("os_ip").is(osIp));
+        return mongoTemplate.exists(query, collectionName);
     }
 }
