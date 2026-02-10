@@ -153,6 +153,7 @@ public class CiSyncManager {
                     if (CollectionUtils.isNotEmpty(ciEntityList)) {
                         synchronized (ciEntityCache) {
                             ciEntityCache.put(hash, ciEntityList);
+                            //System.out.println("update " + JSON.toJSONString(conditionVo.getAttrFilterList()));
                         }
                     } else {
                         //如果存在多次引用某个hash一样的新配置项，则需要将其加入到cache列表，避免重复添加导致添加失败。
@@ -160,6 +161,7 @@ public class CiSyncManager {
                         tmpCiEntityList.add(conditionVo);
                         synchronized (ciEntityCache) {
                             ciEntityCache.put(hash, tmpCiEntityList);
+                            //System.out.println("add " + JSON.toJSONString(conditionVo.getAttrFilterList()));
                         }
                     }
                 } else {
