@@ -112,6 +112,7 @@
                type_id     as typeId,
                is_virtual  as isVirtual,
                is_abstract as isAbstract,
+               expired_day as expiredDay,
                icon,
                lft,
                rht
@@ -136,6 +137,7 @@
         a.`type_id` AS typeId,
         a.`is_private` AS isPrivate,
         a.`is_menu` AS isMenu,
+        a.`expired_day` as expiredDay,
         a.`parent_ci_id` AS parentCiId,
         a.`is_abstract` AS isAbstract,
         a.`is_virtual` AS isVirtual,

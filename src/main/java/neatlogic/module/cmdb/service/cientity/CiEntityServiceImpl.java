@@ -801,7 +801,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
             return transactionVo.getId();
         } else {
-            // 没有任何变化则返回零
+            //如果没有任何变化，刷新一下超时时间和更新时间
+            ciEntityMapper.updateCiEntityRenewTime(ciEntityTransactionVo.getCiEntityId());
+            CiEntityExpiredTimeVo expiredTimeVo = ciEntityMapper.getCiEntityExpiredTimeById(ciEntityTransactionVo.getCiEntityId());
+            if (expiredTimeVo != null && expiredTimeVo.getExpiredDay() > 0) {
+                ciEntityMapper.updateCiEntityExpiredTime(expiredTimeVo);
+            }
             return 0L;
         }
     }

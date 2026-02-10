@@ -1686,6 +1686,27 @@
         LIMIT #{startNum} , #{pageSize}
     </select>
 
+    <select id="getCiEntityExpiredTimeById" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityExpiredTimeVo">
+        select cientity_id  as ciEntityId,
+               expired_time as expiredTime,
+               expired_day  as expiredDay,
+               ci_id        as ciId
+        from cmdb_cientity_expiredtime
+        where cientity_id = #{value}
+    </select>
+
+    <update id="updateCiEntityExpiredTime" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityExpiredTimeVo">
+        update cmdb_cientity_expiredtime
+        set expired_time = DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY)
+        where cientity_id = #{ciEntityId}
+    </update>
+
+    <update id="updateCiEntityRenewTime" parameterType="java.lang.Long">
+        update `cmdb_cientity`
+        set renew_time = now(3)
+        where id = #{value}
+    </update>
+
     <update id="updateCiEntityBaseInfo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
         UPDATE `cmdb_cientity`
         SET lcu        = #{lcu},

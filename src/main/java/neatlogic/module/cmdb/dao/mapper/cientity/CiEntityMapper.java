@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface CiEntityMapper extends ICiEntityCrossoverMapper {
+    CiEntityExpiredTimeVo getCiEntityExpiredTimeById(Long ciEntityId);
+
     List<RelEntityVo> getRelEntityByCiEntityIdList(@Param("idList") List<Long> idList, @Param("excludeRelIdList") List<Long> excludeRelIdList, @Param("globalAttrFilterList") List<GlobalAttrFilterVo> globalAttrFilterList);
 
     List<CiEntityTopoVo> getCiEntityForTopo(CiEntityVo ciEntityVo);
@@ -225,6 +227,10 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     void deleteAttrEntityByFromCiEntityIdAndAttrId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
 
     void insertCiEntityExpiredTime(CiEntityVo ciEntityVo);
+
+    void updateCiEntityExpiredTime(CiEntityExpiredTimeVo ciEntityExpiredTimeVo);
+
+    void updateCiEntityRenewTime(Long id);
 
     void updateCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
