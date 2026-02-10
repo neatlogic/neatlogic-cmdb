@@ -1265,6 +1265,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 fromRelEntityIt.remove();
                             }
                         }
+
+
                     } else if (isUpdate) {
                         /*
                        如果是update模式，新关系为空时不做任何处理，新关系不为空时，替换成新的关系数据
@@ -1289,6 +1291,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         //如果没有replace或update的数据，fromRelEntityList主要用来校验RelRuleType=O的规则，因此取两条数据即可
                         fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
                     }
+
+
                     if (CollectionUtils.isNotEmpty(fromRelEntityTransactionList)) {
                         if (fromRelEntityTransactionList.size() == 1 && CollectionUtils.isNotEmpty(fromRelEntityList)) {
                             // 检查关系是否允许重复
@@ -1304,12 +1308,22 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                         }
                         //检查关系唯一
-                        if (relVo.getToIsUnique().equals(1)) {
+                        if (relVo.getToIsUnique().equals(1) || (RelRuleType.O.getValue().equals(relVo.getFromRule()) && RelRuleType.O.getValue().equals(relVo.getToRule()))) {
                             for (RelEntityTransactionVo fromRelEntityVo : fromRelEntityTransactionList) {
                                 List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(fromRelEntityVo.getToCiEntityId(), relVo.getId(), null);
-                                Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
-                                if (op.isPresent()) {
-                                    throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo, op.get());
+                                if (CollectionUtils.isNotEmpty(checkFromRelEntityList)) {
+                                    Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getFromCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
+                                    if (relVo.getToIsUnique().equals(1)) {
+                                        if (op.isPresent()) {
+                                            throw new RelEntityIsUsedException(RelDirectionType.FROM, relVo, op.get());
+                                        }
+                                    }
+                                    if (RelRuleType.O.getValue().equals(relVo.getFromRule()) && RelRuleType.O.getValue().equals(relVo.getToRule())) {
+                                        if (op.isPresent()) {
+                                            //任意选取一个对端配置项名称报错即可，因为都是同一个配置项
+                                            throw new RelEntityMultipleException(relVo.getToLabel(), checkFromRelEntityList.get(0).getToCiEntityName());
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1386,13 +1400,24 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             throw new RelEntityMultipleException(relVo.getFromLabel());
                         }
                     }
+
                     //检查关系唯一
-                    if (relVo.getFromIsUnique().equals(1)) {
+                    if (relVo.getFromIsUnique().equals(1) || (RelRuleType.O.getValue().equals(relVo.getToRule()) && RelRuleType.O.getValue().equals(relVo.getFromRule()))) {
                         for (RelEntityTransactionVo toRelEntityVo : toRelEntityTransactionList) {
                             List<RelEntityVo> checkFromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(toRelEntityVo.getFromCiEntityId(), relVo.getId(), null);
-                            Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
-                            if (op.isPresent()) {
-                                throw new RelEntityIsUsedException(RelDirectionType.TO, relVo, op.get());
+                            if (CollectionUtils.isNotEmpty(checkFromRelEntityList)) {
+                                Optional<RelEntityVo> op = checkFromRelEntityList.stream().filter(r -> !r.getToCiEntityId().equals(ciEntityTransactionVo.getCiEntityId())).findFirst();
+                                if (relVo.getFromIsUnique().equals(1)) {
+                                    if (op.isPresent()) {
+                                        throw new RelEntityIsUsedException(RelDirectionType.TO, relVo, op.get());
+                                    }
+                                }
+                                if (RelRuleType.O.getValue().equals(relVo.getToRule()) && RelRuleType.O.getValue().equals(relVo.getFromRule())) {
+                                    if (op.isPresent()) {
+                                        //任意选取一个对端配置项名称报错即可，因为都是同一个配置项
+                                        throw new RelEntityMultipleException(relVo.getFromLabel(), checkFromRelEntityList.get(0).getFromCiEntityName());
+                                    }
+                                }
                             }
                         }
                     }
