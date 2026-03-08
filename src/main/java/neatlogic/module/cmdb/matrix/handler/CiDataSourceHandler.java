@@ -891,7 +891,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             Long attrId = Long.valueOf(label.substring(5));
                             AttrVo attrVo = attrMap.get(attrId);
                             if (attrVo != null) {
-                                AttrFilterVo attrFilterVo = ciEntityService.convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
+                                AttrFilterVo attrFilterVo = matrixCiEntityService.convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
                                 if (attrFilterVo != null) {
                                     attrFilters.add(attrFilterVo);
                                 } else {
@@ -903,7 +903,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             Long relId = Long.valueOf(label.substring(8));
                             RelVo relVo = relMap.get(relId);
                             if (relVo != null) {
-                                RelFilterVo relFilterVo = ciEntityService.convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "from");
+                                RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "from");
                                 if (relFilterVo != null) {
                                     relFilters.add(relFilterVo);
                                 } else {
@@ -915,7 +915,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             relId = Long.valueOf(label.substring(6));
                             relVo = relMap.get(relId);
                             if (relVo != null) {
-                                RelFilterVo relFilterVo = ciEntityService.convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "to");
+                                RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "to");
                                 if (relFilterVo != null) {
                                     relFilters.add(relFilterVo);
                                 } else {
@@ -949,7 +949,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             Long globalId = Long.valueOf(label.substring(7));
                             GlobalAttrVo globalAttrVo = globalAttrMap.get(globalId);
                             if (globalAttrVo != null) {
-                                GlobalAttrFilterVo globalAttrFilterVo = ciEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
+                                GlobalAttrFilterVo globalAttrFilterVo = matrixCiEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
                                 if (globalAttrFilterVo != null) {
                                     globalAttrFilters.add(globalAttrFilterVo);
                                 } else {
@@ -1006,7 +1006,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             Long attrId = Long.valueOf(label.substring(5));
                             AttrVo attrVo = attrMap.get(attrId);
                             if (attrVo != null) {
-                                AttrFilterVo attrFilterVo = ciEntityService.convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
+                                AttrFilterVo attrFilterVo = matrixCiEntityService.convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
                                 if (attrFilterVo != null) {
                                     attrFilters.add(attrFilterVo);
                                 } else {
@@ -1018,7 +1018,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             Long relId = Long.valueOf(label.substring(8));
                             RelVo relVo = relMap.get(relId);
                             if (relVo != null) {
-                                RelFilterVo relFilterVo = ciEntityService.convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "from");
+                                RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "from");
                                 if (relFilterVo != null) {
                                     relFilters.add(relFilterVo);
                                 } else {
@@ -1030,7 +1030,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             relId = Long.valueOf(label.substring(6));
                             relVo = relMap.get(relId);
                             if (relVo != null) {
-                                RelFilterVo relFilterVo = ciEntityService.convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "to");
+                                RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relVo, matrixFilterVo.getExpression(), valueList, "to");
                                 if (relFilterVo != null) {
                                     relFilters.add(relFilterVo);
                                 } else {
@@ -1064,7 +1064,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                             Long globalId = Long.valueOf(label.substring(7));
                             GlobalAttrVo globalAttrVo = globalAttrMap.get(globalId);
                             if (globalAttrVo != null) {
-                                GlobalAttrFilterVo globalAttrFilterVo = ciEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
+                                GlobalAttrFilterVo globalAttrFilterVo = matrixCiEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
                                 if (globalAttrFilterVo != null) {
                                     globalAttrFilters.add(globalAttrFilterVo);
                                 } else {

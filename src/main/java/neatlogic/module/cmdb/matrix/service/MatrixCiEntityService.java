@@ -10,6 +10,12 @@
 
 package neatlogic.module.cmdb.matrix.service;
 
+import neatlogic.framework.cmdb.dto.ci.AttrVo;
+import neatlogic.framework.cmdb.dto.ci.RelVo;
+import neatlogic.framework.cmdb.dto.cientity.AttrFilterVo;
+import neatlogic.framework.cmdb.dto.cientity.RelFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrFilterVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.module.cmdb.matrix.dto.MatrixCiEntitySearchVo;
 
 import java.util.List;
@@ -18,4 +24,10 @@ import java.util.Map;
 public interface MatrixCiEntityService {
 
     List<Map<String, Object>> searchCiEntityList(MatrixCiEntitySearchVo matrixCiEntitySearchVo);
+
+    AttrFilterVo convertAttrFilter(AttrVo attrVo, String expression, List<String> valueList);
+
+    GlobalAttrFilterVo convertGlobalAttrFilter(GlobalAttrVo globalAttrVo, String expression, List<String> valueList);
+
+    RelFilterVo convertFromRelFilter(RelVo relVo, String expression, List<String> valueList, String direction);
 }
