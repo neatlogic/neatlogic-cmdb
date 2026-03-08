@@ -42,6 +42,22 @@
         ORDER BY sort
     </select>
 
+    <select id="getCiTypeListByIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.ci.CiTypeVo">
+        SELECT
+        `id`,
+        `name`,
+        `sort`,
+        `is_menu` AS isMenu,
+        `is_showintopo` AS isShowInTopo,
+        `icon`
+        FROM `cmdb_citype`
+        WHERE `id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="getCiTypeByName" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.ci.CiTypeVo">
         SELECT `id`,

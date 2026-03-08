@@ -1,5 +1,4 @@
 /*
- *
  * Copyright (C) 2025  TechSure Co., Ltd.  All Rights Reserved.
  * This file is part of the NeatLogic software.
  * Licensed under the NeatLogic Sustainable Use License (NSUL), Version 4.x – 2025.
@@ -7,32 +6,16 @@
  * See the LICENSE file distributed with this work for the full license text.
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
  */
 
-package neatlogic.module.cmdb.dao.mapper.ci;
+package neatlogic.module.cmdb.matrix.service;
 
-import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
+import neatlogic.module.cmdb.matrix.dto.MatrixCiEntitySearchVo;
 
 import java.util.List;
+import java.util.Map;
 
-public interface CiTypeMapper {
+public interface MatrixCiEntityService {
 
-    Integer getMaxSort();
-
-    int checkCiTypeNameIsExists(CiTypeVo ciTypeVo);
-
-    CiTypeVo getCiTypeById(Long ciTypeId);
-
-    CiTypeVo getCiTypeByName(String ciTypeName);
-
-    List<CiTypeVo> searchCiType(CiTypeVo ciTypeVo);
-
-    List<CiTypeVo> getCiTypeListByIdList(List<Long> idList);
-
-    int insertCiType(CiTypeVo ciTypeVo);
-
-    int updateCiType(CiTypeVo ciTypeVo);
-
-    int deleteCiTypeById(Long ciTypeId);
+    List<Map<String, Object>> searchCiEntityList(MatrixCiEntitySearchVo matrixCiEntitySearchVo);
 }

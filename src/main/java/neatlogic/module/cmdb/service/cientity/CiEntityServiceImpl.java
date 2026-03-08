@@ -2613,18 +2613,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (StringUtils.isBlank(expression)) {
             expression = neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression();
         }
-        if ("select".equals(attrVo.getType())) {
+        if (Objects.equals(attrVo.isNeedTargetCi(), true)) {
             CiVo targetCiVo = ciMapper.getCiById(attrVo.getTargetCiId());
             if (targetCiVo == null) {
                 return null;
             }
             List<CiVo> downwardCiList = ciMapper.getDownwardCiListByLR(targetCiVo.getLft(), targetCiVo.getRht());
-            Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(e -> e.getId(), e -> e));
+            Map<Long, CiVo> downwardCiMap = downwardCiList.stream().collect(Collectors.toMap(CiVo::getId, e -> e));
 
             CiEntityVo ciEntityVo = new CiEntityVo();
             ciEntityVo.setCiId(targetCiVo.getId());
             ciEntityVo.setIdList(new ArrayList<>(downwardCiMap.keySet()));
-            List<String> newValueList = new ArrayList<>();
+            Set<Long> ciEntityIdSet = new HashSet<>();
             for (String value : valueList) {
                 List<CiEntityVo> ciEntityList = new ArrayList<>();
                 ciEntityVo.setName(value);
@@ -2632,42 +2632,101 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
                             || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
                         ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByLikeName(ciEntityVo);
+                        if (CollectionUtils.isEmpty(ciEntityList)) {
+                            if (StringUtils.isNotBlank(value) && value.contains(",")) {
+                                String[] split = value.split(",");
+                                for (String str : split) {
+                                    str = str.trim();
+                                    if (StringUtils.isNotBlank(str)) {
+                                        ciEntityVo.setName(str);
+                                        List<CiEntityVo> list = ciEntityMapper.getVirtualCiEntityBaseInfoByLikeName(ciEntityVo);
+                                        ciEntityList.addAll(list);
+                                    }
+                                }
+                            }
+                        }
                     } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
                             || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
                         ciEntityList = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
+                        if (CollectionUtils.isEmpty(ciEntityList)) {
+                            if (StringUtils.isNotBlank(value) && value.contains(",")) {
+                                String[] split = value.split(",");
+                                for (String str : split) {
+                                    str = str.trim();
+                                    if (StringUtils.isNotBlank(str)) {
+                                        ciEntityVo.setName(str);
+                                        List<CiEntityVo> list = ciEntityMapper.getVirtualCiEntityBaseInfoByName(ciEntityVo);
+                                        ciEntityList.addAll(list);
+                                    }
+                                }
+                            }
+                        }
                     }
                 } else {
                     if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
                             || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
                         ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndLikeName(ciEntityVo);
+                        if (CollectionUtils.isEmpty(ciEntityList)) {
+                            if (StringUtils.isNotBlank(value) && value.contains(",")) {
+                                String[] split = value.split(",");
+                                for (String str : split) {
+                                    str = str.trim();
+                                    if (StringUtils.isNotBlank(str)) {
+                                        ciEntityVo.setName(str);
+                                        List<CiEntityVo> list = ciEntityMapper.getCiEntityListByCiIdListAndLikeName(ciEntityVo);
+                                        ciEntityList.addAll(list);
+                                    }
+                                }
+                            }
+                        }
                     } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
                             || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
                         ciEntityList = ciEntityMapper.getCiEntityListByCiIdListAndName(ciEntityVo);
+                        if (CollectionUtils.isEmpty(ciEntityList)) {
+                            if (StringUtils.isNotBlank(value) && value.contains(",")) {
+                                String[] split = value.split(",");
+                                for (String str : split) {
+                                    str = str.trim();
+                                    if (StringUtils.isNotBlank(str)) {
+                                        ciEntityVo.setName(str);
+                                        List<CiEntityVo> list = ciEntityMapper.getCiEntityListByCiIdListAndName(ciEntityVo);
+                                        ciEntityList.addAll(list);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 for (CiEntityVo ciEntity : ciEntityList) {
-                    newValueList.add(ciEntity.getId().toString());
+                    ciEntityIdSet.add(ciEntity.getId());
                 }
             }
-            if (CollectionUtils.isEmpty(newValueList)) {
+            List<String> newValueList = new ArrayList<>();
+            if (CollectionUtils.isEmpty(ciEntityIdSet)) {
                 if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
                         || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
                     return null;
                 }
+            } else {
+                List<Long> ciEntityIdList = new ArrayList<>(ciEntityIdSet);
+                ciEntityIdList.sort(Comparator.naturalOrder());
+                for (Long ciEntityId : ciEntityIdList) {
+                    newValueList.add(ciEntityId.toString());
+                }
             }
             attrFilterVo.setValueList(newValueList);
         } else {
-            List<String> newValueList = new ArrayList<>();
+            Set<String> newValueSet = new HashSet<>();
             if (Objects.equals(expression, "notequal")) {
                 for (String value : valueList) {
-                    newValueList.add(value);
-                    newValueList.add(value.toLowerCase());
-                    newValueList.add(value.toUpperCase());
+                    newValueSet.add(value);
+                    newValueSet.add(value.toLowerCase());
+                    newValueSet.add(value.toUpperCase());
                 }
             } else {
-                newValueList.addAll(valueList);
+                newValueSet.addAll(valueList);
             }
-            attrFilterVo.setValueList(new ArrayList<>(newValueList));
+            attrFilterVo.setValueList(new ArrayList<>(newValueSet));
         }
         attrFilterVo.setExpression(expression);
         return attrFilterVo;
@@ -2686,40 +2745,62 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             globalAttrFilterVo.setExpression(expression);
             return globalAttrFilterVo;
         }
-        List<Long> longValueList = new ArrayList<>();
+        Set<Long> longValueSet = new HashSet<>();
         List<GlobalAttrItemVo> itemList = globalAttrMapper.getAllGlobalAttrItemByAttrId(globalAttrVo.getId());
         Map<String, GlobalAttrItemVo> globalAttrItemMap = itemList.stream().collect(Collectors.toMap(GlobalAttrItemVo::getValue, e -> e));
         for (String value : valueList) {
-            GlobalAttrItemVo globalAttrItemVo = globalAttrItemMap.get(value);
-            for (Map.Entry<String, GlobalAttrItemVo> entry : globalAttrItemMap.entrySet()) {
-                String key = entry.getKey();
-                if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
-                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
-                    if (Objects.equals(key, value)) {
-                        globalAttrItemVo = entry.getValue();
+            if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
+                    || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+                for (Map.Entry<String, GlobalAttrItemVo> entry : globalAttrItemMap.entrySet()) {
+                    String key = entry.getKey();
+                    if (Objects.equals(key.toLowerCase(), value.toLowerCase())) {
+                        longValueSet.add(entry.getValue().getId());
                     }
-                } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
-                        || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
+                }
+                if (CollectionUtils.isEmpty(longValueSet) && value.contains(",")) {
+                    String[] split = value.split(",");
+                    for (String str : split) {
+                        for (Map.Entry<String, GlobalAttrItemVo> entry : globalAttrItemMap.entrySet()) {
+                            String key = entry.getKey();
+                            if (Objects.equals(key.toLowerCase(), str.toLowerCase())) {
+                                longValueSet.add(entry.getValue().getId());
+                            }
+                        }
+                    }
+                }
+            } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
+                    || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
+                for (Map.Entry<String, GlobalAttrItemVo> entry : globalAttrItemMap.entrySet()) {
+                    String key = entry.getKey();
                     if (key.toLowerCase().contains(value.toLowerCase())) {
-                        globalAttrItemVo = entry.getValue();
+                        longValueSet.add(entry.getValue().getId());
+                    }
+                }
+                if (CollectionUtils.isEmpty(longValueSet) && value.contains(",")) {
+                    String[] split = value.split(",");
+                    for (String str : split) {
+                        for (Map.Entry<String, GlobalAttrItemVo> entry : globalAttrItemMap.entrySet()) {
+                            String key = entry.getKey();
+                            if (key.toLowerCase().contains(str.toLowerCase())) {
+                                longValueSet.add(entry.getValue().getId());
+                            }
+                        }
                     }
                 }
             }
-            if (globalAttrItemVo == null) {
-                return null;
-            }
-            longValueList.add(globalAttrItemVo.getId());
         }
-        if (CollectionUtils.isEmpty(longValueList)) {
+        if (CollectionUtils.isEmpty(longValueSet)) {
             return null;
         }
+        List<Long> longValueList = new ArrayList<>(longValueSet);
+        longValueList.sort(Comparator.naturalOrder());
         globalAttrFilterVo.setValueList(longValueList);
 
-        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
-            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
-        } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
-            expression = neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression();
-        }
+//        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
+//            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
+//        } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+//            expression = neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression();
+//        }
         globalAttrFilterVo.setExpression(expression);
         globalAttrFilterVo.setName(globalAttrVo.getName());
         globalAttrFilterVo.setLabel(globalAttrVo.getLabel());
@@ -2752,7 +2833,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (StringUtils.isBlank(expression)) {
             expression = neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression();
         }
-        List<Long> ciEntityIdList = new ArrayList<>();
+        Set<Long> ciEntityIdSet = new HashSet<>();
         for (String value : valueList) {
             RelEntityVo relEntityVo = new RelEntityVo();
             relEntityVo.setRelId(relVo.getId());
@@ -2763,12 +2844,38 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
                         || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
                     relEntityList = relEntityMapper.getRelEntityByRelIdAndLikeToCiEntityName(relEntityVo);
+                    if (CollectionUtils.isEmpty(relEntityList)) {
+                        if (value.contains(",")) {
+                            String[] split = value.split(",");
+                            for (String str : split) {
+                                str = str.trim();
+                                if (StringUtils.isNotBlank(str)) {
+                                    relEntityVo.setToCiEntityName(str);
+                                    List<RelEntityVo> list = relEntityMapper.getRelEntityByRelIdAndLikeToCiEntityName(relEntityVo);
+                                    relEntityList.addAll(list);
+                                }
+                            }
+                        }
+                    }
                 } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
                         || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
                     relEntityList = relEntityMapper.getRelEntityByRelIdAndToCiEntityName(relEntityVo);
+                    if (CollectionUtils.isEmpty(relEntityList)) {
+                        if (value.contains(",")) {
+                            String[] split = value.split(",");
+                            for (String str : split) {
+                                str = str.trim();
+                                if (StringUtils.isNotBlank(str)) {
+                                    relEntityVo.setToCiEntityName(str);
+                                    List<RelEntityVo> list = relEntityMapper.getRelEntityByRelIdAndToCiEntityName(relEntityVo);
+                                    relEntityList.addAll(list);
+                                }
+                            }
+                        }
+                    }
                 }
                 for (RelEntityVo relEntity : relEntityList) {
-                    ciEntityIdList.add(relEntity.getToCiEntityId());
+                    ciEntityIdSet.add(relEntity.getToCiEntityId());
                 }
             } else if ("to".equals(direction)) {
                 relEntityVo.setFromCiEntityName(value);
@@ -2776,26 +2883,54 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
                         || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
                     relEntityList = relEntityMapper.getRelEntityByRelIdAndLikeFromCiEntityName(relEntityVo);
+                    if (CollectionUtils.isEmpty(relEntityList)) {
+                        if (value.contains(",")) {
+                            String[] split = value.split(",");
+                            for (String str : split) {
+                                str = str.trim();
+                                if (StringUtils.isNotBlank(str)) {
+                                    relEntityVo.setFromCiEntityName(value);
+                                    List<RelEntityVo> list = relEntityMapper.getRelEntityByRelIdAndLikeFromCiEntityName(relEntityVo);
+                                    relEntityList.addAll(list);
+                                }
+                            }
+                        }
+                    }
                 } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())
                         || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
                     relEntityList = relEntityMapper.getRelEntityByRelIdAndFromCiEntityName(relEntityVo);
+                    if (CollectionUtils.isEmpty(relEntityList)) {
+                        if (value.contains(",")) {
+                            String[] split = value.split(",");
+                            for (String str : split) {
+                                str = str.trim();
+                                if (StringUtils.isNotBlank(str)) {
+                                    relEntityVo.setFromCiEntityName(value);
+                                    List<RelEntityVo> list = relEntityMapper.getRelEntityByRelIdAndFromCiEntityName(relEntityVo);
+                                    relEntityList.addAll(list);
+                                }
+                            }
+                        }
+                    }
                 }
                 for (RelEntityVo relEntity : relEntityList) {
-                    ciEntityIdList.add(relEntity.getFromCiEntityId());
+                    ciEntityIdSet.add(relEntity.getFromCiEntityId());
                 }
             }
         }
-        if (CollectionUtils.isEmpty(ciEntityIdList)) {
+        if (CollectionUtils.isEmpty(ciEntityIdSet)) {
             if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression()) || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())) {
                 return null;
             }
         }
 
-        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
-            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
-        } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
-            expression = neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression();
-        }
+//        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
+//            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
+//        } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+//            expression = neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression();
+//        }
+        List<Long> ciEntityIdList = new ArrayList<>(ciEntityIdSet);
+        ciEntityIdList.sort(Comparator.naturalOrder());
         RelFilterVo relFilterVo = new RelFilterVo();
         relFilterVo.setRelId(relVo.getId());
         relFilterVo.setExpression(expression);
