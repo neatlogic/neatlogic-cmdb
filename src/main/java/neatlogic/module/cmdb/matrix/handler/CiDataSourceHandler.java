@@ -856,7 +856,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         JSONArray defaultValue = dataVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             ciEntityVo.setIdList(defaultValue.toJavaList(Long.class));
-            tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
+            tbodyArray = accessSearchCiEntityList(matrixUuid, ciEntityVo, dataVo.getColumnList());
         } else if (CollectionUtils.isNotEmpty(dataVo.getDefaultValueFilterList())) {
             for (MatrixDefaultValueFilterVo defaultValueFilterVo : dataVo.getDefaultValueFilterList()) {
                 List<AttrFilterVo> attrFilters = new ArrayList<>();
@@ -964,7 +964,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                     ciEntityVo.setAttrFilterList(attrFilters);
                     ciEntityVo.setRelFilterList(relFilters);
                     ciEntityVo.setGlobalAttrFilterList(globalAttrFilters);
-                    tbodyArray.addAll(accessSearchCiEntity(matrixUuid, ciEntityVo));
+                    tbodyArray.addAll(accessSearchCiEntityList(matrixUuid, ciEntityVo, dataVo.getColumnList()));
                 }
             }
         } else {
