@@ -32,8 +32,6 @@ import neatlogic.module.cmdb.matrix.dto.MatrixCiEntitySearchVo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -45,8 +43,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
-
-    private static final Logger logger = LoggerFactory.getLogger(MatrixCiEntityServiceImpl.class);
 
     @Resource
     private MatrixCiEntityMapper matrixCiEntityMapper;
@@ -73,11 +69,6 @@ public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
 
     @Override
     public List<Map<String, Object>> searchCiEntityList(MatrixCiEntitySearchVo matrixCiEntitySearchVo) {
-        long time = 0L;
-        if (logger.isInfoEnabled()) {
-            time = System.currentTimeMillis();
-        }
-
         CiVo ciVo = ciMapper.getCiById(matrixCiEntitySearchVo.getCiId());
         if (ciVo == null) {
             throw new CiNotFoundException(matrixCiEntitySearchVo.getCiId());
@@ -225,9 +216,6 @@ public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
         }
         if (matrixCiEntitySearchVo.getNeedRowNum()) {
             int rowNum = matrixCiEntityMapper.searchCiEntityCount(matrixCiEntitySearchVo);
-            if (logger.isInfoEnabled()) {
-                logger.info("查询配置项行数，行数{}，耗时{}ms", rowNum, System.currentTimeMillis() - time);
-            }
             matrixCiEntitySearchVo.setRowNum(rowNum);
         }
         List<Map<String, Object>> list = matrixCiEntityMapper.searchCiEntityList(matrixCiEntitySearchVo);
@@ -631,22 +619,12 @@ public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
                     if (value != null) {
                         String valueStr = value.toString();
                         if (key.startsWith("const_")) {
-                            if (Objects.equals(key, "const_id")) {
-
-                            } else if (Objects.equals(key, "const_typeName")) {
+                            if (Objects.equals(key, "const_typeName")) {
                                 long typeId = Long.parseLong(valueStr);
                                 typeIdSet.add(typeId);
                             } else if (Objects.equals(key, "const_ciLabel")) {
                                 long ciId = Long.parseLong(valueStr);
                                 ciIdSet.add(ciId);
-                            } else if (Objects.equals(key, "const_inspectTime")) {
-
-                            } else if (Objects.equals(key, "const_inspectStatus")) {
-
-                            } else if (Objects.equals(key, "const_monitorTime")) {
-
-                            } else if (Objects.equals(key, "const_monitorStatus")) {
-
                             }
                         } else if (key.startsWith("attr_")) {
                             long attrId = Long.parseLong(key.substring("attr_".length()));
