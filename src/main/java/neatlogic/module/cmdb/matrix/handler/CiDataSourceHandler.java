@@ -450,8 +450,17 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 matrixAttributeVo.setIsRequired(0);
                 switch (ciview.getType()) {
                     case "attr":
-                        matrixAttributeVo.setLabel("attr_" + ciview.getItemId());
                         AttrVo attrVo = attrMap.get(ciview.getItemId());
+                        if (attrVo == null
+                                || Objects.equals(attrVo.getType(), "password")
+                                || Objects.equals(attrVo.getType(), "file")
+                                || Objects.equals(attrVo.getType(), "table")) {
+                            break;
+                        }
+                        if (!Objects.equals(attrVo.getIsSearchAble(), 1)) {
+                            matrixAttributeVo.setIsSearchable(0);
+                        }
+                        matrixAttributeVo.setLabel("attr_" + ciview.getItemId());
                         JSONObject attrConfig = new JSONObject();
                         attrConfig.put("attr", attrVo);
                         matrixAttributeVo.setConfig(attrConfig);
@@ -1085,11 +1094,7 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             //下面逻辑适用于下拉框滚动加载，也可以搜索，但是一页返回的数据量可能会小于pageSize，因为做了去重处理
             ciEntityVo.setCurrentPage(dataVo.getCurrentPage());
             ciEntityVo.setPageSize(dataVo.getPageSize());
-            if (Objects.equals(matrixUuid, "8046364d7a304fa386d49ed2e5faa6a2") || Objects.equals(matrixUuid, "c502bdfbb2cc46bcaf364293efb26503") || Objects.equals(matrixUuid, "43dc2e68d4604a09b3fd99379de0afe3")) {
-                tbodyArray = accessSearchCiEntityList(matrixUuid, ciEntityVo, dataVo.getColumnList());
-            } else {
-                tbodyArray = accessSearchCiEntity(matrixUuid, ciEntityVo);
-            }
+            tbodyArray = accessSearchCiEntityList(matrixUuid, ciEntityVo, dataVo.getColumnList());
             dataVo.setRowNum(ciEntityVo.getRowNum());
             if (CollectionUtils.isEmpty(tbodyArray)) {
                 return resultList;

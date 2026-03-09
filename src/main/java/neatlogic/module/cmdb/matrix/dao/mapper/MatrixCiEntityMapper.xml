@@ -228,19 +228,17 @@
                         <when test="globalAttrFilter.expression == 'notlike'">
                             NOT EXISTS (SELECT 1 FROM `cmdb_cientity_globalattritem` a WHERE a.`cientity_id` = `ci_base`.id
                             AND a.`attr_id` = #{globalAttrFilter.attrId}
-                            AND a.item_id in
+                            AND a.`item_id` IN
                             <foreach collection="globalAttrFilter.valueList" item="value" open="(" close=")"
                                      separator=",">
                                 #{value}
                             </foreach>)
                         </when>
                         <when test="globalAttrFilter.expression == 'is-null'">
-                            NOT EXISTS (SELECT 1 FROM `cmdb_cientity_globalattritem` a WHERE a.`cientity_id` = `ci_base`.id
-                            AND a.`attr_id` = #{globalAttrFilter.attrId})
+                            NOT EXISTS (SELECT 1 FROM `cmdb_cientity_globalattritem` a WHERE a.`cientity_id` = `ci_base`.id AND a.`attr_id` = #{globalAttrFilter.attrId})
                         </when>
                         <when test="globalAttrFilter.expression == 'is-not-null'">
-                            EXISTS (SELECT 1 FROM `cmdb_cientity_globalattritem` a WHERE a.`cientity_id` = `ci_base`.id
-                            AND a.`attr_id` = #{globalAttrFilter.attrId})
+                            EXISTS (SELECT 1 FROM `cmdb_cientity_globalattritem` a WHERE a.`cientity_id` = `ci_base`.id AND a.`attr_id` = #{globalAttrFilter.attrId})
                         </when>
                     </choose>
                 </foreach>
@@ -253,8 +251,7 @@
                                 AND
                                 <choose>
                                     <when test="attrFilter.expression == 'like'">
-                                        EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id`
-                                        AND a.`attr_id` = #{attrFilter.attrId}
+                                        EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id` AND a.`attr_id` = #{attrFilter.attrId}
                                         AND a.`to_cientity_id` IN
                                         <foreach collection="attrFilter.valueList" item="value" open="(" close=")"
                                                  separator=",">
@@ -262,16 +259,14 @@
                                         </foreach>)
                                     </when>
                                     <when test="attrFilter.expression == 'equal'">
-                                        EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id`
-                                        AND a.`attr_id` = #{attrFilter.attrId}
+                                        EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id` AND a.`attr_id` = #{attrFilter.attrId}
                                         GROUP BY a.`from_cientity_id`
                                         HAVING COUNT(a.`to_cientity_id`) = ${attrFilter.valueList.size()}
                                         AND GROUP_CONCAT(a.`to_cientity_id` ORDER BY a.`to_cientity_id` ASC) =
                                         <foreach collection="attrFilter.valueList" item="value" separator="," open="'" close="'">${value}</foreach>)
                                     </when>
                                     <when test="attrFilter.expression == 'notlike'">
-                                        NOT EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id`
-                                        AND a.`attr_id` = #{attrFilter.attrId}
+                                        NOT EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id` AND a.`attr_id` = #{attrFilter.attrId}
                                         AND a.`to_cientity_id` IN
                                         <foreach collection="attrFilter.valueList" item="value" open="(" close=")"
                                                  separator=",">
@@ -279,20 +274,17 @@
                                         </foreach>)
                                     </when>
                                     <when test="attrFilter.expression == 'notequal'">
-                                        NOT EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id`
-                                        AND a.`attr_id` = #{attrFilter.attrId}
+                                        NOT EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id` AND a.`attr_id` = #{attrFilter.attrId}
                                         GROUP BY a.`from_cientity_id`
                                         HAVING COUNT(a.`to_cientity_id`) = ${attrFilter.valueList.size()}
                                         AND GROUP_CONCAT(a.`to_cientity_id` ORDER BY a.`to_cientity_id` ASC) =
                                         <foreach collection="attrFilter.valueList" item="value" separator="," open="'" close="'">${value}</foreach>)
                                     </when>
                                     <when test="attrFilter.expression == 'is-null'">
-                                        NOT EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id`
-                                        AND a.`attr_id` = #{attrFilter.attrId})
+                                        NOT EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id` AND a.`attr_id` = #{attrFilter.attrId})
                                     </when>
                                     <when test="attrFilter.expression == 'is-not-null'">
-                                        EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id`
-                                        AND a.`attr_id` = #{attrFilter.attrId})
+                                        EXISTS (SELECT 1 FROM `cmdb_attrentity` a WHERE a.`from_cientity_id` = `ci_base`.`id` AND a.`attr_id` = #{attrFilter.attrId})
                                     </when>
                                 </choose>
                             </when>
@@ -303,15 +295,14 @@
                                             <when test="attrFilter.valueList.size > 1">
                                                 <choose>
                                                     <when test="attrFilter.type != 'set'">
-                                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` in
+                                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` IN
                                                         <foreach collection="attrFilter.valueList" item="item" open="("
                                                                  close=")" separator=",">
                                                             #{item,typeHandler=Md5Handler}
                                                         </foreach>
                                                     </when>
                                                     <otherwise>
-                                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` =
-                                                        #{attrFilter.value}
+                                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` = #{attrFilter.value}
                                                     </otherwise>
                                                 </choose>
                                             </when>
@@ -319,12 +310,10 @@
                                                 <choose>
                                                     <!--如果是空值需要兼容两种情况-->
                                                     <when test="attrFilter.value == ''">
-                                                        AND (${attrFilter.ciTableName}.`${attrFilter.attrId}` = '' OR
-                                                        ${attrFilter.ciTableName}.`${attrFilter.attrId}` is null)
+                                                        AND (${attrFilter.ciTableName}.`${attrFilter.attrId}` = '' OR ${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NULL)
                                                     </when>
                                                     <otherwise>
-                                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` =
-                                                        #{attrFilter.value}
+                                                        AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` = #{attrFilter.value}
                                                     </otherwise>
                                                 </choose>
                                             </otherwise>
@@ -333,28 +322,23 @@
                                     <when test="attrFilter.expression == 'notequal'">
                                         <choose>
                                             <when test="attrFilter.valueList.size > 1">
-                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` !=
-                                                #{attrFilter.value}
+                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` != #{attrFilter.value}
                                             </when>
                                             <otherwise>
-                                                AND (${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` !=
-                                                #{attrFilter.value,typeHandler=Md5Handler} or
-                                                ${attrFilter.ciTableName}.`${attrFilter.attrId}` is null
-                                                )
+                                                AND (${attrFilter.ciTableName}.`${attrFilter.attrId}_hash` != #{attrFilter.value,typeHandler=Md5Handler}
+                                                OR ${attrFilter.ciTableName}.`${attrFilter.attrId}` IS NULL)
                                             </otherwise>
                                         </choose>
                                     </when>
                                     <when test="attrFilter.expression == 'like'">
                                         <choose>
                                             <when test="attrFilter.type != 'set'">
-                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE
-                                                CONCAT('%', #{attrFilter.value}, '%')
+                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` LIKE CONCAT('%', #{attrFilter.value}, '%')
                                             </when>
                                             <otherwise>
                                                 AND (
                                                 <foreach collection="attrFilter.valueList" item="v" separator=" and ">
-                                                    FIND_IN_SET(#{v},${attrFilter.ciTableName}.`${attrFilter.attrId}`) >
-                                                    0
+                                                    FIND_IN_SET(#{v},${attrFilter.ciTableName}.`${attrFilter.attrId}`) > 0
                                                 </foreach>
                                                 )
                                             </otherwise>
@@ -363,14 +347,12 @@
                                     <when test="attrFilter.expression == 'notlike'">
                                         <choose>
                                             <when test="attrFilter.type != 'set'">
-                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` NOT LIKE
-                                                CONCAT('%', #{attrFilter.value}, '%')
+                                                AND ${attrFilter.ciTableName}.`${attrFilter.attrId}` NOT LIKE CONCAT('%', #{attrFilter.value}, '%')
                                             </when>
                                             <otherwise>
                                                 AND (
                                                 <foreach collection="attrFilter.valueList" item="v" separator=" and ">
-                                                    FIND_IN_SET(#{v},${attrFilter.ciTableName}.`${attrFilter.attrId}`) =
-                                                    0
+                                                    FIND_IN_SET(#{v},${attrFilter.ciTableName}.`${attrFilter.attrId}`) = 0
                                                 </foreach>
                                                 )
                                             </otherwise>
@@ -385,15 +367,13 @@
                                     <when test="attrFilter.expression == 'between' and (@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null or @neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null)">
                                         AND
                                         <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null">
-                                            ${attrFilter.ciTableName}.`${attrFilter.attrId}` &gt;=
-                                            ${@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0]}
+                                            ${attrFilter.ciTableName}.`${attrFilter.attrId}` &gt;= ${@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0]}
                                         </if>
                                         <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[0] != null and @neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null">
                                             and
                                         </if>
                                         <if test="@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1] != null">
-                                            ${attrFilter.ciTableName}.`${attrFilter.attrId}` &lt;=
-                                            ${@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1]}
+                                            ${attrFilter.ciTableName}.`${attrFilter.attrId}` &lt;= ${@neatlogic.framework.cmdb.dao.ognl.Between@parse(attrFilter.type, attrFilter.value)[1]}
                                         </if>
                                     </when>
                                 </choose>
@@ -453,8 +433,7 @@
                                         </foreach>)
                                     </when>
                                     <otherwise>
-                                        EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`to_cientity_id` = `ci_base`.id
-                                        AND a.`rel_id` = #{relFilter.relId}
+                                        EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`to_cientity_id` = `ci_base`.id AND a.`rel_id` = #{relFilter.relId}
                                         AND a.`from_cientity_id` IN
                                         <foreach collection="relFilter.valueList" item="value" separator="," open="("
                                                  close=")">
@@ -473,8 +452,7 @@
                                         </foreach>)
                                     </when>
                                     <otherwise>
-                                        NOT EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`to_cientity_id` = `ci_base`.id
-                                        AND a.`rel_id` = #{relFilter.relId}
+                                        NOT EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`to_cientity_id` = `ci_base`.id AND a.`rel_id` = #{relFilter.relId}
                                         AND a.`from_cientity_id` IN
                                         <foreach collection="relFilter.valueList" item="value" separator="," open="("
                                                  close=")">
@@ -486,24 +464,20 @@
                             <when test="relFilter.expression == 'is-null'">
                                 <choose>
                                     <when test="relFilter.direction=='from'">
-                                        NOT EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`from_cientity_id` = `ci_base`.id
-                                        AND a.`rel_id` = #{relFilter.relId})
+                                        NOT EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`from_cientity_id` = `ci_base`.id AND a.`rel_id` = #{relFilter.relId})
                                     </when>
                                     <otherwise>
-                                        NOT EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`to_cientity_id` = `ci_base`.id
-                                        AND a.`rel_id` = #{relFilter.relId})
+                                        NOT EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`to_cientity_id` = `ci_base`.id AND a.`rel_id` = #{relFilter.relId})
                                     </otherwise>
                                 </choose>
                             </when>
                             <when test="relFilter.expression == 'is-not-null'">
                                 <choose>
                                     <when test="relFilter.direction=='from'">
-                                        EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`from_cientity_id` = `ci_base`.id
-                                        AND a.`rel_id` = #{relFilter.relId})
+                                        EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`from_cientity_id` = `ci_base`.id AND a.`rel_id` = #{relFilter.relId})
                                     </when>
                                     <otherwise>
-                                        EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`to_cientity_id` = `ci_base`.id
-                                        AND a.`rel_id` = #{relFilter.relId})
+                                        EXISTS (SELECT 1 FROM `cmdb_relentity` a WHERE a.`to_cientity_id` = `ci_base`.id AND a.`rel_id` = #{relFilter.relId})
                                     </otherwise>
                                 </choose>
                             </when>

@@ -10,6 +10,8 @@
 
 package neatlogic.module.cmdb.matrix.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
@@ -350,9 +352,58 @@ public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
                 }
             }
             attrFilterVo.setValueList(newValueList);
+        } else if (Objects.equals(attrVo.getType(), "set")) {
+            Set<String> newValueSet = new HashSet<>();
+            if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression())
+                    || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression())) {
+                List<String> memberList = new ArrayList<>();
+                JSONObject config = attrVo.getConfig();
+                if (MapUtils.isNotEmpty(config)) {
+                    JSONArray members = config.getJSONArray("members");
+                    if (CollectionUtils.isNotEmpty(members)) {
+                        memberList = members.toJavaList(String.class);
+                    }
+                }
+                for (String value : valueList) {
+                    if (memberList.contains(value)) {
+                        newValueSet.add(value);
+                    } else if (value.contains(",")) {
+                        String[] split = value.split(",");
+                        for (String str : split) {
+                            if (memberList.contains(str)) {
+                                newValueSet.add(str);
+                            }
+                        }
+                    }
+                }
+            } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
+                for (String value : valueList) {
+                    newValueSet.add(value);
+                    newValueSet.add(value.toLowerCase());
+                    newValueSet.add(value.toUpperCase());
+                }
+            } else {
+                newValueSet.addAll(valueList);
+            }
+            attrFilterVo.setValueList(new ArrayList<>(newValueSet));
+        } else if (Objects.equals(attrVo.getType(), "datetimerange")) {
+            List<String> newValueList = new ArrayList<>();
+            for (String value : valueList) {
+                List<String> strList = new ArrayList<>();
+                if (value.contains("~")) {
+                    String[] split = value.split("~");
+                    for (String str : split) {
+                        strList.add(str.trim());
+                    }
+                    newValueList.add(String.join(",", strList));
+                } else {
+                    newValueList.add(value);
+                }
+            }
+            attrFilterVo.setValueList(newValueList);
         } else {
             Set<String> newValueSet = new HashSet<>();
-            if (Objects.equals(expression, "notequal")) {
+            if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
                 for (String value : valueList) {
                     newValueSet.add(value);
                     newValueSet.add(value.toLowerCase());
@@ -430,12 +481,6 @@ public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
         List<Long> longValueList = new ArrayList<>(longValueSet);
         longValueList.sort(Comparator.naturalOrder());
         globalAttrFilterVo.setValueList(longValueList);
-
-//        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
-//            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
-//        } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
-//            expression = neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression();
-//        }
         globalAttrFilterVo.setExpression(expression);
         globalAttrFilterVo.setName(globalAttrVo.getName());
         globalAttrFilterVo.setLabel(globalAttrVo.getLabel());
@@ -559,11 +604,6 @@ public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
             }
         }
 
-//        if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression())) {
-//            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
-//        } else if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NE.getExpression())) {
-//            expression = neatlogic.framework.matrix.constvalue.SearchExpression.NL.getExpression();
-//        }
         List<Long> ciEntityIdList = new ArrayList<>(ciEntityIdSet);
         ciEntityIdList.sort(Comparator.naturalOrder());
         RelFilterVo relFilterVo = new RelFilterVo();
