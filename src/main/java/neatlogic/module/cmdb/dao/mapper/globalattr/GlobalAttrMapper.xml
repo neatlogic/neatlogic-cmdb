@@ -164,6 +164,16 @@
         where id = #{value}
     </select>
 
+    <select id="getGlobalAttrItemListByIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+        select id, value, attr_id as attrId, sort
+        from cmdb_global_attritem
+        where id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="searchGlobalAttr" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo"
             resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo">
         select
