@@ -550,6 +550,7 @@
         WHERE cientity.id = #{value}
     </select>
 
+
     <select id="getCiEntityBaseInfoByUuid" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo" useCache="false">
         SELECT id,
@@ -1686,7 +1687,8 @@
         LIMIT #{startNum} , #{pageSize}
     </select>
 
-    <select id="getCiEntityExpiredTimeById" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityExpiredTimeVo">
+    <select id="getCiEntityExpiredTimeById" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityExpiredTimeVo">
         select cientity_id  as ciEntityId,
                expired_time as expiredTime,
                expired_day  as expiredDay,

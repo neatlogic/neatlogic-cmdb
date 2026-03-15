@@ -72,6 +72,8 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
     public List<Map<String, Object>> searchCustomViewDataFlatten(CustomViewConditionVo customViewConditionVo) {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
+        List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
+
         //去掉所有引用属性
         customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
         Map<String, AttrVo> attrMap = new HashMap<>();
@@ -116,8 +118,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
             }
         }
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
-        customViewConditionFieldList.addAll(customViewAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr", attr.getName())).collect(Collectors.toList()));
-        customViewConditionFieldList.addAll(customViewConstAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr", attr.getName())).collect(Collectors.toList()));
+        customViewConditionFieldList.addAll(customViewAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr", attr.getName())).toList());
+        customViewConditionFieldList.addAll(customViewConstAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr", attr.getName())).toList());
+        customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr", attr.getName())).toList());
         customViewConditionVo.setFieldList(customViewConditionFieldList);
 
         List<Map<String, Object>> dataList = customViewDataMapper.searchCustomViewDataFlatten(customViewConditionVo);
