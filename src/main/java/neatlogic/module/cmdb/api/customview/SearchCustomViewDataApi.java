@@ -17,10 +17,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
-import neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewConditionVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewConstAttrVo;
-import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
+import neatlogic.framework.cmdb.dto.customview.*;
 import neatlogic.framework.cmdb.enums.customview.SearchMode;
 import neatlogic.framework.cmdb.exception.customview.CustomViewCiChangeException;
 import neatlogic.framework.cmdb.exception.customview.CustomViewNotFoundException;
@@ -139,6 +136,7 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         if (CollectionUtils.isNotEmpty(returnObj.getJSONArray("dataList")) && mode.equals("api")) {
             List<CustomViewAttrVo> attrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
             List<CustomViewConstAttrVo> constAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
+            List<CustomViewGlobalAttrVo> globalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
             JSONArray newDataList = new JSONArray();
             for (int i = 0; i < returnObj.getJSONArray("dataList").size(); i++) {
                 JSONObject dataObj = returnObj.getJSONArray("dataList").getJSONObject(i);
@@ -148,6 +146,9 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
                 }
                 for (CustomViewConstAttrVo constAttrVo : constAttrList) {
                     newDataObj.put(constAttrVo.getAlias(), dataObj.get(constAttrVo.getUuid()));
+                }
+                for (CustomViewGlobalAttrVo globalAttrVo : globalAttrList) {
+                    newDataObj.put(globalAttrVo.getAlias(), dataObj.get(globalAttrVo.getUuid()));
                 }
                 newDataList.add(newDataObj);
             }
