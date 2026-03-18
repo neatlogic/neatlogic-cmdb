@@ -842,8 +842,6 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         if (CollectionUtils.isEmpty(matrixAttributeList)) {
             return resultList;
         }
-        Map<String, String> attributeLabelMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getUuid(), e -> e.getLabel()));
-        List<String> attributeList = matrixAttributeList.stream().map(MatrixAttributeVo::getUuid).collect(Collectors.toList());
         CiEntityVo ciEntityVo = new CiEntityVo();
         Long ciId = matrixCiVo.getCiId();
         ciEntityVo.setCiId(ciId);
@@ -858,109 +856,39 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
             ciEntityVo.setIdList(defaultValue.toJavaList(Long.class));
             tbodyArray = accessSearchCiEntityList(matrixUuid, ciEntityVo, dataVo.getColumnList());
         } else if (CollectionUtils.isNotEmpty(dataVo.getDefaultValueFilterList())) {
+            List<MatrixFilterVo> initFilterList = dataVo.getFilterList();
             for (MatrixDefaultValueFilterVo defaultValueFilterVo : dataVo.getDefaultValueFilterList()) {
+                List<Long> idList = new ArrayList<>();
+                List<Long> filterCiIdList = new ArrayList<>();
                 List<AttrFilterVo> attrFilters = new ArrayList<>();
                 List<RelFilterVo> relFilters = new ArrayList<>();
                 List<GlobalAttrFilterVo> globalAttrFilters = new ArrayList<>();
-                List<MatrixFilterVo> filterList = new ArrayList<>();
+                List<MatrixFilterVo> filterList = new ArrayList<>(initFilterList);
                 MatrixKeywordFilterVo valueFieldFilter = defaultValueFilterVo.getValueFieldFilter();
                 if (valueFieldFilter != null) {
-                    filterList.add(new MatrixFilterVo(valueFieldFilter.getUuid(), valueFieldFilter.getExpression(), Arrays.asList(valueFieldFilter.getValue())));
+                    filterList.add(new MatrixFilterVo(valueFieldFilter.getUuid(), valueFieldFilter.getExpression(), List.of(valueFieldFilter.getValue())));
                 }
                 MatrixKeywordFilterVo textFieldFilter = defaultValueFilterVo.getTextFieldFilter();
                 if (textFieldFilter != null && (valueFieldFilter == null || !Objects.equals(valueFieldFilter.getUuid(), textFieldFilter.getUuid()))) {
-                    filterList.add(new MatrixFilterVo(textFieldFilter.getUuid(), textFieldFilter.getExpression(), Arrays.asList(textFieldFilter.getValue())));
+                    filterList.add(new MatrixFilterVo(textFieldFilter.getUuid(), textFieldFilter.getExpression(), List.of(textFieldFilter.getValue())));
                 }
-                boolean flag = true;
-                for (MatrixFilterVo matrixFilterVo : filterList) {
-                    if (matrixFilterVo == null) {
-                        continue;
-                    }
-                    String uuid = matrixFilterVo.getUuid();
-                    if (StringUtils.isBlank(uuid)) {
-                        continue;
-                    }
-                    if (!attributeList.contains(uuid)) {
-                        throw new MatrixAttributeNotFoundException(dataVo.getMatrixUuid(), uuid);
-                    }
-                    String label = attributeLabelMap.get(uuid);
-                    CiViewVo ciView = ciViewMap.get(label);
-                    if (ciView == null) {
-                        continue;
-                    }
-                    List<String> valueList = matrixFilterVo.getValueList();
-                    if (CollectionUtils.isEmpty(valueList)) {
-                        if (!Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NULL.getExpression())
-                                && !Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NOTNULL.getExpression())) {
-                            continue;
-                        }
-                    }
-                    switch (ciView.getType()) {
-                        case "attr":
-                            Long attrId = Long.valueOf(label.substring("attr_".length()));
-                            AttrVo attrVo = attrMap.get(attrId);
-                            if (attrVo != null) {
-                                AttrFilterVo attrFilterVo = matrixCiEntityService.convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
-                                if (attrFilterVo != null) {
-                                    attrFilters.add(attrFilterVo);
-                                } else {
-                                    flag = false;
-                                }
-                            }
-                            break;
-                        case "relfrom":
-                            Long relFromId = Long.valueOf(label.substring("relfrom_".length()));
-                            RelVo relFromVo = relMap.get(relFromId);
-                            if (relFromVo != null) {
-                                RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relFromVo, matrixFilterVo.getExpression(), valueList, "from");
-                                if (relFilterVo != null) {
-                                    relFilters.add(relFilterVo);
-                                } else {
-                                    flag = false;
-                                }
-                            }
-                            break;
-                        case "relto":
-                            Long relToId = Long.valueOf(label.substring("relto_".length()));
-                            RelVo relToVo = relMap.get(relToId);
-                            if (relToVo != null) {
-                                RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relToVo, matrixFilterVo.getExpression(), valueList, "to");
-                                if (relFilterVo != null) {
-                                    relFilters.add(relFilterVo);
-                                } else {
-                                    flag = false;
-                                }
-                            }
-                            break;
-                        case "const":
-                            //固化属性需要特殊处理
-                            if ("const_id".equals(label)) {
-                                List<Long> idList = new ArrayList<>();
-                                for (String value : valueList) {
-                                    idList.add(Long.valueOf(value));
-                                }
-                                ciEntityVo.setIdList(idList);
-                            } else if ("const_ciLabel".equals(label)) {
-                                List<CiVo> ciList = ciMapper.getCiListByLabelList(valueList);
-                                List<Long> filterCiIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
-                                ciEntityVo.setFilterCiIdList(filterCiIdList);
-                            }
-                            break;
-                        case "global":
-                            Long globalId = Long.valueOf(label.substring("global_".length()));
-                            GlobalAttrVo globalAttrVo = globalAttrMap.get(globalId);
-                            if (globalAttrVo != null) {
-                                GlobalAttrFilterVo globalAttrFilterVo = matrixCiEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
-                                if (globalAttrFilterVo != null) {
-                                    globalAttrFilters.add(globalAttrFilterVo);
-                                } else {
-                                    flag = false;
-                                }
-                            }
-                            break;
-                    }
-                }
+                boolean flag = handleFilterList(
+                        dataVo.getMatrixUuid(),
+                        filterList,
+                        matrixAttributeList,
+                        attrMap,
+                        relMap,
+                        globalAttrMap,
+                        ciViewMap,
+                        idList,
+                        filterCiIdList,
+                        attrFilters,
+                        relFilters,
+                        globalAttrFilters
+                );
                 if (flag) {
+                    ciEntityVo.setIdList(idList);
+                    ciEntityVo.setFilterCiIdList(filterCiIdList);
                     ciEntityVo.setAttrFilterList(attrFilters);
                     ciEntityVo.setRelFilterList(relFilters);
                     ciEntityVo.setGlobalAttrFilterList(globalAttrFilters);
@@ -968,120 +896,42 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
                 }
             }
         } else {
+            List<Long> idList = new ArrayList<>();
+            List<Long> filterCiIdList = new ArrayList<>();
             List<AttrFilterVo> attrFilters = new ArrayList<>();
             List<RelFilterVo> relFilters = new ArrayList<>();
             List<GlobalAttrFilterVo> globalAttrFilters = new ArrayList<>();
             List<MatrixFilterVo> filterList = dataVo.getFilterList();
             String keywordColumn = dataVo.getKeywordColumn();
             if (StringUtils.isNotBlank(keywordColumn) && StringUtils.isNotBlank(dataVo.getKeyword())) {
-                MatrixFilterVo matrixFilterVo = new MatrixFilterVo(keywordColumn, SearchExpression.LI.getExpression(), Arrays.asList(dataVo.getKeyword()));
+                MatrixFilterVo matrixFilterVo = new MatrixFilterVo(keywordColumn, SearchExpression.LI.getExpression(), List.of(dataVo.getKeyword()));
                 filterList.add(matrixFilterVo);
             }
-            boolean flag = true;
-            if (CollectionUtils.isNotEmpty(filterList)) {
-                for (MatrixFilterVo matrixFilterVo : filterList) {
-                    if (matrixFilterVo == null) {
-                        continue;
-                    }
-                    String uuid = matrixFilterVo.getUuid();
-                    if (StringUtils.isBlank(uuid)) {
-                        continue;
-                    }
-                    if (!attributeList.contains(uuid)) {
-                        throw new MatrixAttributeNotFoundException(dataVo.getMatrixUuid(), uuid);
-                    }
-                    String label = attributeLabelMap.get(uuid);
-                    CiViewVo ciView = ciViewMap.get(label);
-                    if (ciView == null) {
-                        continue;
-                    }
-                    List<String> valueList = matrixFilterVo.getValueList();
-                    if (CollectionUtils.isEmpty(valueList)) {
-                        if (!Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NULL.getExpression())
-                                && !Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NOTNULL.getExpression())) {
-                            continue;
-                        }
-                    }
-                    switch (ciView.getType()) {
-                        case "attr":
-                            Long attrId = Long.valueOf(label.substring("attr_".length()));
-                            AttrVo attrVo = attrMap.get(attrId);
-                            if (attrVo != null) {
-                                AttrFilterVo attrFilterVo = matrixCiEntityService.convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
-                                if (attrFilterVo != null) {
-                                    attrFilters.add(attrFilterVo);
-                                } else {
-                                    flag = false;
-                                }
-                            }
-                            break;
-                        case "relfrom":
-                            Long relFromId = Long.valueOf(label.substring("relfrom_".length()));
-                            RelVo relFromVo = relMap.get(relFromId);
-                            if (relFromVo != null) {
-                                RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relFromVo, matrixFilterVo.getExpression(), valueList, "from");
-                                if (relFilterVo != null) {
-                                    relFilters.add(relFilterVo);
-                                } else {
-                                    flag = false;
-                                }
-                            }
-                            break;
-                        case "relto":
-                            Long relToId = Long.valueOf(label.substring("relto_".length()));
-                            RelVo relToVo = relMap.get(relToId);
-                            if (relToVo != null) {
-                                RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relToVo, matrixFilterVo.getExpression(), valueList, "to");
-                                if (relFilterVo != null) {
-                                    relFilters.add(relFilterVo);
-                                } else {
-                                    flag = false;
-                                }
-                            }
-                            break;
-                        case "const":
-                            //固化属性需要特殊处理
-                            if ("const_id".equals(label)) {
-                                List<Long> idList = new ArrayList<>();
-                                for (String value : valueList) {
-                                    idList.add(Long.valueOf(value));
-                                }
-                                ciEntityVo.setIdList(idList);
-                            } else if ("const_ciLabel".equals(label)) {
-                                List<CiVo> ciList = ciMapper.getCiListByLabelList(valueList);
-                                List<Long> filterCiIdList = ciList.stream().map(CiVo::getId).collect(Collectors.toList());
-                                ciEntityVo.setFilterCiIdList(filterCiIdList);
-                            }
-                            break;
-                        case "global":
-                            Long globalId = Long.valueOf(label.substring("global_".length()));
-                            GlobalAttrVo globalAttrVo = globalAttrMap.get(globalId);
-                            if (globalAttrVo != null) {
-                                GlobalAttrFilterVo globalAttrFilterVo = matrixCiEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
-                                if (globalAttrFilterVo != null) {
-                                    globalAttrFilters.add(globalAttrFilterVo);
-                                } else {
-                                    flag = false;
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
-
-            if (!flag) {
-                return resultList;
-            }
-            ciEntityVo.setAttrFilterList(attrFilters);
-            ciEntityVo.setRelFilterList(relFilters);
-            ciEntityVo.setGlobalAttrFilterList(globalAttrFilters);
-            //下面逻辑适用于下拉框滚动加载，也可以搜索，但是一页返回的数据量可能会小于pageSize，因为做了去重处理
-            ciEntityVo.setCurrentPage(dataVo.getCurrentPage());
-            ciEntityVo.setPageSize(dataVo.getPageSize());
-            tbodyArray = accessSearchCiEntityList(matrixUuid, ciEntityVo, dataVo.getColumnList());
-            dataVo.setRowNum(ciEntityVo.getRowNum());
-            if (CollectionUtils.isEmpty(tbodyArray)) {
-                return resultList;
+            boolean flag = handleFilterList(
+                    dataVo.getMatrixUuid(),
+                    filterList,
+                    matrixAttributeList,
+                    attrMap,
+                    relMap,
+                    globalAttrMap,
+                    ciViewMap,
+                    idList,
+                    filterCiIdList,
+                    attrFilters,
+                    relFilters,
+                    globalAttrFilters
+            );
+            if (flag) {
+                ciEntityVo.setIdList(idList);
+                ciEntityVo.setFilterCiIdList(filterCiIdList);
+                ciEntityVo.setAttrFilterList(attrFilters);
+                ciEntityVo.setRelFilterList(relFilters);
+                ciEntityVo.setGlobalAttrFilterList(globalAttrFilters);
+                //下面逻辑适用于下拉框滚动加载，也可以搜索，但是一页返回的数据量可能会小于pageSize，因为做了去重处理
+                ciEntityVo.setCurrentPage(dataVo.getCurrentPage());
+                ciEntityVo.setPageSize(dataVo.getPageSize());
+                tbodyArray = accessSearchCiEntityList(matrixUuid, ciEntityVo, dataVo.getColumnList());
+                dataVo.setRowNum(ciEntityVo.getRowNum());
             }
         }
         List<Map<String, JSONObject>> tbodyList = new ArrayList<>();
@@ -1108,6 +958,116 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
         return resultList;
     }
 
+    private boolean handleFilterList(
+            String matrixUuid,
+            List<MatrixFilterVo> filterList,
+            List<MatrixAttributeVo> matrixAttributeList,
+            Map<Long, AttrVo> attrMap,
+            Map<Long, RelVo> relMap,
+            Map<Long, GlobalAttrVo> globalAttrMap,
+            Map<String, CiViewVo> ciViewMap,
+            List<Long> idList,
+            List<Long> filterCiIdList,
+            List<AttrFilterVo> attrFilters,
+            List<RelFilterVo> relFilters,
+            List<GlobalAttrFilterVo> globalAttrFilters) {
+
+        boolean flag = true;
+        if (CollectionUtils.isNotEmpty(filterList)) {
+            Map<String, String> attributeLabelMap = matrixAttributeList.stream().collect(Collectors.toMap(MatrixAttributeVo::getUuid, MatrixAttributeVo::getLabel));
+            List<String> attributeList = matrixAttributeList.stream().map(MatrixAttributeVo::getUuid).toList();
+            for (MatrixFilterVo matrixFilterVo : filterList) {
+                if (matrixFilterVo == null) {
+                    continue;
+                }
+                String uuid = matrixFilterVo.getUuid();
+                if (StringUtils.isBlank(uuid)) {
+                    continue;
+                }
+                if (!attributeList.contains(uuid)) {
+                    throw new MatrixAttributeNotFoundException(matrixUuid, uuid);
+                }
+                String label = attributeLabelMap.get(uuid);
+                CiViewVo ciView = ciViewMap.get(label);
+                if (ciView == null) {
+                    continue;
+                }
+                List<String> valueList = matrixFilterVo.getValueList();
+                if (CollectionUtils.isEmpty(valueList)) {
+                    if (!Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NULL.getExpression())
+                            && !Objects.equals(matrixFilterVo.getExpression(), SearchExpression.NOTNULL.getExpression())) {
+                        continue;
+                    }
+                }
+                switch (ciView.getType()) {
+                    case "attr":
+                        Long attrId = Long.valueOf(label.substring("attr_".length()));
+                        AttrVo attrVo = attrMap.get(attrId);
+                        if (attrVo != null) {
+                            AttrFilterVo attrFilterVo = matrixCiEntityService.convertAttrFilter(attrVo, matrixFilterVo.getExpression(), valueList);
+                            if (attrFilterVo != null) {
+                                attrFilters.add(attrFilterVo);
+                            } else {
+                                flag = false;
+                            }
+                        }
+                        break;
+                    case "relfrom":
+                        Long relFromId = Long.valueOf(label.substring("relfrom_".length()));
+                        RelVo relFromVo = relMap.get(relFromId);
+                        if (relFromVo != null) {
+                            RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relFromVo, matrixFilterVo.getExpression(), valueList, "from");
+                            if (relFilterVo != null) {
+                                relFilters.add(relFilterVo);
+                            } else {
+                                flag = false;
+                            }
+                        }
+                        break;
+                    case "relto":
+                        Long relToId = Long.valueOf(label.substring("relto_".length()));
+                        RelVo relToVo = relMap.get(relToId);
+                        if (relToVo != null) {
+                            RelFilterVo relFilterVo = matrixCiEntityService.convertFromRelFilter(relToVo, matrixFilterVo.getExpression(), valueList, "to");
+                            if (relFilterVo != null) {
+                                relFilters.add(relFilterVo);
+                            } else {
+                                flag = false;
+                            }
+                        }
+                        break;
+                    case "const":
+                        //固化属性需要特殊处理
+                        if ("const_id".equals(label)) {
+                            for (String value : new HashSet<>(valueList)) {
+                                idList.add(Long.valueOf(value));
+                            }
+                        } else if ("const_ciLabel".equals(label)) {
+                            List<CiVo> ciList = ciMapper.getCiListByLabelList(valueList);
+                            for (CiVo ci : ciList) {
+                                if (!filterCiIdList.contains(ci.getId())) {
+                                    filterCiIdList.add(ci.getId());
+                                }
+                            }
+                        }
+                        break;
+                    case "global":
+                        Long globalId = Long.valueOf(label.substring("global_".length()));
+                        GlobalAttrVo globalAttrVo = globalAttrMap.get(globalId);
+                        if (globalAttrVo != null) {
+                            GlobalAttrFilterVo globalAttrFilterVo = matrixCiEntityService.convertGlobalAttrFilter(globalAttrVo, matrixFilterVo.getExpression(), valueList);
+                            if (globalAttrFilterVo != null) {
+                                globalAttrFilters.add(globalAttrFilterVo);
+                            } else {
+                                flag = false;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        return flag;
+    }
 
     @Override
     protected JSONObject mySaveTableRowData(String matrixUuid, JSONObject rowData) {
