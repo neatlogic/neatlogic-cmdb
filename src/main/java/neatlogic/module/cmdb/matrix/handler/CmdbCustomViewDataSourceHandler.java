@@ -455,17 +455,15 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             return resultList;
         }
         List<Map<String, Object>> dataList = new ArrayList<>();
-        Map<String, MatrixAttributeVo> label2AttributeMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getLabel(), e -> e));
-        Map<String, String> attributeUuidMap = matrixAttributeList.stream().collect(Collectors.toMap(e -> e.getLabel(), e -> e.getUuid()));
+        Map<String, MatrixAttributeVo> label2AttributeMap = matrixAttributeList.stream().collect(Collectors.toMap(MatrixAttributeVo::getLabel, e -> e));
+        Map<String, String> attributeUuidMap = matrixAttributeList.stream().collect(Collectors.toMap(MatrixAttributeVo::getLabel, MatrixAttributeVo::getUuid));
         if (CollectionUtils.isNotEmpty(dataVo.getDefaultValue())) {
             List<String> defaultValue = dataVo.getDefaultValue().toJavaList(String.class);
             for (String primaryKeyAttrUuidAndValueListStr : defaultValue) {
                 List<String> primaryKeyAttrUuidAndValueList = new ArrayList<>();
                 if (primaryKeyAttrUuidAndValueListStr.contains("(&&)")) {
                     String[] split = primaryKeyAttrUuidAndValueListStr.split("(&&)");
-                    for (String e : split) {
-                        primaryKeyAttrUuidAndValueList.add(e);
-                    }
+                    primaryKeyAttrUuidAndValueList.addAll(Arrays.asList(split));
                 } else {
                     primaryKeyAttrUuidAndValueList.add(primaryKeyAttrUuidAndValueListStr);
                 }
@@ -474,7 +472,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                     String[] split = primaryKeyAttrUuidAndValue.split("#");
                     String uuid = split[0];
                     String value = split[1];
-                    filterList.add(new MatrixFilterVo(uuid, SearchExpression.EQ.getExpression(), Arrays.asList(value)));
+                    filterList.add(new MatrixFilterVo(uuid, SearchExpression.EQ.getExpression(), List.of(value)));
                 }
                 CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
                 customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
@@ -486,15 +484,16 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
                 dataList.add(mapList.get(0));
             }
         } else if (CollectionUtils.isNotEmpty(dataVo.getDefaultValueFilterList())) {
+            List<MatrixFilterVo> initFilterList = dataVo.getFilterList();
             for (MatrixDefaultValueFilterVo defaultValueFilterVo : dataVo.getDefaultValueFilterList()) {
-                List<MatrixFilterVo> filterList = new ArrayList<>();
+                List<MatrixFilterVo> filterList = new ArrayList<>(initFilterList);
                 MatrixKeywordFilterVo valueFieldFilter = defaultValueFilterVo.getValueFieldFilter();
                 if (valueFieldFilter != null) {
-                    filterList.add(new MatrixFilterVo(valueFieldFilter.getUuid(), valueFieldFilter.getExpression(), Arrays.asList(valueFieldFilter.getValue())));
+                    filterList.add(new MatrixFilterVo(valueFieldFilter.getUuid(), valueFieldFilter.getExpression(), List.of(valueFieldFilter.getValue())));
                 }
                 MatrixKeywordFilterVo textFieldFilter = defaultValueFilterVo.getTextFieldFilter();
                 if (textFieldFilter != null && (valueFieldFilter == null || !Objects.equals(valueFieldFilter.getUuid(), textFieldFilter.getUuid()))) {
-                    filterList.add(new MatrixFilterVo(textFieldFilter.getUuid(), textFieldFilter.getExpression(), Arrays.asList(textFieldFilter.getValue())));
+                    filterList.add(new MatrixFilterVo(textFieldFilter.getUuid(), textFieldFilter.getExpression(), List.of(textFieldFilter.getValue())));
                 }
                 CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
                 customViewConditionVo.setCustomViewId(matrixCmdbCustomViewVo.getCustomViewId());
@@ -509,7 +508,7 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
             List<MatrixFilterVo> filterList = dataVo.getFilterList();
             String keywordColumn = dataVo.getKeywordColumn();
             if (StringUtils.isNotBlank(keywordColumn) && StringUtils.isNotBlank(dataVo.getKeyword())) {
-                MatrixFilterVo matrixFilterVo = new MatrixFilterVo(keywordColumn, Expression.LIKE.getExpression(), Arrays.asList(dataVo.getKeyword()));
+                MatrixFilterVo matrixFilterVo = new MatrixFilterVo(keywordColumn, Expression.LIKE.getExpression(), List.of(dataVo.getKeyword()));
                 filterList.add(matrixFilterVo);
             }
             CustomViewConditionVo customViewConditionVo = new CustomViewConditionVo();
