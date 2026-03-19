@@ -18,7 +18,7 @@ import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.OperationType;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
-import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.restful.core.privateapi.binarystream.PrivateBinaryStreamApiComponentBase;
 import neatlogic.module.cmdb.service.ci.CiService;
 import org.springframework.stereotype.Service;
 

@@ -25,7 +25,7 @@ import neatlogic.framework.common.constvalue.MimeType;
 import neatlogic.framework.common.constvalue.ResponseCode;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
-import neatlogic.framework.restful.core.privateapi.PrivateBinaryStreamApiComponentBase;
+import neatlogic.framework.restful.core.privateapi.binarystream.PrivateBinaryStreamApiComponentBase;
 import neatlogic.framework.userexportfile.core.ExportFileManager;
 import neatlogic.framework.util.FileUtil;
 import neatlogic.framework.util.excel.ExcelBuilder;
