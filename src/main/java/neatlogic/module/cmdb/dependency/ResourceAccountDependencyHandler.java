@@ -60,7 +60,7 @@ public class ResourceAccountDependencyHandler extends CustomDependencyHandlerBas
         List<String> pathList = new ArrayList<>();
         pathList.add("资产清单");
         String lastName = obj.getIp() + (obj.getPort() != null ? (":" + obj.getPort()) : "");
-        String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/autoexec.html#/asset-manage?resourceId=" + obj.getId();
+        String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/#{moduleId}.html#/asset-manage?resourceId=" + obj.getId();
         return new DependencyInfoVo(obj.getId(), dependencyInfoConfig, lastName, pathList, urlFormat, this.getGroupName());
     }
 
