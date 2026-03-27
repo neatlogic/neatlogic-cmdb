@@ -8,8 +8,8 @@ import neatlogic.framework.dependency.core.CustomDependencyHandlerBase;
 import neatlogic.framework.dependency.core.IFromType;
 import neatlogic.framework.dependency.dto.DependencyInfoVo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
-import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -60,7 +60,7 @@ public class ResourceAccountDependencyHandler extends CustomDependencyHandlerBas
         List<String> pathList = new ArrayList<>();
         pathList.add("资产清单");
         String lastName = obj.getIp() + (obj.getPort() != null ? (":" + obj.getPort()) : "");
-        String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/cmdb.html#/asset-manage?resourceId=" + obj.getId();
+        String urlFormat = "/" + TenantContext.get().getTenantUuid() + "/{moduleId}.html#/asset-manage?resourceId=" + obj.getId();
         return new DependencyInfoVo(obj.getId(), dependencyInfoConfig, lastName, pathList, urlFormat, this.getGroupName());
     }
 
@@ -73,7 +73,7 @@ public class ResourceAccountDependencyHandler extends CustomDependencyHandlerBas
     public List<DependencyInfoVo> getDependencyList(Object from, int startNum, int pageSize) {
         List<DependencyInfoVo> resultList = new ArrayList<>();
         List<Long> resourceIdList = resourceAccountMapper.getResourceIdListByAccountIdWithPage((Long) from, startNum, pageSize);
-        if (resourceIdList.size() > 0) {
+        if (CollectionUtils.isNotEmpty(resourceIdList)) {
             List<ResourceVo> resourceList = resourceCenterResourceService.getResourceListByIdList(resourceIdList);
             for (ResourceVo vo : resourceList) {
                 DependencyInfoVo dependencyInfoVo = parse(vo);
