@@ -1209,6 +1209,8 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
             if (searchVo.getAppSystemId() != null) {
                 $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "=", searchVo.getAppSystemId()));
+            }else{
+                $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_system_id").toString(), "is not null"));
             }
             if (searchVo.getAppModuleId() != null) {
                 $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("app_module_id").toString(), "=", searchVo.getAppModuleId()));

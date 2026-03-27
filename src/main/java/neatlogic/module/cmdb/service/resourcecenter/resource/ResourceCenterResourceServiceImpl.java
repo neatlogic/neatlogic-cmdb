@@ -1259,6 +1259,11 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
     }
 
     @Override
+    public ApplicationListDisplayVo getApplicationListDisplay() {
+        return resourceEntityMapper.getApplicationListDisplay();
+    }
+
+    @Override
     public List<AccountComponentVo> searchAccountComponent(AccountComponentVo accountComponentVo) {
         String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
         String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);

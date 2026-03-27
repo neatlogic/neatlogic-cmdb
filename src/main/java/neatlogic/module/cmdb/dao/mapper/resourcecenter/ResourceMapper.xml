@@ -711,6 +711,9 @@
         <if test="appSystemId != null">
             AND a.`app_system_id` = #{appSystemId}
         </if>
+        <if test="appSystemId == null">
+            AND a.`app_system_id` is not null
+        </if>
         <if test="appModuleId != null">
             AND a.`app_module_id` = #{appModuleId}
         </if>
