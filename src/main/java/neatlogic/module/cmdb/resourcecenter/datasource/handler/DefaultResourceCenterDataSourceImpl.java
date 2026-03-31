@@ -341,33 +341,13 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             throw new AppModuleNotFoundException(appModuleId);
         }
         JSONArray tableList = new JSONArray();
-        List<String> viewNameList = new ArrayList<>();
-        Map<String, List<String>> viewName2FieldListMap = new HashMap<>();
-        ApplicationListDisplayVo applicationListDisplay = resourceEntityMapper.getApplicationListDisplay();
-        if (applicationListDisplay != null) {
-            JSONObject config = applicationListDisplay.getConfig();
-            if (MapUtils.isNotEmpty(config)) {
-                JSONArray tableSettingList = config.getJSONArray("tableSettingList");
-                if (CollectionUtils.isNotEmpty(tableSettingList)) {
-                    for (int i = 0; i < tableSettingList.size(); i++) {
-                        JSONObject tableObj = tableSettingList.getJSONObject(i);
-                        if (MapUtils.isNotEmpty(tableObj)) {
-                            String name = tableObj.getString("viewName");
-                            if (StringUtils.isNotBlank(viewName) && !Objects.equals(name, viewName)) {
-                                continue;
-                            }
-                            viewNameList.add(name);
-                            JSONArray fieldList = tableObj.getJSONArray("fieldList");
-                            if (CollectionUtils.isNotEmpty(fieldList)) {
-                                viewName2FieldListMap.put(name, fieldList.toJavaList(String.class));
-                            }
-                        }
-                    }
+        Map<String, List<String>> viewName2FieldListMap = getApplicationListDisplayViewName2FieldListMap();
+        if (MapUtils.isNotEmpty(viewName2FieldListMap)) {
+            for (Map.Entry<String, List<String>> entry : viewName2FieldListMap.entrySet()) {
+                String name = entry.getKey();
+                if (StringUtils.isNotBlank(viewName) && !Objects.equals(name, viewName)) {
+                    continue;
                 }
-            }
-        }
-        if (CollectionUtils.isNotEmpty(viewNameList)) {
-            for (String name : viewNameList) {
                 ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(name);
                 if (resourceEntityVo != null) {
                     ResourceSearchVo searchVo = new ResourceSearchVo();
@@ -390,7 +370,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                         searchVo.setInspectStatusList(inspectStatusList);
                     }
                     searchVo.setViewName(name);
-                    List<String> fieldList = viewName2FieldListMap.get(name);
+                    List<String> fieldList = entry.getValue();
                     List<ResourceVo> resourceList = getAppResourceList(searchVo, true);
                     JSONArray tbodyList = new JSONArray();
                     if (CollectionUtils.isNotEmpty(resourceList)) {
@@ -1218,6 +1198,31 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
         }
         return resultList;
+    }
+
+    @Override
+    public Map<String, List<String>> getApplicationListDisplayViewName2FieldListMap() {
+        Map<String, List<String>> viewName2FieldListMap = new LinkedHashMap<>();
+        ApplicationListDisplayVo applicationListDisplay = resourceEntityMapper.getApplicationListDisplay();
+        if (applicationListDisplay != null) {
+            JSONObject config = applicationListDisplay.getConfig();
+            if (MapUtils.isNotEmpty(config)) {
+                JSONArray tableSettingList = config.getJSONArray("tableSettingList");
+                if (CollectionUtils.isNotEmpty(tableSettingList)) {
+                    for (int i = 0; i < tableSettingList.size(); i++) {
+                        JSONObject tableObj = tableSettingList.getJSONObject(i);
+                        if (MapUtils.isNotEmpty(tableObj)) {
+                            String name = tableObj.getString("viewName");
+                            JSONArray fieldList = tableObj.getJSONArray("fieldList");
+                            if (CollectionUtils.isNotEmpty(fieldList)) {
+                                viewName2FieldListMap.put(name, fieldList.toJavaList(String.class));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return viewName2FieldListMap;
     }
 
     /**

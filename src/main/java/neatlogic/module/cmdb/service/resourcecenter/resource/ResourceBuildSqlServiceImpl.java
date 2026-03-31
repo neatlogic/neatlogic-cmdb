@@ -3087,6 +3087,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
 //                    System.out.println("o");
                     orRightExpressionVo = $sql.exp(orRightExpressionVo, "and", orLeftExpressionVo2);
                 }
+                orRightExpressionVo = $sql.exp("(", orRightExpressionVo, ")");
                 ExpressionVo orExpressionVo = $sql.exp("(", orLeftExpressionVo, "or", orRightExpressionVo, ")");
                 whereExpressionList.add(orExpressionVo);
             }
