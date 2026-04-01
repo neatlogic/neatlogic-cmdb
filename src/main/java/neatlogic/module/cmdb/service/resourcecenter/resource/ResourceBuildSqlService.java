@@ -15,10 +15,14 @@ package neatlogic.module.cmdb.service.resourcecenter.resource;
 import neatlogic.framework.cmdb.dto.resourcecenter.AccountComponentVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
+import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.common.dto.BasePageVo;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ResourceBuildSqlService {
 
@@ -189,4 +193,8 @@ public interface ResourceBuildSqlService {
     String buildGetInspectConfigFilePathListSql(List<Long> idList);
 
     String buildGetInspectConfigFilePathListByJobIdSql(Long jobId);
+
+    ResourceEntityConfigVo getResourceEntityConfigVo(ResourceEntityVo resourceEntityVo);
+
+    PlainSelect getPlainSelect(ResourceEntityConfigVo config, Map<String, Column> fieldName2ColumnMap);
 }

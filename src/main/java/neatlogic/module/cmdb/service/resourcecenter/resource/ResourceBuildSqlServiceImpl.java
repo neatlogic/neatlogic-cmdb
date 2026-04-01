@@ -2238,7 +2238,8 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         return null;
     }
 
-    private ResourceEntityConfigVo getResourceEntityConfigVo(ResourceEntityVo resourceEntityVo) {
+    @Override
+    public ResourceEntityConfigVo getResourceEntityConfigVo(ResourceEntityVo resourceEntityVo) {
         String viewName = resourceEntityVo.getName();
         ResourceEntityConfigVo originalConfig = resourceEntityVo.getConfig();
         List<ResourceEntityRelLinkVo> relLinkList = getRelLinkListByRelNode(originalConfig.getRelNode());
@@ -3687,7 +3688,8 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         return sqlVo;
     }
 
-    private PlainSelect getPlainSelect(ResourceEntityConfigVo config, Map<String, Column> fieldName2ColumnMap) {
+    @Override
+    public PlainSelect getPlainSelect(ResourceEntityConfigVo config, Map<String, Column> fieldName2ColumnMap) {
         PlainSelect plainSelect = null;
         if (Objects.equals(DatasourceManager.getDatabaseId(), DatabaseVendor.TIDB.getDatabaseId())) {
             ResourceViewGenerateSqlUtilForTiDB resourceViewGenerateSqlUtilForTiDB = new ResourceViewGenerateSqlUtilForTiDB(config);
