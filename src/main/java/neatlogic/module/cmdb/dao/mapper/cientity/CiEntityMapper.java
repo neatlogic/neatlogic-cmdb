@@ -213,6 +213,7 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
      */
     List<HashMap<String, Object>> getCiEntityByIdLite(CiEntityVo ciEntityVo);
 
+    List<CiEntityTagVo> getCiEntityTagByCiEntityId(Long ciEntityId);
 
     List<Long> getCiEntityIdByCiId(CiEntityVo ciEntityVo);
 
@@ -245,6 +246,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     void insertAttrEntity(AttrEntityVo attrEntityVo);
 
     void insertCiEntityInspect(CiEntityInspectVo ciEntityInspectVo);
+
+    int insertIgnoreCiEntityTag(List<CiEntityTagVo> ciEntityTagList);
 
     void deleteCiEntityBaseInfo(CiEntityVo ciEntityVo);
 

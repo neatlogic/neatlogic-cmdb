@@ -28,6 +28,16 @@
         </where>
     </select>
 
+    <select id="getTagListByIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.tag.TagVo">
+        SELECT id, name
+        FROM cmdb_tag
+        WHERE id IN
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
     <insert id="insertCmdbTag" parameterType="neatlogic.framework.cmdb.dto.tag.TagVo">
         INSERT IGNORE INTO cmdb_tag (id, name)
         VALUES (#{id}, #{name})

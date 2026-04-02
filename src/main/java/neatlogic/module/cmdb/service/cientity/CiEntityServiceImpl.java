@@ -274,6 +274,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     }
                 }
             }
+
+            //拼接标签数据
+            returnCiEntityVo.setTagList(ciEntityMapper.getCiEntityTagByCiEntityId(returnCiEntityVo.getId()));
         }
         return returnCiEntityVo;
     }

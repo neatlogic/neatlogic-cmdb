@@ -21,6 +21,8 @@ public interface CmdbTagMapper {
 
     int searchTagListCount(TagVo cmdbTagVo);
 
+    List<TagVo> getTagListByIdList(List<Long> idList);
+
     void insertCmdbTag(TagVo tagVo);
 
 }

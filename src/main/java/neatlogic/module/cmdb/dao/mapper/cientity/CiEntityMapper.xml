@@ -121,6 +121,23 @@
         JOIN cmdb_ci to_ci ON to_cientity.ci_id = to_ci.id
     </select>
 
+    <insert id="insertIgnoreCiEntityTag" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityTagVo">
+        INSERT IGNORE INTO `cmdb_cientity_tag` (`cientity_id`, `tag_id`) VALUES
+        <foreach collection="list" item="ciEntityTag" separator=",">
+            (#{ciEntityTag.ciEntityId}, #{ciEntityTag.tagId})
+        </foreach>
+    </insert>
+
+    <select id="getCiEntityTagByCiEntityId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityTagVo">
+        SELECT
+            a.`cientity_id` AS `ciEntityId`,
+            a.`tag_id` AS `tagId`,
+            b.`name` AS `tagName`
+        FROM `cmdb_cientity_tag` a
+        JOIN `cmdb_tag` b ON a.`tag_id` = b.`id`
+        WHERE a.`cientity_id` = #{ciEntityId}
+    </select>
+
     <select id="getCiEntityForTopo" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo"
             resultMap="ciEntityRelMap">
         select cientity.id,

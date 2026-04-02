@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.api.tag;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
@@ -21,15 +22,16 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.tag.CmdbTagMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class SearchTagApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CmdbTagMapper cmdbTagMapper;
 
 
@@ -50,10 +52,10 @@ public class SearchTagApi extends PrivateApiComponentBase {
 
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字", xss = true)})
     @Output({@Param(explode = TagVo.class)})
-    @Description(desc = "查询配置项标签接口")
+    @Description(desc = "查询配置项标签")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        TagVo tagVo = JSONObject.toJavaObject(jsonObj, TagVo.class);
+        TagVo tagVo = JSON.toJavaObject(jsonObj, TagVo.class);
         return cmdbTagMapper.searchTagList(tagVo);
     }
 

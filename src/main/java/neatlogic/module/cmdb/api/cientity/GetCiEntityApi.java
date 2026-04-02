@@ -160,6 +160,7 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         entityObj.put("maxRelEntityCount", ciEntityVo.getMaxRelEntityCount());
         entityObj.put("maxAttrEntityCount", ciEntityVo.getMaxAttrEntityCount());
         entityObj.put("isVirtual", ciEntityVo.getIsVirtual());
+        entityObj.put("tagList", ciEntityVo.getTagList());
         entityObj.put("authData", ciEntityVo.getAuthData());
         return entityObj;
     }
