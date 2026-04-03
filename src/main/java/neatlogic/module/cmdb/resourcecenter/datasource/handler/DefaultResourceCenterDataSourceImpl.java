@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataSource {
+    private static final Long ALL_APP_SYSTEM_ID = -1L;
 
     private final Logger logger = LoggerFactory.getLogger(DefaultResourceCenterDataSourceImpl.class);
     @Resource
@@ -900,16 +901,20 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Override
     public List<AppSystemVo> getAppSystemListForTree(BasePageVo searchVo) {
+        return getAppSystemListForTree(searchVo, null);
+    }
+
+    @Override
+    public List<AppSystemVo> getAppSystemListForTree(BasePageVo searchVo, String moduleName) {
         List<AppSystemVo> appSystemList = new ArrayList<>();
-        String keyword = searchVo.getKeyword();
-        int count = resourceMapper.getAppSystemIdListCountByKeyword(keyword);
-        if (count > 0) {
-            searchVo.setRowNum(count);
-            List<Long> appSystemIdList = resourceMapper.getAppSystemIdListByKeyword(searchVo);
-            if (CollectionUtils.isEmpty(appSystemIdList)) {
-                return appSystemList;
-            }
-            appSystemList = resourceMapper.getAppSystemListByIdList(appSystemIdList);
+        Set<Long> visibleAppSystemIdSet = getVisibleAppSystemIdSet(moduleName);
+        if (visibleAppSystemIdSet != null && CollectionUtils.isEmpty(visibleAppSystemIdSet)) {
+            searchVo.setRowNum(0);
+            return appSystemList;
+        }
+        List<Long> appSystemIdList = getVisibleTreeAppSystemIdList(searchVo, visibleAppSystemIdSet);
+        if (CollectionUtils.isNotEmpty(appSystemIdList)) {
+            appSystemList = sortAppSystemListByIdOrder(resourceMapper.getAppSystemListByIdList(appSystemIdList), appSystemIdList);
             List<Long> hasModuleAppSystemIdList = resourceMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
             if (CollectionUtils.isNotEmpty(hasModuleAppSystemIdList)) {
                 for (AppSystemVo appSystemVo : appSystemList) {
@@ -918,8 +923,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
                     }
                 }
             }
-            if (StringUtils.isNotEmpty(keyword)) {
-                List<AppModuleVo> appModuleList = resourceMapper.getAppModuleListByKeywordAndAppSystemIdList(keyword, appSystemIdList);
+            if (StringUtils.isNotEmpty(searchVo.getKeyword())) {
+                List<AppModuleVo> appModuleList = resourceMapper.getAppModuleListByKeywordAndAppSystemIdList(searchVo.getKeyword(), appSystemIdList);
                 if (CollectionUtils.isNotEmpty(appModuleList)) {
                     Map<Long, List<AppModuleVo>> appModuleMap = new HashMap<>();
                     for (AppModuleVo appModuleVo : appModuleList) {
@@ -940,30 +945,170 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Override
     public List<ResourceVo> getAppSystemListForSelect(BasePageVo searchVo) {
+        return getAppSystemListForSelect(searchVo, null);
+    }
+
+    @Override
+    public List<ResourceVo> getAppSystemListForSelect(BasePageVo searchVo, String moduleName) {
         List<ResourceVo> resourceList = new ArrayList<>();
+        Set<Long> visibleAppSystemIdSet = getVisibleAppSystemIdSet(moduleName);
+        if (visibleAppSystemIdSet != null && CollectionUtils.isEmpty(visibleAppSystemIdSet)) {
+            searchVo.setRowNum(0);
+            return resourceList;
+        }
         JSONArray defaultValue = searchVo.getDefaultValue();
         if (CollectionUtils.isNotEmpty(defaultValue)) {
             List<Long> idList = defaultValue.toJavaList(Long.class);
-            resourceList = resourceMapper.searchAppSystemListByIdList(idList);
+            if (visibleAppSystemIdSet != null) {
+                idList = idList.stream().filter(visibleAppSystemIdSet::contains).collect(Collectors.toList());
+            }
+            if (CollectionUtils.isNotEmpty(idList)) {
+                resourceList = sortResourceListByIdOrder(resourceMapper.searchAppSystemListByIdList(idList), idList);
+            }
         } else {
-            int rowNum = resourceMapper.searchAppSystemCount(searchVo);
-            if (rowNum > 0) {
-                searchVo.setRowNum(rowNum);
-                if (searchVo.getNeedPage()) {
-                    List<Long> idList = resourceMapper.searchAppSystemIdList(searchVo);
-                    resourceList = resourceMapper.searchAppSystemListByIdList(idList);
-                } else {
-                    int pageCount = searchVo.getPageCount();
-                    for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
-                        searchVo.setCurrentPage(currentPage);
-                        List<Long> idList = resourceMapper.searchAppSystemIdList(searchVo);
-                        List<ResourceVo> list = resourceMapper.searchAppSystemListByIdList(idList);
-                        resourceList.addAll(list);
-                    }
-                }
+            List<Long> idList = getVisibleSelectAppSystemIdList(searchVo, visibleAppSystemIdSet);
+            if (CollectionUtils.isNotEmpty(idList)) {
+                resourceList = sortResourceListByIdOrder(resourceMapper.searchAppSystemListByIdList(idList), idList);
             }
         }
         return resourceList;
+    }
+
+    /**
+     * 查询应用树可见范围内的应用id列表，并在数据库侧完成分页。
+     *
+     * @param searchVo 查询条件
+     * @param visibleAppSystemIdSet 可见应用id集合
+     * @return 当前页应用id列表
+     */
+    private List<Long> getVisibleTreeAppSystemIdList(BasePageVo searchVo, Set<Long> visibleAppSystemIdSet) {
+        int count;
+        List<Long> appSystemIdList;
+        if (visibleAppSystemIdSet == null) {
+            count = resourceMapper.getAppSystemIdListCountByKeyword(searchVo.getKeyword());
+            if (count <= 0) {
+                searchVo.setRowNum(0);
+                return new ArrayList<>();
+            }
+            appSystemIdList = resourceMapper.getAppSystemIdListByKeyword(searchVo);
+        } else {
+            List<Long> visibleAppSystemIdList = new ArrayList<>(visibleAppSystemIdSet);
+            count = resourceMapper.getAppSystemIdListCountByKeywordAndIdList(searchVo.getKeyword(), visibleAppSystemIdList);
+            if (count <= 0) {
+                searchVo.setRowNum(0);
+                return new ArrayList<>();
+            }
+            appSystemIdList = resourceMapper.getAppSystemIdListByKeywordAndIdList(searchVo, visibleAppSystemIdList);
+        }
+        searchVo.setRowNum(count);
+        return appSystemIdList;
+    }
+
+    /**
+     * 查询应用下拉可见范围内的应用id列表，并在数据库侧完成分页。
+     *
+     * @param searchVo 查询条件
+     * @param visibleAppSystemIdSet 可见应用id集合
+     * @return 当前页应用id列表
+     */
+    private List<Long> getVisibleSelectAppSystemIdList(BasePageVo searchVo, Set<Long> visibleAppSystemIdSet) {
+        int rowNum;
+        List<Long> idList;
+        if (visibleAppSystemIdSet == null) {
+            rowNum = resourceMapper.searchAppSystemCount(searchVo);
+            if (rowNum <= 0) {
+                searchVo.setRowNum(0);
+                return new ArrayList<>();
+            }
+            idList = resourceMapper.searchAppSystemIdList(searchVo);
+        } else {
+            List<Long> visibleAppSystemIdList = new ArrayList<>(visibleAppSystemIdSet);
+            rowNum = resourceMapper.searchAppSystemCountByIdList(searchVo.getKeyword(), visibleAppSystemIdList);
+            if (rowNum <= 0) {
+                searchVo.setRowNum(0);
+                return new ArrayList<>();
+            }
+            idList = resourceMapper.searchAppSystemIdListByIdList(searchVo, visibleAppSystemIdList);
+        }
+        searchVo.setRowNum(rowNum);
+        return idList;
+    }
+
+    /**
+     * 从应用清单配置中读取模块可见应用范围。
+     *
+     * @param moduleName 模块名
+     * @return 可见应用id集合；为空字符串时返回null表示不过滤
+     */
+    private Set<Long> getVisibleAppSystemIdSet(String moduleName) {
+        if (StringUtils.isBlank(moduleName)) {
+            return null;
+        }
+        ApplicationListDisplayVo applicationListDisplay = resourceEntityMapper.getApplicationListDisplay();
+        if (applicationListDisplay == null) {
+            return Collections.emptySet();
+        }
+        JSONObject config = applicationListDisplay.getConfig();
+        if (MapUtils.isEmpty(config)) {
+            return Collections.emptySet();
+        }
+        JSONObject moduleVisibleMap = config.getJSONObject("moduleVisibleAppSystemIdListMap");
+        if (MapUtils.isEmpty(moduleVisibleMap)) {
+            return Collections.emptySet();
+        }
+        JSONArray appSystemIdArray = moduleVisibleMap.getJSONArray(moduleName);
+        if (CollectionUtils.isEmpty(appSystemIdArray)) {
+            return Collections.emptySet();
+        }
+        List<Long> appSystemIdList = appSystemIdArray.toJavaList(Long.class);
+        if (appSystemIdList.contains(ALL_APP_SYSTEM_ID)) {
+            return null;
+        }
+        return new LinkedHashSet<>(appSystemIdList);
+    }
+
+    /**
+     * 按id顺序重排应用树结果，保持与分页查询出的id顺序一致。
+     *
+     * @param appSystemList 应用列表
+     * @param idList 应用id顺序
+     * @return 排序后的应用列表
+     */
+    private List<AppSystemVo> sortAppSystemListByIdOrder(List<AppSystemVo> appSystemList, List<Long> idList) {
+        if (CollectionUtils.isEmpty(appSystemList) || CollectionUtils.isEmpty(idList)) {
+            return appSystemList;
+        }
+        Map<Long, AppSystemVo> appSystemMap = appSystemList.stream().collect(Collectors.toMap(AppSystemVo::getId, e -> e));
+        List<AppSystemVo> resultList = new ArrayList<>();
+        for (Long id : idList) {
+            AppSystemVo appSystemVo = appSystemMap.get(id);
+            if (appSystemVo != null) {
+                resultList.add(appSystemVo);
+            }
+        }
+        return resultList;
+    }
+
+    /**
+     * 按id顺序重排应用下拉结果，保持与分页查询出的id顺序一致。
+     *
+     * @param resourceList 应用列表
+     * @param idList 应用id顺序
+     * @return 排序后的应用列表
+     */
+    private List<ResourceVo> sortResourceListByIdOrder(List<ResourceVo> resourceList, List<Long> idList) {
+        if (CollectionUtils.isEmpty(resourceList) || CollectionUtils.isEmpty(idList)) {
+            return resourceList;
+        }
+        Map<Long, ResourceVo> resourceMap = resourceList.stream().collect(Collectors.toMap(ResourceVo::getId, e -> e));
+        List<ResourceVo> resultList = new ArrayList<>();
+        for (Long id : idList) {
+            ResourceVo resourceVo = resourceMap.get(id);
+            if (resourceVo != null) {
+                resultList.add(resourceVo);
+            }
+        }
+        return resultList;
     }
 
     @Override

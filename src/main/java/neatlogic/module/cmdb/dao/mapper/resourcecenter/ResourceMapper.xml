@@ -1262,6 +1262,22 @@
         </where>
     </select>
 
+    <select id="searchAppSystemCountByIdList" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        <where>
+            `id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+            <if test="keyword != null and keyword != ''">
+                AND (`name` LIKE CONCAT('%', #{keyword}, '%')
+                OR `abbr_name` LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
     <select id="searchAppSystemIdList" parameterType="neatlogic.framework.common.dto.BasePageVo"
             resultType="java.lang.Long">
         SELECT
@@ -1274,6 +1290,23 @@
             </if>
         </where>
         LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="searchAppSystemIdListByIdList" resultType="java.lang.Long">
+        SELECT
+        `id`
+        FROM @{DATA_SCHEMA}.`scence_appsystem`
+        <where>
+            `id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                AND (`name` LIKE CONCAT('%', #{searchVo.keyword}, '%')
+                OR `abbr_name` LIKE CONCAT('%', #{searchVo.keyword}, '%'))
+            </if>
+        </where>
+        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
     <select id="searchAppSystemListByIdList" parameterType="java.lang.Long" resultMap="resourceCenterMap">
@@ -1389,6 +1422,21 @@
         </where>
     </select>
 
+    <select id="getAppSystemIdListCountByKeywordAndIdList" resultType="int">
+        SELECT COUNT(DISTINCT `id`)
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        <where>
+            `id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+            <if test="keyword != null and keyword != ''">
+                AND (`name` LIKE concat('%', #{keyword}, '%') or `app_module_name` LIKE concat('%', #{keyword}, '%')
+                or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
     <select id="getAppSystemIdListByKeyword" parameterType="neatlogic.framework.common.dto.BasePageVo"
             resultType="java.lang.Long">
         SELECT DISTINCT a.`id` from (
@@ -1404,6 +1452,25 @@
         ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
         ) a
         LIMIT #{startNum}, #{pageSize}
+    </select>
+
+    <select id="getAppSystemIdListByKeywordAndIdList" resultType="java.lang.Long">
+        SELECT DISTINCT a.`id` from (
+        SELECT `id`
+        FROM @{DATA_SCHEMA}.`scence_appsystem_appmodule`
+        <where>
+            `id` IN
+            <foreach collection="appSystemIdList" item="appSystemId" open="(" separator="," close=")">
+                #{appSystemId}
+            </foreach>
+            <if test="searchVo.keyword != null and searchVo.keyword != ''">
+                AND (`name` LIKE concat('%', #{searchVo.keyword}, '%') or `app_module_name` LIKE concat('%', #{searchVo.keyword}, '%')
+                or `abbr_name` LIKE concat('%', #{searchVo.keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{searchVo.keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY CONVERT(`abbr_name` USING gbk) COLLATE gbk_chinese_ci ASC
+        ) a
+        LIMIT #{searchVo.startNum}, #{searchVo.pageSize}
     </select>
 
     <select id="getAppSystemListByIdList" parameterType="java.lang.Long"

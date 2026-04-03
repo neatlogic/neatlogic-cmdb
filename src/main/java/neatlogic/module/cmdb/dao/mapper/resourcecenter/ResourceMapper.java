@@ -137,7 +137,25 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int searchAppSystemCount(BasePageVo searchVo);
 
+    /**
+     * 根据限定应用范围统计应用数量。
+     *
+     * @param keyword 关键字
+     * @param appSystemIdList 可见应用id列表
+     * @return 应用数量
+     */
+    int searchAppSystemCountByIdList(@Param("keyword") String keyword, @Param("appSystemIdList") List<Long> appSystemIdList);
+
     List<Long> searchAppSystemIdList(BasePageVo searchVo);
+
+    /**
+     * 根据限定应用范围分页查询应用id列表。
+     *
+     * @param searchVo 查询条件
+     * @param appSystemIdList 可见应用id列表
+     * @return 应用id列表
+     */
+    List<Long> searchAppSystemIdListByIdList(@Param("searchVo") BasePageVo searchVo, @Param("appSystemIdList") List<Long> appSystemIdList);
 
     List<ResourceVo> searchAppSystemListByIdList(List<Long> idList);
 
@@ -155,7 +173,25 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     int getAppSystemIdListCountByKeyword(String keyword);
 
+    /**
+     * 根据关键字和限定应用范围统计应用树数量。
+     *
+     * @param keyword 关键字
+     * @param appSystemIdList 可见应用id列表
+     * @return 应用数量
+     */
+    int getAppSystemIdListCountByKeywordAndIdList(@Param("keyword") String keyword, @Param("appSystemIdList") List<Long> appSystemIdList);
+
     List<Long> getAppSystemIdListByKeyword(BasePageVo searchVo);
+
+    /**
+     * 根据关键字和限定应用范围分页查询应用树id列表。
+     *
+     * @param searchVo 查询条件
+     * @param appSystemIdList 可见应用id列表
+     * @return 应用树id列表
+     */
+    List<Long> getAppSystemIdListByKeywordAndIdList(@Param("searchVo") BasePageVo searchVo, @Param("appSystemIdList") List<Long> appSystemIdList);
 
     List<AppSystemVo> getAppSystemListByIdList(List<Long> appSystemIdList);
 

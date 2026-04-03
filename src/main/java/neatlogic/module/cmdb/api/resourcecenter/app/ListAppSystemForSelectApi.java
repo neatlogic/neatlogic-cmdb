@@ -48,6 +48,7 @@ public class ListAppSystemForSelectApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "moduleName", type = ApiParamType.STRING, desc = "模块名"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "默认值列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
@@ -63,7 +64,7 @@ public class ListAppSystemForSelectApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         BasePageVo searchVo = paramObj.toJavaObject(BasePageVo.class);
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
-        List<ResourceVo> tbodyList = resourceCenterDataSource.getAppSystemListForSelect(searchVo);
+        List<ResourceVo> tbodyList = resourceCenterDataSource.getAppSystemListForSelect(searchVo, paramObj.getString("moduleName"));
         return TableResultUtil.getResult(tbodyList, searchVo);
     }
 }

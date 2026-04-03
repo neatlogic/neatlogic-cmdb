@@ -49,6 +49,7 @@ public class ListAppSystemForTreeApi extends PrivateApiComponentBase {
     }
 
     @Input({
+            @Param(name = "moduleName", type = ApiParamType.STRING, desc = "模块名"),
             @Param(name = "keyword", type = ApiParamType.STRING, desc = "关键字"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页数据条目")
@@ -62,7 +63,7 @@ public class ListAppSystemForTreeApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         BasePageVo searchVo = paramObj.toJavaObject(BasePageVo.class);
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
-        List<AppSystemVo> tbodyList = resourceCenterDataSource.getAppSystemListForTree(searchVo);
+        List<AppSystemVo> tbodyList = resourceCenterDataSource.getAppSystemListForTree(searchVo, paramObj.getString("moduleName"));
         return TableResultUtil.getResult(tbodyList, searchVo);
     }
 }
