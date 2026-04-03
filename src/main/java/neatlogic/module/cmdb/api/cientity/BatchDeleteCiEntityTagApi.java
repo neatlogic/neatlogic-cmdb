@@ -17,14 +17,11 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
-import neatlogic.framework.cmdb.dto.cientity.CiEntityTagVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
-import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityAuthException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
-import neatlogic.framework.cmdb.exception.tag.CmdbTagNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
 import neatlogic.framework.restful.annotation.Input;
@@ -33,7 +30,6 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.tag.CmdbTagMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -41,7 +37,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -52,21 +47,19 @@ import java.util.stream.Collectors;
 @AuthAction(action = CI_MODIFY.class)
 @AuthAction(action = CIENTITY_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
-public class BatchAddCiEntityTagApi extends PrivateApiComponentBase {
+public class BatchDeleteCiEntityTagApi extends PrivateApiComponentBase {
 
     @Resource
     private CiEntityMapper ciEntityMapper;
-    @Resource
-    private CmdbTagMapper cmdbTagMapper;
 
     @Override
     public String getToken() {
-        return "/cmdb/cientity/tag/batch/add";
+        return "/cmdb/cientity/tag/batch/delete";
     }
 
     @Override
     public String getName() {
-        return "批量添加配置项标签";
+        return "批量删除配置项标签";
     }
 
     @Override
@@ -76,16 +69,12 @@ public class BatchAddCiEntityTagApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "ciEntityIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "配置项id列表"),
-            @Param(name = "mode", type = ApiParamType.STRING, desc = "编辑模式，append/replace"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, isRequired = true, desc = "标签id列表")
     })
-    @Description(desc = "批量添加配置项标签")
+    @Description(desc = "批量删除配置项标签")
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
-        JSONArray ciEntityIdArray = paramObj.getJSONArray("ciEntityIdList");
-        JSONArray tagIdArray = paramObj.getJSONArray("tagIdList");
-
-        List<Long> ciEntityIdList = ciEntityIdArray.toJavaList(Long.class);
+        List<Long> ciEntityIdList = paramObj.getJSONArray("ciEntityIdList").toJavaList(Long.class);
         List<CiEntityVo> ciEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(ciEntityIdList);
         if (CollectionUtils.isEmpty(ciEntityList)) {
             throw new CiEntityNotFoundException(ciEntityIdList.get(0));
@@ -102,35 +91,9 @@ public class BatchAddCiEntityTagApi extends PrivateApiComponentBase {
                 throw new CiEntityAuthException(ciEntityId, ciEntityVo.getName(), TransactionActionType.UPDATE.getText());
             }
         }
-        String mode = paramObj.getString("mode");
-        if ("replace".equals(mode)) {
-            ciEntityMapper.deleteCiEntityTagByCiEntityIdList(ciEntityIdList);
-        }
-
+        JSONArray tagIdArray = paramObj.getJSONArray("tagIdList");
         List<Long> tagIdList = tagIdArray.toJavaList(Long.class);
-        List<TagVo> tagList = cmdbTagMapper.getTagListByIdList(tagIdList);
-        if (CollectionUtils.isEmpty(tagList)) {
-            throw new CmdbTagNotFoundException(tagIdList.get(0));
-        }
-        if (tagList.size() != tagIdList.size()) {
-            List<Long> existTagIdList = tagList.stream().map(TagVo::getId).collect(Collectors.toList());
-            List<Long> notFoundTagIdList = ListUtils.removeAll(tagIdList, existTagIdList);
-            throw new CmdbTagNotFoundException(notFoundTagIdList);
-        }
-
-        List<CiEntityTagVo> ciEntityTagList = new ArrayList<>();
-        for (Long ciEntityId : ciEntityIdList) {
-            for (Long tagId : tagIdList) {
-                ciEntityTagList.add(new CiEntityTagVo(ciEntityId, tagId));
-                if (ciEntityTagList.size() > 100) {
-                    ciEntityMapper.insertIgnoreCiEntityTag(ciEntityTagList);
-                    ciEntityTagList.clear();
-                }
-            }
-        }
-        if (CollectionUtils.isNotEmpty(ciEntityTagList)) {
-            ciEntityMapper.insertIgnoreCiEntityTag(ciEntityTagList);
-        }
+        ciEntityMapper.deleteCiEntityTagByCiEntityIdListAndTagIdList(ciEntityIdList, tagIdList);
         return null;
     }
 }
