@@ -249,6 +249,10 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     int insertIgnoreCiEntityTag(List<CiEntityTagVo> ciEntityTagList);
 
+    int deleteCiEntityTagByCiEntityIdList(@Param("ciEntityIdList") List<Long> ciEntityIdList);
+
+    int deleteCiEntityTagByCiEntityIdListAndTagIdList(@Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("tagIdList") List<Long> tagIdList);
+
     void deleteCiEntityBaseInfo(CiEntityVo ciEntityVo);
 
     void deleteCiEntityExpiredTimeByCiEntityId(Long ciEntityId);

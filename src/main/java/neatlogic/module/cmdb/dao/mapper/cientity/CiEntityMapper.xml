@@ -128,6 +128,26 @@
         </foreach>
     </insert>
 
+    <delete id="deleteCiEntityTagByCiEntityIdListAndTagIdList">
+        DELETE FROM `cmdb_cientity_tag`
+        WHERE `cientity_id` IN
+        <foreach collection="ciEntityIdList" item="ciEntityId" open="(" close=")" separator=",">
+            #{ciEntityId}
+        </foreach>
+        AND `tag_id` IN
+        <foreach collection="tagIdList" item="tagId" open="(" close=")" separator=",">
+            #{tagId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteCiEntityTagByCiEntityIdList">
+        DELETE FROM `cmdb_cientity_tag`
+        WHERE `cientity_id` IN
+        <foreach collection="ciEntityIdList" item="ciEntityId" open="(" close=")" separator=",">
+            #{ciEntityId}
+        </foreach>
+    </delete>
+
     <select id="getCiEntityTagByCiEntityId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityTagVo">
         SELECT
             a.`cientity_id` AS `ciEntityId`,
