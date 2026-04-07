@@ -1317,10 +1317,11 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public List<Long> getAppSystemIdListById(Long id) {
         List<Long> appSystemIdList = new ArrayList<>();
-        List<ResourceEntityVo> appViewList = getAppViewList();
-        if (CollectionUtils.isNotEmpty(appViewList)) {
-            for (ResourceEntityVo resourceEntityVo : appViewList) {
-                List<Long> list = resourceCenterResourceService.getAppSystemIdListById(resourceEntityVo.getName(), id);
+//        List<ResourceEntityVo> appViewList = getAppViewList();
+        Map<String, List<String>> viewName2FieldListMap = getApplicationListDisplayViewName2FieldListMap();
+        if (MapUtils.isNotEmpty(viewName2FieldListMap)) {
+            for (Map.Entry<String, List<String>> entry : viewName2FieldListMap.entrySet()) {
+                List<Long> list = resourceCenterResourceService.getAppSystemIdListById(entry.getKey(), id);
                 appSystemIdList.addAll(list);
             }
         }
