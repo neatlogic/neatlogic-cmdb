@@ -1302,11 +1302,12 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public Map<String, List<Long>> getAppResourceTypeIdListByAppSystemIdAndAppModuleIdAndEnvIdAndInspectStatusList(Long appSystemId, Long appModuleId, Long envId, List<String> inspectStatusList) {
         Map<String, List<Long>> viewName2TypeIdListMap = new HashMap<>();
-        List<ResourceEntityVo> appViewList = getAppViewList();
-        if (CollectionUtils.isNotEmpty(appViewList)) {
-            for (ResourceEntityVo resourceEntityVo : appViewList) {
-                List<Long> typeIdList = resourceCenterResourceService.getAppResourceTypeIdListByViewNameAndAppSystemId(resourceEntityVo.getName(), appSystemId, appModuleId, envId, inspectStatusList);
-                viewName2TypeIdListMap.put(resourceEntityVo.getName(), typeIdList);
+//        List<ResourceEntityVo> appViewList = getAppViewList();
+        Map<String, List<String>> viewName2FieldListMap = getApplicationListDisplayViewName2FieldListMap();
+        if (MapUtils.isNotEmpty(viewName2FieldListMap)) {
+            for (Map.Entry<String, List<String>> entry : viewName2FieldListMap.entrySet()) {
+                List<Long> typeIdList = resourceCenterResourceService.getAppResourceTypeIdListByViewNameAndAppSystemId(entry.getKey(), appSystemId, appModuleId, envId, inspectStatusList);
+                viewName2TypeIdListMap.put(entry.getKey(), typeIdList);
             }
         }
         return viewName2TypeIdListMap;
