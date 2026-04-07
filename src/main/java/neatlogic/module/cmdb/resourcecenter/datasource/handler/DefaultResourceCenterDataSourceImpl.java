@@ -1187,9 +1187,10 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
         List<AppEnvVo> resultList = new ArrayList<>();
         Map<Long, AppEnvVo> appEnvMap = new HashMap<>();
         Map<Long, List<AppModuleVo>> appEnvId2AppModuleListMap = new HashMap<>();
-        List<ResourceEntityVo> appViewList = getAppViewList();
-        for (ResourceEntityVo resourceEntityVo : appViewList) {
-            List<AppEnvVo> appEnvList = resourceCenterResourceService.getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(resourceEntityVo.getName(), appSystemId, appModuleId, inspectStatusList);
+//        List<ResourceEntityVo> appViewList = getAppViewList();
+        Map<String, List<String>> viewName2FieldListMap = getApplicationListDisplayViewName2FieldListMap();
+        for (Map.Entry<String, List<String>> entry : viewName2FieldListMap.entrySet()) {
+            List<AppEnvVo> appEnvList = resourceCenterResourceService.getAppEnvListByViewNameAndAppSystemIdAndAppModuleIdAndInspectStatusList(entry.getKey(), appSystemId, appModuleId, inspectStatusList);
             for (AppEnvVo appEnvVo : appEnvList) {
                 appEnvMap.put(appEnvVo.getId(), appEnvVo);
                 List<AppModuleVo> appModuleList = appEnvVo.getAppModuleList();
@@ -1302,11 +1303,12 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public Map<String, List<Long>> getAppResourceTypeIdListByAppSystemIdAndAppModuleIdAndEnvIdAndInspectStatusList(Long appSystemId, Long appModuleId, Long envId, List<String> inspectStatusList) {
         Map<String, List<Long>> viewName2TypeIdListMap = new HashMap<>();
-        List<ResourceEntityVo> appViewList = getAppViewList();
-        if (CollectionUtils.isNotEmpty(appViewList)) {
-            for (ResourceEntityVo resourceEntityVo : appViewList) {
-                List<Long> typeIdList = resourceCenterResourceService.getAppResourceTypeIdListByViewNameAndAppSystemId(resourceEntityVo.getName(), appSystemId, appModuleId, envId, inspectStatusList);
-                viewName2TypeIdListMap.put(resourceEntityVo.getName(), typeIdList);
+//        List<ResourceEntityVo> appViewList = getAppViewList();
+        Map<String, List<String>> viewName2FieldListMap = getApplicationListDisplayViewName2FieldListMap();
+        if (MapUtils.isNotEmpty(viewName2FieldListMap)) {
+            for (Map.Entry<String, List<String>> entry : viewName2FieldListMap.entrySet()) {
+                List<Long> typeIdList = resourceCenterResourceService.getAppResourceTypeIdListByViewNameAndAppSystemId(entry.getKey(), appSystemId, appModuleId, envId, inspectStatusList);
+                viewName2TypeIdListMap.put(entry.getKey(), typeIdList);
             }
         }
         return viewName2TypeIdListMap;
@@ -1315,10 +1317,11 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @Override
     public List<Long> getAppSystemIdListById(Long id) {
         List<Long> appSystemIdList = new ArrayList<>();
-        List<ResourceEntityVo> appViewList = getAppViewList();
-        if (CollectionUtils.isNotEmpty(appViewList)) {
-            for (ResourceEntityVo resourceEntityVo : appViewList) {
-                List<Long> list = resourceCenterResourceService.getAppSystemIdListById(resourceEntityVo.getName(), id);
+//        List<ResourceEntityVo> appViewList = getAppViewList();
+        Map<String, List<String>> viewName2FieldListMap = getApplicationListDisplayViewName2FieldListMap();
+        if (MapUtils.isNotEmpty(viewName2FieldListMap)) {
+            for (Map.Entry<String, List<String>> entry : viewName2FieldListMap.entrySet()) {
+                List<Long> list = resourceCenterResourceService.getAppSystemIdListById(entry.getKey(), id);
                 appSystemIdList.addAll(list);
             }
         }
