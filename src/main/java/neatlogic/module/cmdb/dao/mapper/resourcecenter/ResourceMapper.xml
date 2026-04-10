@@ -533,6 +533,7 @@
         <result column="os_id" property="osId"/>
         <result column="os_name" property="osName"/>
         <result column="os_type_id" property="osTypeId"/>
+        <result column="os_ip" property="osIp"/>
         <result column="app_module_id" property="appModuleId"/>
         <result column="app_module_name" property="appModuleName"/>
         <result column="app_module_abbr_name" property="appModuleAbbrName"/>
@@ -595,7 +596,8 @@
         a.`env_name`,
         a.`os_id`,
         a.`os_name`,
-        a.`os_type_id`
+        a.`os_type_id`,
+        a.`os_ip`
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
         WHERE a.`id` IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
