@@ -142,10 +142,14 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
         List<Long> hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(new ArrayList<>(withoutCiAuthCiEntityList), GroupType.MAINTAIN);
         Map<Long,String> ciLabelMap = new HashMap<>();
-        List<CiVo> ciVoList=ciMapper.getCiByIdList(resultList.stream().map(ResourceVo::getOsTypeId).filter(Objects::nonNull).collect(Collectors.toList()));
-        if(CollectionUtils.isNotEmpty(ciVoList)) {
-            ciLabelMap = ciVoList.stream().collect(Collectors.toMap(CiVo::getId, CiVo::getLabel));
+        List<CiVo> ciVoList;
+        if(CollectionUtils.isNotEmpty(resultList)) {
+            ciVoList=ciMapper.getCiByIdList(resultList.stream().filter(Objects::nonNull).map(ResourceVo::getOsTypeId).collect(Collectors.toList()));
+            if(CollectionUtils.isNotEmpty(ciVoList)) {
+                ciLabelMap = ciVoList.stream().collect(Collectors.toMap(CiVo::getId, CiVo::getLabel));
+            }
         }
+
         for (ResourceVo resourceVo : resultList) {
             //模型权限
             if (canEditTypeIdList.contains(resourceVo.getTypeId())) {
