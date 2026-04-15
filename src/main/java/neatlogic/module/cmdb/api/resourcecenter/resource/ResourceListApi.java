@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB;
+import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceSearchVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo;
 import neatlogic.framework.cmdb.enums.group.GroupType;
@@ -27,16 +28,14 @@ import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
+import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +51,9 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
     @Resource
     private IResourceCenterResourceService resourceCenterResourceService;
+
+    @Resource
+    private CiMapper ciMapper;
 
     @Override
     public String getToken() {
@@ -137,8 +139,15 @@ public class ResourceListApi extends PrivateApiComponentBase {
                 canDeleteTypeIdList.add(typeId);
             }
         }
-        //模型权限
+
+        List<Long> hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(new ArrayList<>(withoutCiAuthCiEntityList), GroupType.MAINTAIN);
+        Map<Long,String> ciLabelMap = new HashMap<>();
+        List<CiVo> ciVoList=ciMapper.getCiByIdList(resultList.stream().map(ResourceVo::getOsTypeId).filter(Objects::nonNull).collect(Collectors.toList()));
+        if(CollectionUtils.isNotEmpty(ciVoList)) {
+            ciLabelMap = ciVoList.stream().collect(Collectors.toMap(CiVo::getId, CiVo::getLabel));
+        }
         for (ResourceVo resourceVo : resultList) {
+            //模型权限
             if (canEditTypeIdList.contains(resourceVo.getTypeId())) {
                 resourceVo.setIsCanEdit(true);
             } else {
@@ -149,15 +158,16 @@ public class ResourceListApi extends PrivateApiComponentBase {
             } else {
                 withoutCiAuthCiEntityList.add(resourceVo.getId());
             }
-        }
-        //团体权限
-        List<Long> hasMaintainCiEntityIdList = CiAuthChecker.isCiEntityInGroup(new ArrayList<>(withoutCiAuthCiEntityList), GroupType.MAINTAIN);
-        for (ResourceVo resourceVo : resultList) {
+            //团体权限
             if (hasMaintainCiEntityIdList.contains(resourceVo.getId())) {
                 resourceVo.setIsCanEdit(true);
                 resourceVo.setIsCanDelete(true);
             }
+            //补充 osTypeName
+            resourceVo.setOsTypeName(ciLabelMap.get(resourceVo.getOsTypeId()));
         }
+
+
         return TableResultUtil.getResult(resultList, searchVo);
     }
 
