@@ -1494,7 +1494,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
                         //如果是更新，并且设置了跳过唯一规则校验，才忽略唯一规则报错
                         if (!ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue()) || !ciEntityTransactionVo.getSkipUniqueCheck()) {
-                            throw new CiUniqueRuleException(ciVo, String.join(",", valueList));
+                            throw new CiUniqueRuleException(ciVo, String.join(",", valueList), checkCiEntity.getId());
                         }
                     }
                 }
@@ -1769,7 +1769,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                         for (CiEntityVo checkCiEntity : checkList) {
                             if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
-                                throw new CiUniqueRuleException(ciVo);
+                                throw new CiUniqueRuleException(ciVo, checkCiEntity.getId());
                             }
                         }
                     }
@@ -1992,7 +1992,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         List<CiEntityVo> checkList = this.searchCiEntity(ciEntityConditionVo);
                         for (CiEntityVo checkCiEntity : checkList) {
                             if (!checkCiEntity.getId().equals(ciEntityTransactionVo.getCiEntityId())) {
-                                throw new CiUniqueRuleException(ciVo);
+                                throw new CiUniqueRuleException(ciVo, checkCiEntity.getId());
                             }
                         }
                     }
