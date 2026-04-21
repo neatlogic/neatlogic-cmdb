@@ -434,7 +434,7 @@ public class LegalValidManager {
                 List<CiEntityVo> checkList = ciEntityService.searchCiEntity(ciEntityConditionVo);
                 for (CiEntityVo checkCiEntity : checkList) {
                     if (!checkCiEntity.getId().equals(ciEntityVo.getId())) {
-                        errorList.add(new CiUniqueRuleException(ciVo));
+                        errorList.add(new CiUniqueRuleException(ciVo, checkCiEntity.getId()));
                     }
                 }
             }
