@@ -20,10 +20,7 @@ import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.fulltextindex.dto.globalsearch.DocumentTypeVo;
 import neatlogic.framework.fulltextindex.dto.globalsearch.DocumentVo;
 import neatlogic.framework.globalsearch.core.GlobalSearchManager;
-import neatlogic.framework.restful.annotation.Description;
-import neatlogic.framework.restful.annotation.Input;
-import neatlogic.framework.restful.annotation.OperationType;
-import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
@@ -52,9 +49,18 @@ public class SearchAllCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
-    @Input({@Param(name = "keyword", type = ApiParamType.STRING, isRequired = true, desc = "关键字"),
-            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "页码，默认：1")})
-    @Description(desc = "配置项全局搜索")
+    @Override
+    public JSONObject example() {
+        String json = "{\"keyword\":\"mysql 192.168.0.22\",\"currentPage\":1,\"pageSize\":20}";
+        return JSON.parseObject(json);
+    }
+
+    @Input({@Param(name = "keyword", type = ApiParamType.STRING, isRequired = true, desc = "搜索关键字，支持名称、IP、编号等配置项相关文本"),
+            @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页码，默认值是1"),
+            @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "每页条数，默认值沿用系统分页配置")})
+    @Output({@Param(name = "documentTypeList", explode = DocumentTypeVo[].class, desc = "按配置项类型分组的搜索结果，每组内包含分页信息和结果列表"),
+            @Param(name = "wordList", type = ApiParamType.JSONARRAY, desc = "关键字分词结果，可用于理解实际检索词")})
+    @Description(desc = "根据关键字搜索配置项，并按配置项类型分组返回结果")
     @Override
     public Object myDoService(JSONObject jsonObj) {
         DocumentVo documentVo = JSON.toJavaObject(jsonObj, DocumentVo.class);

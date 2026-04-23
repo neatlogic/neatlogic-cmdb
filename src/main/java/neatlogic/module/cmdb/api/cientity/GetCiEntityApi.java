@@ -60,10 +60,6 @@ public class GetCiEntityApi extends PrivateApiComponentBase {
         return "/cmdb/cientity/get";
     }
 
-    @Override
-    public boolean isMcp() {
-        return true;
-    }
 
     @Override
     public String getName() {
