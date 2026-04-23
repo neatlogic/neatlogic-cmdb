@@ -1036,6 +1036,21 @@
         LIMIT 1
     </select>
 
+    <select id="getOSByIdList" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
+        SELECT a.`id`,
+               a.`name`,
+               a.`ip`,
+               a.`type_id`    AS typeId,
+               a.`type_name`  AS typeName,
+               a.`type_label` AS typeLabel
+        FROM @{DATA_SCHEMA}.`scence_os` a
+        WHERE a.`id` IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="getAppSystemById" parameterType="java.lang.Long" resultMap="resourceCenterMap">
         select `id`,
                `name`,

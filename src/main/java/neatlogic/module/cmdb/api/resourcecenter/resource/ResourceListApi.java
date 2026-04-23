@@ -29,9 +29,11 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.resourcecenter.resource.IResourceCenterResourceService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -54,6 +56,8 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
+    @Resource
+    private ResourceMapper resourceMapper;
 
     @Override
     public String getToken() {
@@ -94,7 +98,8 @@ public class ResourceListApi extends PrivateApiComponentBase {
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "common.currentpage"),
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "rowNum", type = ApiParamType.INTEGER, desc = "common.rownum"),
-            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "common.isneedpage")
+            @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "common.isneedpage"),
+            @Param(name = "needSupplementOs", type = ApiParamType.BOOLEAN, desc = "是否补充资源自身的操作系统信息")
     })
     @Output({
             @Param(explode = BasePageVo.class),
@@ -123,6 +128,9 @@ public class ResourceListApi extends PrivateApiComponentBase {
         List<ResourceVo> resultList = resourceCenterDataSource.getResourceList(searchVo);
         if (CollectionUtils.isNotEmpty(resultList)) {
             resourceCenterResourceService.addTagAndAccountInformation(resultList);
+            if (Boolean.TRUE.equals(jsonObj.getBoolean("needSupplementOs"))) {
+                supplementOperatingSystemInformation(resultList);
+            }
         }
 
         Set<Long> typeIdList = resultList.stream().map(ResourceVo::getTypeId).collect(Collectors.toSet());
@@ -173,6 +181,48 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
 
         return TableResultUtil.getResult(resultList, searchVo);
+    }
+
+    /**
+     * 补充 os信息
+     */
+    private void supplementOperatingSystemInformation(List<ResourceVo> resultList) {
+        if (CollectionUtils.isEmpty(resultList)) {
+            return;
+        }
+        List<Long> osCandidateIdList = resultList.stream()
+                .filter(Objects::nonNull)
+                .filter(resourceVo -> resourceVo.getId() != null)
+                .filter(resourceVo -> resourceVo.getPort() == null)
+                .filter(resourceVo -> StringUtils.isNotBlank(resourceVo.getIp()))
+                .filter(resourceVo -> resourceVo.getOsId() == null && StringUtils.isBlank(resourceVo.getOsIp()) && StringUtils.isBlank(resourceVo.getOsName()) && resourceVo.getOsTypeId() == null)
+                .map(ResourceVo::getId)
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(osCandidateIdList)) {
+            return;
+        }
+        List<ResourceVo> osResourceList = resourceMapper.getOSByIdList(osCandidateIdList);
+        if (CollectionUtils.isEmpty(osResourceList)) {
+            return;
+        }
+        Map<Long, ResourceVo> osResourceMap = osResourceList.stream()
+                .filter(Objects::nonNull)
+                .filter(resourceVo -> resourceVo.getId() != null)
+                .collect(Collectors.toMap(ResourceVo::getId, resourceVo -> resourceVo, (left, right) -> left));
+        for (ResourceVo resourceVo : resultList) {
+            if (resourceVo == null || resourceVo.getId() == null) {
+                continue;
+            }
+            ResourceVo osResourceVo = osResourceMap.get(resourceVo.getId());
+            if (osResourceVo == null) {
+                continue;
+            }
+            resourceVo.setOsId(osResourceVo.getId());
+            resourceVo.setOsIp(osResourceVo.getIp());
+            resourceVo.setOsName(osResourceVo.getName());
+            resourceVo.setOsTypeId(osResourceVo.getTypeId());
+            resourceVo.setOsTypeName(osResourceVo.getTypeName());
+        }
     }
 
 }

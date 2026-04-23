@@ -109,6 +109,8 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     ResourceVo getOSByIp(String ip);
 
+    List<ResourceVo> getOSByIdList(List<Long> idList);
+
     ResourceVo getAppSystemById(Long id);
 
     ResourceVo getAppSystemByName(String name);
