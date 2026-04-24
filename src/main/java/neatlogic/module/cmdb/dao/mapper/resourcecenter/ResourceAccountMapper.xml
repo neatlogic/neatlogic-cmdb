@@ -114,6 +114,9 @@
                 #{item}
             </foreach>
         </if>
+        <if test="isDefault != null">
+            and a.`is_default` = #{isDefault}
+        </if>
     </sql>
 
     <resultMap id="accountMap" type="neatlogic.framework.cmdb.dto.resourcecenter.AccountVo">

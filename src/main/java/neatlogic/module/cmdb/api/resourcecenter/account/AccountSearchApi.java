@@ -67,6 +67,7 @@ public class AccountSearchApi extends PrivateApiComponentBase {
     @Input({
             @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "协议id列表"),
             @Param(name = "protocolList", type = ApiParamType.JSONARRAY, desc = "协议名称列表"),
+            @Param(name = "isDefault", type = ApiParamType.ENUM, rule = "0,1", desc = "是否默认"),
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "关键词"),
             @Param(name = "defaultValue", type = ApiParamType.JSONARRAY, desc = "用于回显的账号ID列表"),
             @Param(name = "currentPage", type = ApiParamType.INTEGER, desc = "当前页"),
