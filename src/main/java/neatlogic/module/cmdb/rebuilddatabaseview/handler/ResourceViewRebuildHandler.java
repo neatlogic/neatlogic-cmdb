@@ -23,7 +23,7 @@ import neatlogic.framework.rebuilddatabaseview.core.IRebuildDataBaseView;
 import neatlogic.framework.rebuilddatabaseview.core.ViewStatusInfo;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
 import neatlogic.module.cmdb.service.resourcecenter.resource.ResourceBuildSqlService;
-import neatlogic.module.cmdb.utils.ResourceEntityFactory;
+import neatlogic.framework.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 

@@ -14,7 +14,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceEntityMapper;
-import neatlogic.module.cmdb.utils.ResourceEntityFactory;
+import neatlogic.framework.cmdb.utils.ResourceEntityFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.Map;
 @Service
 @AuthAction(action = CMDB.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
-public class getResourceEntityViewDataListApi extends PrivateApiComponentBase {
+public class GetResourceEntityViewDataListApi extends PrivateApiComponentBase {
 
     @Resource
     private ResourceEntityMapper resourceEntityMapper;
