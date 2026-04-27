@@ -194,9 +194,9 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
             SqlVo sqlVo = new SqlVo();
             if (preConditionQueryCriteriaVo != null) {
-                getSqlVoForResource(sqlVo, preConditionQueryCriteriaVo, fieldName2ColumnMap);
+                getSqlVoForResource(sqlVo, preConditionQueryCriteriaVo, fieldName2ColumnMap, "pre_d");
             }
-            getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap);
+            getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap, "d");
             $sql.addSql(plainSelect, sqlVo);
 //            if (CollectionUtils.isNotEmpty(searchVo.getKeywordList()) && searchVo.getNameFieldAttrId() != null && searchVo.getIpFieldAttrId() != null) {
 //                $sql.addOrderBy(plainSelect, $sql.fun("COUNT", "fw.word").withDistinct(true), "desc");
@@ -237,9 +237,9 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
             SqlVo sqlVo = new SqlVo();
             if (preConditionQueryCriteriaVo != null) {
-                getSqlVoForResource(sqlVo, preConditionQueryCriteriaVo, fieldName2ColumnMap);
+                getSqlVoForResource(sqlVo, preConditionQueryCriteriaVo, fieldName2ColumnMap, "pre_d");
             }
-            getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap);
+            getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap, "d");
             $sql.addSql(plainSelect, sqlVo);
             Column column = fieldName2ColumnMap.get("id");
             $sql.setSelectColumn(plainSelect, $sql.fun("COUNT", column.toString()).withDistinct(true));
@@ -2104,7 +2104,44 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         return sqlVo;
     }
 
+    private boolean isTagMatchAll(ResourceQueryCriteriaVo queryCriteriaVo) {
+        return queryCriteriaVo != null && StringUtils.equalsIgnoreCase(queryCriteriaVo.getTagMatchMode(), "all");
+    }
+
+    private void appendTagFilterJoin(List<JoinVo> joinList, List<ExpressionVo> whereExpressionList, ResourceQueryCriteriaVo queryCriteriaVo, Column idColumn, String baseAlias) {
+        if (CollectionUtils.isEmpty(queryCriteriaVo.getTagIdList()) || idColumn == null) {
+            return;
+        }
+        List<Long> tagIdList = new ArrayList<>();
+        for (Long tagId : new LinkedHashSet<>(queryCriteriaVo.getTagIdList())) {
+            if (tagId != null) {
+                tagIdList.add(tagId);
+            }
+        }
+        if (CollectionUtils.isEmpty(tagIdList)) {
+            return;
+        }
+        if (isTagMatchAll(queryCriteriaVo)) {
+            for (int i = 0; i < tagIdList.size(); i++) {
+                String alias = baseAlias + "_tag_" + i;
+                joinList.add($sql.join("join", "cmdb_resourcecenter_resource_tag", alias).withOn(
+                        $sql.exp(
+                                $sql.exp(alias + ".resource_id", "=", idColumn.toString()),
+                                "and",
+                                $sql.exp(alias + ".tag_id", "=", tagIdList.get(i))
+                        )));
+            }
+        } else {
+            joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_tag", baseAlias).withOn($sql.exp(baseAlias + ".resource_id", "=", idColumn.toString())));
+            whereExpressionList.add($sql.exp(baseAlias + ".tag_id", "in", tagIdList));
+        }
+    }
+
     private void getSqlVoForResource(SqlVo sqlVo, ResourceQueryCriteriaVo queryCriteriaVo, Map<String, Column> fieldName2ColumnMap) {
+        getSqlVoForResource(sqlVo, queryCriteriaVo, fieldName2ColumnMap, "d");
+    }
+
+    private void getSqlVoForResource(SqlVo sqlVo, ResourceQueryCriteriaVo queryCriteriaVo, Map<String, Column> fieldName2ColumnMap, String tagAlias) {
 //        SqlVo sqlVo = new SqlVo();
         List<JoinVo> joinList = new ArrayList<>();
         List<ExpressionVo> whereExpressionList = new ArrayList<>();
@@ -2250,8 +2287,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
          */
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getTagIdList())) {
 //            System.out.println("e");
-            joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_tag", "d").withOn($sql.exp("d.resource_id", "=", fieldName2ColumnMap.get("id").toString())));
-            whereExpressionList.add($sql.exp("d.tag_id", "in", queryCriteriaVo.getTagIdList()));
+            appendTagFilterJoin(joinList, whereExpressionList, queryCriteriaVo, fieldName2ColumnMap.get("id"), tagAlias);
         }
         /*
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">

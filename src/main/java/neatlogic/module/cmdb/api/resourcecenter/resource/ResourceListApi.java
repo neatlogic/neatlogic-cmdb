@@ -90,6 +90,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
             @Param(name = "appModuleIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.appmoduleidlist"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.typeidlist"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, desc = "common.tagidlist"),
+            @Param(name = "tagMatchMode", type = ApiParamType.STRING, desc = "标签匹配模式"),
             @Param(name = "inspectStatusList", type = ApiParamType.JSONARRAY, desc = "term.inspect.inspectstatuslist"),
             @Param(name = "searchField", type = ApiParamType.STRING, desc = "term.cmdb.searchfield"),
             @Param(name = "batchSearchList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.batchsearchlist"),

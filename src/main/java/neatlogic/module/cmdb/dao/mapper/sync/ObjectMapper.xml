@@ -16,6 +16,19 @@
           and a.obj_type = #{type}
     </select>
 
+    <select id="getObjectByCiId" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.sync.ObjectVo">
+        select a.id,
+               a.obj_category as objCategory,
+               a.obj_type     as objType,
+               a.ci_id        as ciId,
+               b.name         as ciName,
+               b.label        as ciLabel
+        from cmdb_sync_objtype a
+                 left join cmdb_ci b on a.ci_id = b.id
+        where a.ci_id = #{value}
+        limit 1
+    </select>
+
     <select id="checkObjectIsExists" parameterType="neatlogic.framework.cmdb.dto.sync.ObjectVo" resultType="int">
         select count(1)
         from cmdb_sync_objtype

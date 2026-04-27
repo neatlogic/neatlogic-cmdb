@@ -164,7 +164,7 @@
                 #{protocolId}
             </foreach>
         </if>
-        <if test="tagIdList != null and tagIdList.size() > 0">
+        <if test="tagIdList != null and tagIdList.size() > 0 and (tagMatchMode == null or tagMatchMode != 'all')">
             AND d.`tag_id` IN
             <foreach collection="tagIdList" item="tagId" open="(" separator="," close=")">
                 #{tagId}
@@ -264,8 +264,8 @@
                 #{protocolId}
             </foreach>
         </if>
-        <if test="preCondition.tagIdList != null and preCondition.tagIdList.size() > 0">
-            AND d.`tag_id` IN
+        <if test="preCondition.tagIdList != null and preCondition.tagIdList.size() > 0 and (preCondition.tagMatchMode == null or preCondition.tagMatchMode != 'all')">
+            AND p_d.`tag_id` IN
             <foreach collection="preCondition.tagIdList" item="tagId" open="(" separator="," close=")">
                 #{tagId}
             </foreach>
@@ -298,7 +298,18 @@
             LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
         </if>
         <if test="tagIdList != null and tagIdList.size() > 0">
-            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+            <choose>
+                <when test="tagMatchMode != null and tagMatchMode == 'all'">
+                    <foreach collection="tagIdList" item="tagId" index="index">
+                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
+                        ON d_${index}.`resource_id` = a.`id`
+                        AND d_${index}.`tag_id` = #{tagId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                </otherwise>
+            </choose>
         </if>
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
@@ -343,7 +354,18 @@
             LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
         </if>
         <if test="tagIdList != null and tagIdList.size() > 0">
-            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+            <choose>
+                <when test="tagMatchMode != null and tagMatchMode == 'all'">
+                    <foreach collection="tagIdList" item="tagId" index="index">
+                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
+                        ON d_${index}.`resource_id` = a.`id`
+                        AND d_${index}.`tag_id` = #{tagId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                </otherwise>
+            </choose>
         </if>
         <if test="isHasAuth == false">
             LEFT JOIN cmdb_cientity_group ccg ON ccg.cientity_id = a.id
@@ -384,7 +406,34 @@
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
         LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            <choose>
+                <when test="tagMatchMode != null and tagMatchMode == 'all'">
+                    <foreach collection="tagIdList" item="tagId" index="index">
+                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
+                        ON d_${index}.`resource_id` = a.`id`
+                        AND d_${index}.`tag_id` = #{tagId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                </otherwise>
+            </choose>
+        </if>
+        <if test="preCondition != null and preCondition.tagIdList != null and preCondition.tagIdList.size() > 0">
+            <choose>
+                <when test="preCondition.tagMatchMode != null and preCondition.tagMatchMode == 'all'">
+                    <foreach collection="preCondition.tagIdList" item="tagId" index="index">
+                        INNER JOIN `cmdb_resourcecenter_resource_tag` p_d_${index}
+                        ON p_d_${index}.`resource_id` = a.`id`
+                        AND p_d_${index}.`tag_id` = #{tagId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    LEFT JOIN `cmdb_resourcecenter_resource_tag` p_d ON p_d.`resource_id` = a.`id`
+                </otherwise>
+            </choose>
+        </if>
         left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
         left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
         <if test="isHasAuth == false">
@@ -441,7 +490,34 @@
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
         LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            <choose>
+                <when test="tagMatchMode != null and tagMatchMode == 'all'">
+                    <foreach collection="tagIdList" item="tagId" index="index">
+                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
+                        ON d_${index}.`resource_id` = a.`id`
+                        AND d_${index}.`tag_id` = #{tagId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                </otherwise>
+            </choose>
+        </if>
+        <if test="preCondition != null and preCondition.tagIdList != null and preCondition.tagIdList.size() > 0">
+            <choose>
+                <when test="preCondition.tagMatchMode != null and preCondition.tagMatchMode == 'all'">
+                    <foreach collection="preCondition.tagIdList" item="tagId" index="index">
+                        INNER JOIN `cmdb_resourcecenter_resource_tag` p_d_${index}
+                        ON p_d_${index}.`resource_id` = a.`id`
+                        AND p_d_${index}.`tag_id` = #{tagId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    LEFT JOIN `cmdb_resourcecenter_resource_tag` p_d ON p_d.`resource_id` = a.`id`
+                </otherwise>
+            </choose>
+        </if>
         left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
         left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id
         <if test="isHasAuth == false">
@@ -1650,7 +1726,20 @@
         FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
         LEFT JOIN `cmdb_resourcecenter_resource_account` b ON b.`resource_id` = a.`id`
         LEFT JOIN `cmdb_resourcecenter_account` c ON c.`id` = b.`account_id`
-        LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+        <if test="tagIdList != null and tagIdList.size() > 0">
+            <choose>
+                <when test="tagMatchMode != null and tagMatchMode == 'all'">
+                    <foreach collection="tagIdList" item="tagId" index="index">
+                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
+                        ON d_${index}.`resource_id` = a.`id`
+                        AND d_${index}.`tag_id` = #{tagId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                </otherwise>
+            </choose>
+        </if>
         <if test="inspectJobPhaseNodeStatusList !=null and inspectJobPhaseNodeStatusList.size() > 0">
             left join autoexec_job_resource_inspect ajri on ajri.resource_id=a.id
             left join autoexec_job_phase_node ajpn on ajpn.job_phase_id =ajri.phase_id AND ajpn.resource_id = a.id

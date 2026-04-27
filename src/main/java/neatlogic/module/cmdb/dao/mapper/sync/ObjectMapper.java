@@ -12,12 +12,13 @@
 
 package neatlogic.module.cmdb.dao.mapper.sync;
 
+import neatlogic.framework.cmdb.crossover.ISyncObjectCrossoverMapper;
 import neatlogic.framework.cmdb.dto.sync.ObjectVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface ObjectMapper {
+public interface ObjectMapper extends ISyncObjectCrossoverMapper {
     ObjectVo getObjectByCategoryAndType(@Param("category") String category, @Param("type") String type);
 
     int checkObjectIsExists(ObjectVo objectVo);
