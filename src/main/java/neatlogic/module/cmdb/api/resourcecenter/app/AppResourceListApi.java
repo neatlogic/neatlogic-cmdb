@@ -75,11 +75,6 @@ public class AppResourceListApi extends PrivateApiComponentBase {
         Long envId = paramObj.getLong("envId");
         Integer currentPage = paramObj.getInteger("currentPage");
         Integer pageSize = paramObj.getInteger("pageSize");
-        Long typeId = paramObj.getLong("typeId");
-        List<Long> typeIdList = new ArrayList<>();
-        if (typeId != null) {
-            typeIdList.add(typeId);
-        }
         String viewName = paramObj.getString("viewName");
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
         JSONArray tableList = resourceCenterDataSource.getAppResourceList(appSystemId, appModuleId, envId, null, viewName, currentPage, pageSize);

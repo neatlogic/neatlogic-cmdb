@@ -412,7 +412,7 @@ public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
         GlobalAttrFilterVo globalAttrFilterVo = new GlobalAttrFilterVo();
         globalAttrFilterVo.setAttrId(globalAttrVo.getId());
         if (StringUtils.isBlank(expression)) {
-            expression = neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression();
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
         }
         if (Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NULL.getExpression())
                 || Objects.equals(expression, neatlogic.framework.matrix.constvalue.SearchExpression.NOTNULL.getExpression())) {
@@ -499,7 +499,7 @@ public class MatrixCiEntityServiceImpl implements MatrixCiEntityService {
             return null;
         }
         if (StringUtils.isBlank(expression)) {
-            expression = neatlogic.framework.matrix.constvalue.SearchExpression.EQ.getExpression();
+            expression = neatlogic.framework.matrix.constvalue.SearchExpression.LI.getExpression();
         }
         Set<Long> ciEntityIdSet = new HashSet<>();
         for (String value : valueList) {
