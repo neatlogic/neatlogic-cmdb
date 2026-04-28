@@ -13,6 +13,7 @@
 package neatlogic.module.cmdb.rebuilddatabaseview.handler;
 
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.dao.mapper.SchemaMapper;
 import neatlogic.framework.rebuilddatabaseview.core.IRebuildDataBaseView;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -73,9 +75,11 @@ public class CustomViewRebuildHandler implements IRebuildDataBaseView {
 
     @Override
     public List<ViewStatusInfo> createOrReplaceView() {
-        List<ViewStatusInfo> resultList = new ArrayList<>();
+        List<ViewStatusInfo> resultList = Collections.synchronizedList(new ArrayList<>());
         List<Long> idList = customViewMapper.getAllIdList();
-        for (Long id : idList) {
+        BatchRunner<Long> runner = new BatchRunner<>();
+        runner.execute(idList, 5, (threadIndex, dataIndex, id) -> {
+            long startTime = System.currentTimeMillis();
             CustomViewVo customViewVo = customViewMapper.getCustomViewById(id);
             customViewService.parseConfig(customViewVo);
             ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
@@ -89,8 +93,25 @@ public class CustomViewRebuildHandler implements IRebuildDataBaseView {
                 viewStatusInfo.setStatus(ViewStatusInfo.Status.FAILURE.toString());
                 viewStatusInfo.setError(e.getMessage());
             }
+            viewStatusInfo.setTimeCost(System.currentTimeMillis() - startTime);
             resultList.add(viewStatusInfo);
-        }
+        }, "REBUILD-DATABASE-VIEW-FOR-CUSTOMVIEW");
+//        for (Long id : idList) {
+//            CustomViewVo customViewVo = customViewMapper.getCustomViewById(id);
+//            customViewService.parseConfig(customViewVo);
+//            ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
+//            viewStatusInfo.setName("customview_" + id);
+//            viewStatusInfo.setLabel(customViewVo.getName());
+//            try {
+//                CustomViewBuilder builder = new CustomViewBuilder(customViewVo);
+//                builder.buildView();
+//                viewStatusInfo.setStatus(ViewStatusInfo.Status.SUCCESS.toString());
+//            } catch (Exception e) {
+//                viewStatusInfo.setStatus(ViewStatusInfo.Status.FAILURE.toString());
+//                viewStatusInfo.setError(e.getMessage());
+//            }
+//            resultList.add(viewStatusInfo);
+//        }
         return resultList;
     }
 
