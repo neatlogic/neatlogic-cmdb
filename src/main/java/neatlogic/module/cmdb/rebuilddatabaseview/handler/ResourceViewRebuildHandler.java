@@ -146,15 +146,12 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
 //            resultList.add(viewStatusInfo);
             allResourceEntityList.add(resourceEntityVo);
         }
-//        System.out.println("allResourceEntityList.size() = " + allResourceEntityList.size());
         BatchRunner<ResourceEntityVo> runner = new BatchRunner<>();
         runner.execute(allResourceEntityList, 5, (threadIndex, dataIndex, resourceEntityVo) -> {
-//            System.out.println("start " + "resourceEntityVo.getName() = " + resourceEntityVo.getName());
             long startTime = System.currentTimeMillis();
             ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
             viewStatusInfo.setTimeCost(System.currentTimeMillis() - startTime);
             resultList.add(viewStatusInfo);
-//            System.out.println("end " + "resourceEntityVo.getName() = " + resourceEntityVo.getName() + (System.currentTimeMillis() - start) + ", " + JSON.toJSON(viewStatusInfo));
         }, "REBUILD-DATABASE-VIEW-FOR-RESOURCEVIEW");
         return resultList;
     }

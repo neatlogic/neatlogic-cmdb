@@ -77,11 +77,8 @@ public class CustomViewRebuildHandler implements IRebuildDataBaseView {
     public List<ViewStatusInfo> createOrReplaceView() {
         List<ViewStatusInfo> resultList = Collections.synchronizedList(new ArrayList<>());
         List<Long> idList = customViewMapper.getAllIdList();
-//        System.out.println("idList.size() = " + idList.size());
-//        System.out.println("idList = " + JSON.toJSON(idList));
         BatchRunner<Long> runner = new BatchRunner<>();
         runner.execute(idList, 5, (threadIndex, dataIndex, id) -> {
-//            System.out.println("start " + "customview_" + id);
             long startTime = System.currentTimeMillis();
             CustomViewVo customViewVo = customViewMapper.getCustomViewById(id);
             customViewService.parseConfig(customViewVo);
@@ -98,7 +95,6 @@ public class CustomViewRebuildHandler implements IRebuildDataBaseView {
             }
             viewStatusInfo.setTimeCost(System.currentTimeMillis() - startTime);
             resultList.add(viewStatusInfo);
-//            System.out.println("end " + "customview_" + id);
         }, "REBUILD-DATABASE-VIEW-FOR-CUSTOMVIEW");
 //        for (Long id : idList) {
 //            CustomViewVo customViewVo = customViewMapper.getCustomViewById(id);

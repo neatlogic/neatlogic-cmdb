@@ -94,10 +94,8 @@ public class CiViewRebuildHandler implements IRebuildDataBaseView {
             for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
                 searchVo.setCurrentPage(currentPage);
                 List<CiVo> ciList = ciMapper.getVirtualCiList(searchVo);
-//                System.out.println("ciList.size() = " + ciList.size());
                 BatchRunner<CiVo> runner = new BatchRunner<>();
                 runner.execute(ciList, 5, (threadIndex, dataIndex, ciVo) -> {
-//                    System.out.println("start cmdb_" + ciVo.getId());
                     long startTime = System.currentTimeMillis();
                     ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
                     viewStatusInfo.setName("cmdb_" + ciVo.getId());
@@ -113,7 +111,6 @@ public class CiViewRebuildHandler implements IRebuildDataBaseView {
                     }
                     viewStatusInfo.setTimeCost(System.currentTimeMillis() - startTime);
                     resultList.add(viewStatusInfo);
-//                    System.out.println("end cmdb_" + ciVo.getId());
                 }, "REBUILD-DATABASE-VIEW-FOR-CIVIEW");
 //                for (CiVo ciVo : ciList) {
 //                    ViewStatusInfo viewStatusInfo = new ViewStatusInfo();
