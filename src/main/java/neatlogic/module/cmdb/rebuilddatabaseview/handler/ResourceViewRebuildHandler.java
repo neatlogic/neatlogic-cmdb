@@ -14,6 +14,7 @@ package neatlogic.module.cmdb.rebuilddatabaseview.handler;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
+import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -101,8 +103,9 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
 
     @Override
     public List<ViewStatusInfo> createOrReplaceView() {
-        List<ViewStatusInfo> resultList = new ArrayList<>();
+        List<ViewStatusInfo> resultList = Collections.synchronizedList(new ArrayList<>());
         List<String> viewNameList = new ArrayList<>();
+        List<ResourceEntityVo> allResourceEntityList = new ArrayList<>();
         List<ResourceEntityVo> resourceEntityList = resourceEntityMapper.getResourceEntityList();
         for (ResourceEntityVo resourceEntityVo : resourceEntityList) {
             String config = resourceEntityMapper.getResourceEntityConfigByName(resourceEntityVo.getName());
@@ -125,9 +128,10 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
                 }
             }
             resourceEntityVo.setConfigStr(config);
-            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
-            resultList.add(viewStatusInfo);
+//            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
+//            resultList.add(viewStatusInfo);
             viewNameList.add(resourceEntityVo.getName());
+            allResourceEntityList.add(resourceEntityVo);
         }
         List<SceneEntityVo> sceneEntityList = ResourceEntityFactory.getSceneEntityList();
         for (SceneEntityVo sceneEntityVo : sceneEntityList) {
@@ -138,9 +142,20 @@ public class ResourceViewRebuildHandler implements IRebuildDataBaseView {
             resourceEntityVo.setName(sceneEntityVo.getName());
             resourceEntityVo.setLabel(sceneEntityVo.getLabel());
             resourceEntityVo.setConfigStr("{}");
-            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
-            resultList.add(viewStatusInfo);
+//            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
+//            resultList.add(viewStatusInfo);
+            allResourceEntityList.add(resourceEntityVo);
         }
+//        System.out.println("allResourceEntityList.size() = " + allResourceEntityList.size());
+        BatchRunner<ResourceEntityVo> runner = new BatchRunner<>();
+        runner.execute(allResourceEntityList, 5, (threadIndex, dataIndex, resourceEntityVo) -> {
+//            System.out.println("start " + "resourceEntityVo.getName() = " + resourceEntityVo.getName());
+            long startTime = System.currentTimeMillis();
+            ViewStatusInfo viewStatusInfo = rebuildSceneEntity(resourceEntityVo);
+            viewStatusInfo.setTimeCost(System.currentTimeMillis() - startTime);
+            resultList.add(viewStatusInfo);
+//            System.out.println("end " + "resourceEntityVo.getName() = " + resourceEntityVo.getName() + (System.currentTimeMillis() - start) + ", " + JSON.toJSON(viewStatusInfo));
+        }, "REBUILD-DATABASE-VIEW-FOR-RESOURCEVIEW");
         return resultList;
     }
 
