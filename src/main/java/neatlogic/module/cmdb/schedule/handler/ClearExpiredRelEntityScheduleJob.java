@@ -46,6 +46,11 @@ import java.util.Map;
 @Component
 @DisallowConcurrentExecution
 public class ClearExpiredRelEntityScheduleJob extends JobBase {
+    @Override
+    public String getName() {
+        return "过期配置项关系清理";
+    }
+
     private static final String CRON_EXPRESSION = "0 0 0 * * ?";
     private final Map<Long, RelVo> relMap = new HashMap<>();
     @Resource

@@ -35,6 +35,11 @@ import java.util.List;
 @Component
 @DisallowConcurrentExecution
 public class SyncCiEntityScheduleJob extends JobBase {
+    @Override
+    public String getName() {
+        return "配置项自动同步";
+    }
+
 
     @Resource
     private SyncMapper syncMapper;

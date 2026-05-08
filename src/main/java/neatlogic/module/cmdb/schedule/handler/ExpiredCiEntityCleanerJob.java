@@ -36,6 +36,11 @@ import java.util.List;
 @Component
 @DisallowConcurrentExecution
 public class ExpiredCiEntityCleanerJob extends JobBase {
+    @Override
+    public String getName() {
+        return "过期配置项定时清理";
+    }
+
     Logger logger = LoggerFactory.getLogger(ExpiredCiEntityCleanerJob.class);
     @Resource
     private CiEntityMapper ciEntityMapper;

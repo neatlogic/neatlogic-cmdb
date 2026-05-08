@@ -34,6 +34,11 @@ import java.util.List;
 @Component
 @DisallowConcurrentExecution
 public class LegalValidScheduleJob extends JobBase {
+    @Override
+    public String getName() {
+        return "配置项合规定时检查";
+    }
+
     static Logger logger = LoggerFactory.getLogger(LegalValidScheduleJob.class);
 
     @Resource
