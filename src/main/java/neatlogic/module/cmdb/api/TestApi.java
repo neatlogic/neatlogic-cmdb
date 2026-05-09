@@ -29,7 +29,6 @@ public class TestApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         System.out.println(paramObj);
-        Integer.parseInt("abc");
         return paramObj;
     }
 
