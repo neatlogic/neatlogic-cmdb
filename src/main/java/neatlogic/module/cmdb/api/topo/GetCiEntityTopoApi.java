@@ -172,7 +172,7 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
             CiEntityVo rootCiEntityVo = ciEntityMapper.getCiEntityBaseInfoById(ciEntityId);
             ciEntitySet.add(rootCiEntityVo);
             ciTypeIdSet.add(rootCiEntityVo.getTypeId());
-            for (int l = 0; l <= level; l++) {
+            for (int l = 1; l <= level; l++) {
                 if (CollectionUtils.isNotEmpty(levelCiEntityIdList)) {
                     List<Long> tmpCiCiEntityIdList = new ArrayList<>();
                     List<Long> tmpExcludeRelIdList = new ArrayList<>();
@@ -197,16 +197,16 @@ public class GetCiEntityTopoApi extends PrivateApiComponentBase {
                                 ciEntityVo.setCiName(relEntityVo.getFromCiName());
                                 ciEntityVo.setCiLabel(relEntityVo.getFromCiLabel());
                             }
-                            if (canShowCiTypeIdSet.contains(ciEntityVo.getTypeId())) {
-                                ciEntitySet.add(ciEntityVo);
-                                ciTypeIdSet.add(ciEntityVo.getTypeId());
-                            }
-                            containRelIdSet.add(relEntityVo.getRelId());
                             RelTypeVo relTypeVo = relTypeMap.get(relEntityVo.getRelId());
                             if (relTypeVo == null) {
                                 relTypeMap.put(relEntityVo.getRelId(), relMapper.getRelTypeByRelId(relEntityVo.getRelId()));
                                 relTypeVo = relTypeMap.get(relEntityVo.getRelId());
                             }
+                            if (canShowCiTypeIdSet.contains(ciEntityVo.getTypeId()) && relTypeVo != null && Objects.equals(relTypeVo.getIsShowInTopo(), 1)) {
+                                ciEntitySet.add(ciEntityVo);
+                                ciTypeIdSet.add(ciEntityVo.getTypeId());
+                            }
+                            containRelIdSet.add(relEntityVo.getRelId());
                             //判断关系类型是否展示TOPO
                             if (relTypeVo != null && relTypeVo.getIsShowInTopo().equals(1)) {
                                 if (CollectionUtils.isEmpty(disableRelIdList) || disableRelIdList.stream().noneMatch(r -> r.equals(relEntityVo.getRelId()))) {
