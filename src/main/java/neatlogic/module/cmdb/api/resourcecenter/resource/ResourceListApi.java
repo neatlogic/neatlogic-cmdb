@@ -100,7 +100,8 @@ public class ResourceListApi extends PrivateApiComponentBase {
             @Param(name = "pageSize", type = ApiParamType.INTEGER, desc = "common.pagesize"),
             @Param(name = "rowNum", type = ApiParamType.INTEGER, desc = "common.rownum"),
             @Param(name = "needPage", type = ApiParamType.BOOLEAN, desc = "common.isneedpage"),
-            @Param(name = "needSupplementOs", type = ApiParamType.BOOLEAN, desc = "是否补充资源自身的操作系统信息")
+            @Param(name = "needSupplementOs", type = ApiParamType.BOOLEAN, desc = "是否补充资源自身的操作系统信息"),
+            @Param(name = "theadFieldNameList", type = ApiParamType.JSONARRAY, desc = "需要显示的表头字段名称列表")
     })
     @Output({
             @Param(explode = BasePageVo.class),
@@ -111,6 +112,11 @@ public class ResourceListApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         ResourceSearchVo searchVo;
         ResourceSearchVo preCondition = null;
+        List<String> theadFieldNameList = new ArrayList<>();
+        JSONArray theadFieldNameArray = jsonObj.getJSONArray("theadFieldNameList");
+        if (CollectionUtils.isNotEmpty(theadFieldNameArray)) {
+            theadFieldNameList = theadFieldNameArray.toJavaList(String.class);
+        }
         JSONArray defaultValue = jsonObj.getJSONArray("defaultValue");
         //先处理前置过滤器
         if (jsonObj.containsKey("preCondition")) {
@@ -126,9 +132,15 @@ public class ResourceListApi extends PrivateApiComponentBase {
 //        resourceCenterResourceService.handleBatchSearchList(searchVo);
 //        resourceCenterResourceService.setIpFieldAttrIdAndNameFieldAttrId(searchVo);
         IResourceCenterDataSource resourceCenterDataSource = ResourceCenterDataSourceFactory.getResourceCenterDataSource();
-        List<ResourceVo> resultList = resourceCenterDataSource.getResourceList(searchVo);
+        List<ResourceVo> resultList = resourceCenterDataSource.getResourceList(searchVo, theadFieldNameList);
         if (CollectionUtils.isNotEmpty(resultList)) {
-            resourceCenterResourceService.addTagAndAccountInformation(resultList);
+//            resourceCenterResourceService.addTagAndAccountInformation(resultList);
+            if (theadFieldNameList.contains("tagList")) {
+                resourceCenterResourceService.addTagInformation(resultList);
+            }
+            if (theadFieldNameList.contains("accountList")) {
+                resourceCenterResourceService.addAccountInformation(resultList);
+            }
             if (Boolean.TRUE.equals(jsonObj.getBoolean("needSupplementOs"))) {
                 supplementOperatingSystemInformation(resultList);
             }
@@ -180,8 +192,9 @@ public class ResourceListApi extends PrivateApiComponentBase {
             resourceVo.setOsTypeName(ciLabelMap.get(resourceVo.getOsTypeId()));
         }
 
-
-        return TableResultUtil.getResult(resultList, searchVo);
+        JSONObject resultObj = TableResultUtil.getResult(resultList, searchVo);
+        resultObj.put("theadFieldList", theadFieldNameList);
+        return resultObj;
     }
 
     /**

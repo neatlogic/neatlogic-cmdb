@@ -39,6 +39,7 @@ import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceMapper;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceTagMapper;
 import neatlogic.module.cmdb.service.resourcecenter.ResourceEntityService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -722,6 +723,15 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList) {
+        List<String> appModuleFieldList = List.of("app_module_id", "app_module_name", "app_module_abbr_name");
+        List<String> appSystemFieldList = List.of("app_system_id", "app_system_name", "app_system_abbr_name");
+        if (CollectionUtils.isNotEmpty(ListUtils.retainAll(selectFieldNameList, appSystemFieldList))
+                && CollectionUtils.isEmpty(ListUtils.retainAll(selectFieldNameList, appModuleFieldList))) {
+            selectFieldNameList.add("app_module_id");
+        }
+        if (!selectFieldNameList.contains("id")) {
+            selectFieldNameList.add("id");
+        }
         String sql = resourceBuildSqlService.buildGetResourceListSql(idList, selectFieldNameList);
         if (StringUtils.isNotBlank(sql)) {
             return resourceMapper.getResourceListBySql(sql);

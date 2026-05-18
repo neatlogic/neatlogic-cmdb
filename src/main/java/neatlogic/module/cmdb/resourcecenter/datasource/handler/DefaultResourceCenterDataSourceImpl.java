@@ -617,11 +617,50 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     }
 
     @Override
-    public List<ResourceVo> getResourceList(ResourceSearchVo searchVo) {
+    public List<ResourceVo> getResourceList(ResourceSearchVo searchVo, List<String> theadFieldNameList) {
         List<ResourceVo> resultList = new ArrayList<>();
         List<Long> idList = resourceCenterResourceService.getResourceIdList(searchVo);
         if (CollectionUtils.isNotEmpty(idList)) {
-            List<ResourceVo> resourceList = resourceCenterResourceService.getResourceListByIdList(idList);
+            List<String> selectFieldNameList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(theadFieldNameList)) {
+                selectFieldNameList = ResourceEntityFactory.getFieldNameListByViewNameAndPropertyList("scence_ipobject_detail", theadFieldNameList);
+            } else {
+                AssetListDisplayVo assetListDisplayVo = resourceEntityMapper.getAssetListDisplay();
+                if (assetListDisplayVo != null) {
+                    JSONObject config = assetListDisplayVo.getConfig();
+                    if (MapUtils.isNotEmpty(config)) {
+                        JSONArray fieldArray = config.getJSONArray("fieldList");
+                        if (CollectionUtils.isNotEmpty(fieldArray)) {
+                            List<String> fieldList = new ArrayList<>();
+                            for (int i = 0; i < fieldArray.size(); i++) {
+                                JSONObject fieldObj = fieldArray.getJSONObject(i);
+                                if (MapUtils.isNotEmpty(fieldObj)) {
+                                    String name = fieldObj.getString("name");
+                                    if (StringUtils.isNotBlank(name)) {
+                                        fieldList.add(name);
+                                    }
+                                }
+                            }
+                            selectFieldNameList = ResourceEntityFactory.getFieldNameListByViewNameAndPropertyList("scence_ipobject_detail", fieldList);
+                        }
+                    }
+                }
+            }
+            if (CollectionUtils.isEmpty(selectFieldNameList)) {
+                List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName("scence_ipobject_detail");
+                fieldNameList.remove("env_seq_no");
+                fieldNameList.remove("vendor_id");
+                fieldNameList.remove("vendor_name");
+                fieldNameList.remove("vendor_label");
+                fieldNameList.remove("datacenter_id");
+                fieldNameList.remove("datacenter_name");
+                fieldNameList.remove("fcu");
+                fieldNameList.remove("fcd");
+                fieldNameList.remove("lcu");
+                fieldNameList.remove("lcd");
+                selectFieldNameList = fieldNameList;
+            }
+            List<ResourceVo> resourceList = resourceCenterResourceService.getResourceListByIdList(idList, selectFieldNameList);
             //排序
             for (Long id : idList) {
                 for (ResourceVo resourceVo : resourceList) {
@@ -880,8 +919,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
 
     @Override
     public List<ValueTextVo> getAssertAllTheadList() {
-        Set<ValueTextVo> keySet = headFieldHandlerMap.keySet();
-        return new ArrayList<>(keySet);
+        List<ValueTextVo> fieldList = ResourceEntityFactory.getFieldListByViewName("scence_ipobject_detail");
+        return new ArrayList<>(fieldList);
     }
 
     @Override
