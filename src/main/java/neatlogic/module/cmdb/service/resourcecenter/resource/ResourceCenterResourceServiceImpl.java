@@ -732,6 +732,9 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
         if (!selectFieldNameList.contains("id")) {
             selectFieldNameList.add("id");
         }
+        if (!selectFieldNameList.contains("type_id")) {
+            selectFieldNameList.add("type_id");
+        }
         String sql = resourceBuildSqlService.buildGetResourceListSql(idList, selectFieldNameList);
         if (StringUtils.isNotBlank(sql)) {
             return resourceMapper.getResourceListBySql(sql);
