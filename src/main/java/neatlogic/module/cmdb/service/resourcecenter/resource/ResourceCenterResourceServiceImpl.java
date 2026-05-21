@@ -57,7 +57,6 @@ import java.util.stream.Collectors;
 public class ResourceCenterResourceServiceImpl implements IResourceCenterResourceService, IResourceCenterResourceCrossoverService {
 
     private final Logger logger = LoggerFactory.getLogger(ResourceCenterResourceServiceImpl.class);
-    private final static List<String> defaultAttrList = Arrays.asList("_id", "_uuid", "_name", "_fcu", "_fcd", "_lcu", "_lcd", "_inspectStatus", "_inspectTime", "_monitorStatus", "_monitorTime", "_typeId", "_typeName", "_typeLabel");
 
     private final String MYBATIS_MODE = "mybatis";
     private final String JSQLPARSER_MODE = "jsqlparser";

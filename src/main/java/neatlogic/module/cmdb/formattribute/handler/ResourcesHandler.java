@@ -145,7 +145,7 @@ public class ResourcesHandler extends FormHandlerBase {
         if ("input".equals(type)) {
             JSONArray inputNodeArray = dataObj.getJSONArray("inputNodeList");
             if (CollectionUtils.isNotEmpty(inputNodeArray)) {
-                List<String> selectFieldNameList = Arrays.asList("id", "name", "ip", "port");
+                List<String> selectFieldNameList = new ArrayList<>(Arrays.asList("id", "name", "ip", "port"));
                 List<ResourceVo> resourceIsNotFoundList = new ArrayList<>();
                 ResourceSearchVo searchVo = new ResourceSearchVo();
                 searchVo.setIsHasAuth(true);
