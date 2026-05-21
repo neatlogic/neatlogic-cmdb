@@ -332,6 +332,8 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             for (ResourceAccountVo resourceAccountVo : resourceAccountVoList) {
                 AccountVo accountVo = accountMap.get(resourceAccountVo.getAccountId());
                 if (accountVo != null) {
+                    accountVo.setPasswordCipher(null);
+                    accountVo.setPasswordPlain(null);
                     resourceAccountVoMap.computeIfAbsent(resourceAccountVo.getResourceId(), k -> new ArrayList<>()).add(accountVo);
                 }
             }
