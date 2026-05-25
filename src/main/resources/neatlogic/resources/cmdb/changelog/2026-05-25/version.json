@@ -1,0 +1,12 @@
+{
+  "content": [
+    {
+      "type": "功能优化",
+      "detail": [
+        {
+          "msg": "1、配置项操作内置消息主题改为ActiveMQ Artemis Topic"
+        }
+      ]
+    }
+  ]
+}

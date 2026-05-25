@@ -62,7 +62,7 @@ public class CiEntityInsertTopic extends TopicBase<CiEntityTransactionVo> {
 
     @Override
     public String getHandler() {
-        return "artemis";
+        return "artemis-topic";
     }
 
     @Override
