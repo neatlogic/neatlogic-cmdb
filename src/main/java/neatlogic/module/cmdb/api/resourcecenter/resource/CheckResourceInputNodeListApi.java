@@ -72,7 +72,7 @@ public class CheckResourceInputNodeListApi extends PrivateApiComponentBase {
         JSONArray inputNodeList = paramObj.getJSONArray("inputNodeList");
         JSONObject preCondition = paramObj.getJSONObject("preCondition");
         String cmdbGroupType = paramObj.getString("cmdbGroupType");
-        List<String> selectFieldNameList = Arrays.asList("id", "name", "ip", "port");
+        List<String> selectFieldNameList = new ArrayList<>(Arrays.asList("id", "name", "ip", "port"));
         List<ResourceVo> nodeList = new ArrayList<>();
         if (preCondition == null) {
             preCondition = new JSONObject();
