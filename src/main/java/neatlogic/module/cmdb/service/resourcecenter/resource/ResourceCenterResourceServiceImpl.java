@@ -724,6 +724,7 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
 
     @Override
     public List<ResourceVo> getResourceListByIdList(List<Long> idList, List<String> selectFieldNameList) {
+        selectFieldNameList = new ArrayList<>(selectFieldNameList);
         List<String> appModuleFieldList = List.of("app_module_id", "app_module_name", "app_module_abbr_name");
         List<String> appSystemFieldList = List.of("app_system_id", "app_system_name", "app_system_abbr_name");
         if (CollectionUtils.isNotEmpty(ListUtils.retainAll(selectFieldNameList, appSystemFieldList))
