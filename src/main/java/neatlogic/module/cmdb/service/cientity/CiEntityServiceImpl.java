@@ -21,6 +21,8 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
+import neatlogic.framework.cmdb.cientityevent.CiEntityEventManager;
+import neatlogic.framework.cmdb.cientityevent.CiEntityEventType;
 import neatlogic.framework.cmdb.crossover.ICiEntityCrossoverService;
 import neatlogic.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -2098,6 +2100,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 //rebuildRelEntityIndex(relEntityList);
             }
             CiEntityVo deleteCiEntityVo = new CiEntityVo(ciEntityTransactionVo);
+            if (StringUtils.isBlank(deleteCiEntityVo.getName()) && ciEntityTransactionVo.getOldCiEntityVo() != null) {
+                deleteCiEntityVo.setName(ciEntityTransactionVo.getOldCiEntityVo().getName());
+            }
             //删除之前找到所有关联配置项，可能需要更新他们的表达式属性
             this.updateInvokedExpressionAttr(deleteCiEntityVo);
 
@@ -2119,6 +2124,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             if (topic != null) {
                 topic.send(ciEntityTransactionVo);
             }
+            //配置项事件必须在真实删除成功后注册，确保外部模块只处理已提交的数据变化。
+            CiEntityEventManager.doEvent(CiEntityEventType.DELETE, deleteCiEntityVo);
             return null;
         } else {
             /*
@@ -2172,15 +2179,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             //rebuildAttrEntityIndex(rebuildAttrEntityList);
 
             String topicName = "";
+            CiEntityEventType eventType = null;
             /*
             写入配置项信息
              */
             if (ciEntityTransactionVo.getAction().equals(TransactionActionType.INSERT.getValue())) {
                 this.insertCiEntity(ciEntityVo);
                 topicName = "cmdb/cientity/insert";
+                eventType = CiEntityEventType.CREATE;
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue())) {
                 this.updateCiEntity(ciEntityVo);
                 topicName = "cmdb/cientity/update";
+                eventType = CiEntityEventType.UPDATE;
             } else if (ciEntityTransactionVo.getAction().equals(TransactionActionType.RECOVER.getValue())) {
                 if (ciEntityMapper.getCiEntityBaseInfoById(ciEntityTransactionVo.getCiEntityId()) == null) {
                     this.insertCiEntity(ciEntityVo);
@@ -2189,6 +2199,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     this.updateCiEntity(ciEntityVo);
                 }
                 topicName = "cmdb/cientity/recover";
+                eventType = CiEntityEventType.RECOVER;
             }
             /*
             写入关系信息
@@ -2321,6 +2332,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
             }
 
+            if (eventType != null) {
+                //事件处理器在事务提交后执行，避免业务模块读到未提交或回滚的数据。
+                CiEntityEventManager.doEvent(eventType, ciEntityVo);
+            }
 
             return ciEntityVo.getId();
         }

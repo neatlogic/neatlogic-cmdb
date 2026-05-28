@@ -53,4 +53,9 @@ public class ResourceEntityServiceImpl implements ResourceEntityService, IResour
         }
         return null;
     }
+
+    @Override
+    public ResourceEntityVo getResourceEntityByName(String viewName) {
+        return resourceEntityMapper.getResourceEntityByName(viewName);
+    }
 }
