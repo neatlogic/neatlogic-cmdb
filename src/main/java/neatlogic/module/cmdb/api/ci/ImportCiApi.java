@@ -112,6 +112,10 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
             }
             //校验导入数据
             JSONArray dataList = ciService.validateImportCi(newCiList);
+            newCiMap.clear();
+            for (CiVo ciVo : newCiList) {
+                newCiMap.put(ciVo.getId(), ciVo);
+            }
             if (CollectionUtils.isNotEmpty(dataList)) {
                 JSONArray errorList = new JSONArray();
                 for (int i = 0; i < dataList.size(); i++) {

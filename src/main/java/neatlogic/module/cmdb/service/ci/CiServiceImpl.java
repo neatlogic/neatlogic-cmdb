@@ -40,6 +40,7 @@ import neatlogic.framework.lrcode.LRCodeManager;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.util.Md5Util;
+import neatlogic.framework.util.SnowflakeUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
@@ -60,10 +61,109 @@ import java.util.stream.Collectors;
 
 @Service
 public class CiServiceImpl implements CiService, ICiCrossoverService {
+
+    private void normalizeImportCiList(List<CiVo> newCiList) {
+        Map<Long, Long> ciIdMap = new HashMap<>();
+        for (CiVo ciVo : newCiList) {
+            Long originalCiId = ciVo.getId();
+            CiVo oldCiByName = StringUtils.isNotBlank(ciVo.getName()) ? ciMapper.getCiByName(ciVo.getName()) : null;
+            if (oldCiByName != null) {
+                ciVo.setId(oldCiByName.getId());
+            } else {
+                CiVo oldCiById = ciMapper.getCiBaseInfoById(originalCiId);
+                if (oldCiById != null && !Objects.equals(oldCiById.getName(), ciVo.getName())) {
+                    ciVo.setId(SnowflakeUtil.uniqueLong());
+                }
+            }
+            ciIdMap.put(originalCiId, ciVo.getId());
+        }
+
+        for (CiVo ciVo : newCiList) {
+            ciVo.setParentCiId(resolveCiId(ciVo.getParentCiId(), ciVo.getParentCiName(), ciIdMap));
+            Map<Long, Long> attrIdMap = new HashMap<>();
+            if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
+                for (AttrVo attrVo : ciVo.getAttrList()) {
+                    normalizeImportAttr(ciVo, attrVo, ciIdMap, attrIdMap);
+                }
+            }
+            remapCiAttrConfig(ciVo, attrIdMap);
+
+            if (CollectionUtils.isNotEmpty(ciVo.getRelList())) {
+                for (RelVo relVo : ciVo.getRelList()) {
+                    if (Objects.equals(relVo.getDirection(), RelDirectionType.FROM.getValue())) {
+                        relVo.setFromCiId(ciVo.getId());
+                        relVo.setToCiId(resolveCiId(relVo.getToCiId(), relVo.getToCiName(), ciIdMap));
+                    } else if (Objects.equals(relVo.getDirection(), RelDirectionType.TO.getValue())) {
+                        relVo.setToCiId(ciVo.getId());
+                        relVo.setFromCiId(resolveCiId(relVo.getFromCiId(), relVo.getFromCiName(), ciIdMap));
+                    } else {
+                        relVo.setFromCiId(resolveCiId(relVo.getFromCiId(), relVo.getFromCiName(), ciIdMap));
+                        relVo.setToCiId(resolveCiId(relVo.getToCiId(), relVo.getToCiName(), ciIdMap));
+                    }
+                }
+            }
+        }
+    }
+
+    private void normalizeImportAttr(CiVo ciVo, AttrVo attrVo, Map<Long, Long> ciIdMap, Map<Long, Long> attrIdMap) {
+        Long originalAttrId = attrVo.getId();
+        AttrVo oldAttrVo = attrMapper.getAttrByCiIdAndName(ciVo.getId(), attrVo.getName());
+        if (oldAttrVo != null) {
+            attrVo.setId(oldAttrVo.getId());
+        } else {
+            AttrVo oldAttrById = attrMapper.getAttrById(originalAttrId);
+            if (oldAttrById != null) {
+                attrVo.setId(SnowflakeUtil.uniqueLong());
+            }
+        }
+        attrIdMap.put(originalAttrId, attrVo.getId());
+        attrVo.setCiId(ciVo.getId());
+        attrVo.setTargetCiId(resolveCiId(attrVo.getTargetCiId(), attrVo.getTargetCiName(), ciIdMap));
+    }
+
+    /**
+     * 先按原始id判断模型是否存在，不存在时再用模型唯一标识兜底。
+     */
+    private Long resolveCiId(Long ciId, String ciName, Map<Long, Long> ciIdMap) {
+        if (ciId == null) {
+            return null;
+        }
+        CiVo ciVo = ciMapper.getCiBaseInfoById(ciId);
+        if (ciVo != null) {
+            return ciVo.getId();
+        }
+        if (ciIdMap.containsKey(ciId)) {
+            return ciIdMap.get(ciId);
+        }
+        if (StringUtils.isNotBlank(ciName)) {
+            ciVo = ciMapper.getCiByName(ciName);
+            if (ciVo != null) {
+                return ciVo.getId();
+            }
+        }
+        return ciId;
+    }
+
+    /**
+     * 属性id被重映射后，名称属性和唯一规则也要同步指向本地属性id。
+     */
+    private void remapCiAttrConfig(CiVo ciVo, Map<Long, Long> attrIdMap) {
+        if (attrIdMap.isEmpty()) {
+            return;
+        }
+        if (ciVo.getNameAttrId() != null && attrIdMap.containsKey(ciVo.getNameAttrId())) {
+            ciVo.setNameAttrId(attrIdMap.get(ciVo.getNameAttrId()));
+        }
+        if (CollectionUtils.isNotEmpty(ciVo.getUniqueAttrIdList())) {
+            ciVo.setUniqueAttrIdList(ciVo.getUniqueAttrIdList().stream().map(attrId -> attrIdMap.getOrDefault(attrId, attrId)).collect(Collectors.toList()));
+        }
+    }
+
     @Override
     public JSONArray validateImportCi(List<CiVo> newCiList) {
         JSONArray dataList = new JSONArray();
         if (CollectionUtils.isNotEmpty(newCiList)) {
+            normalizeImportCiList(newCiList);
             Map<Long, CiVo> newCiMap = new HashMap<>();
             for (CiVo ciVo : newCiList) {
                 newCiMap.put(ciVo.getId(), ciVo);
@@ -96,6 +196,7 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                             attrObj.put("_action", "insert");
                             hasChange = true;
                         } else {
+                            attrVo.setId(oldAttrVo.getId());
                             if (!Objects.equals(oldAttrVo.getType(), attrVo.getType())) {
                                 attrObj.put("_action", "update");
                                 attrObj.getJSONArray("error").add("属性类型发生变化，原类型是“" + oldAttrVo.getTypeText() + "”，新类型是“" + attrVo.getTypeText() + "”");
@@ -104,8 +205,6 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                                     && Objects.equals(oldAttrVo.getIsRequired(), attrVo.getIsRequired())
                                     && Objects.equals(oldAttrVo.getConfigStr(), attrVo.getConfigStr())) {
                                 attrObj.put("_action", "same");
-                                //更新属性id为旧属性id
-                                attrVo.setId(oldAttrVo.getId());
                             } else {
                                 attrObj.put("_action", "update");
                                 hasChange = true;
