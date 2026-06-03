@@ -42,4 +42,9 @@ public enum CmdbTenantConfig implements ITenantConfig {
     public String getDescription() {
         return description;
     }
+
+    @Override
+    public String getModuleGroup() {
+        return "cmdb";
+    }
 }
