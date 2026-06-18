@@ -1,0 +1,81 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_data_audit",
+  "label": "配置管理sync_data_audit表",
+  "description": "配置管理sync_data_audit表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "audit_id",
+      "type": "bigint",
+      "description": "审计id，每次只会记录最后一次审计id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "ci_collection_id",
+      "type": "bigint",
+      "description": "采集id。"
+    },
+    {
+      "name": "collection_name",
+      "type": "varchar(255)",
+      "description": "集合名称，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "data_id",
+      "type": "varchar(500)",
+      "description": "mongodb数据id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "error",
+      "type": "longtext",
+      "description": "异常。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_audit_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "audit_id"
+      ],
+      "description": "普通索引，覆盖 audit_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_collection",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "collection_name"
+      ],
+      "description": "普通索引，覆盖 collection_name 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "data_id",
+        "ci_collection_id"
+      ],
+      "description": "唯一索引，覆盖 data_id、ci_collection_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

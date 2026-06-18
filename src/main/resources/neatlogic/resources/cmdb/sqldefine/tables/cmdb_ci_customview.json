@@ -1,0 +1,31 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci_customview",
+  "label": "配置模型自定义视图关联表",
+  "description": "配置模型自定义视图关联表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "模型id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "自定义视图id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_id",
+        "customview_id"
+      ],
+      "description": "主键索引，覆盖 ci_id、customview_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

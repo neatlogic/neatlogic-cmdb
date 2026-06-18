@@ -1,0 +1,157 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_rel",
+  "label": "CI关联类型表",
+  "description": "CI关联类型表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "type_id",
+      "type": "bigint",
+      "description": "类型id。"
+    },
+    {
+      "name": "input_type",
+      "type": "enum('at','mt')",
+      "description": "录入方式。"
+    },
+    {
+      "name": "from_ci_id",
+      "type": "bigint",
+      "description": "来源模型id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "from_name",
+      "type": "varchar(100)",
+      "description": "来源端名称，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "from_label",
+      "type": "varchar(200)",
+      "description": "来源端标签，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "from_rule",
+      "type": "enum('1:N','0:N','1:1','0:1','O','N')",
+      "description": "来源端规则。"
+    },
+    {
+      "name": "from_group_id",
+      "type": "bigint",
+      "description": "来源端分组,引用cmdb_relgroup的id。"
+    },
+    {
+      "name": "from_is_unique",
+      "type": "tinyint",
+      "description": "来源引用是否唯一。"
+    },
+    {
+      "name": "from_is_cascade_delete",
+      "type": "tinyint",
+      "description": "来源端是否级联删除。"
+    },
+    {
+      "name": "from_is_required",
+      "type": "tinyint",
+      "description": "来源端是否必填。"
+    },
+    {
+      "name": "to_ci_id",
+      "type": "bigint",
+      "description": "目标端模型id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "to_name",
+      "type": "varchar(100)",
+      "description": "目标端名称。"
+    },
+    {
+      "name": "to_label",
+      "type": "varchar(200)",
+      "description": "目标端标签。"
+    },
+    {
+      "name": "to_rule",
+      "type": "enum('1:N','0:N','0:1','1:1','O','N')",
+      "description": "目标端规则。"
+    },
+    {
+      "name": "to_group_id",
+      "type": "bigint",
+      "description": "目标端分组,引用cmdb_relgroup的id。"
+    },
+    {
+      "name": "to_is_unique",
+      "type": "tinyint",
+      "description": "目标引用是否唯一。"
+    },
+    {
+      "name": "to_is_cascade_delete",
+      "type": "tinyint",
+      "description": "目标端是否级联删除。"
+    },
+    {
+      "name": "to_is_required",
+      "type": "tinyint",
+      "description": "目标端是否必填。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_from_ciid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "from_ci_id"
+      ],
+      "description": "普通索引，覆盖 from_ci_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_to_ciid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_ci_id"
+      ],
+      "description": "普通索引，覆盖 to_ci_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uk_from_to_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "from_name",
+        "to_name"
+      ],
+      "description": "唯一索引，覆盖 from_name、to_name 字段，适合用于精确检索、唯一性判断和去重查询。"
+    },
+    {
+      "name": "uk_fromlabel_tolabel",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "from_label",
+        "to_label"
+      ],
+      "description": "唯一索引，覆盖 from_label、to_label 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

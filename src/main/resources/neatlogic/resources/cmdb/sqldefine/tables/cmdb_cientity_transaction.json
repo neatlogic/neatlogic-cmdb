@@ -1,0 +1,100 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_transaction",
+  "label": "cmdb配置项实例事务表",
+  "description": "cmdb配置项实例事务表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint unsigned",
+      "description": "ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_entity_uuid",
+      "type": "char(32)",
+      "description": "配置项实例uuid。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "引用ecmdb_ci的id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "ci_entity_id",
+      "type": "bigint",
+      "description": "引用ecmdb_ci_entity的id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "description": "名称。"
+    },
+    {
+      "name": "action",
+      "type": "enum('insert','update','delete','recover')",
+      "description": "操作类型，I:insert,U:update;D:delete;S:recover;。"
+    },
+    {
+      "name": "edit_mode",
+      "type": "enum('global','partial')",
+      "description": "编辑模式。"
+    },
+    {
+      "name": "transaction_id",
+      "type": "bigint",
+      "description": "事务id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "content",
+      "type": "longtext",
+      "description": "修改内容，json格式。"
+    },
+    {
+      "name": "snapshot",
+      "type": "longtext",
+      "description": "修改前快照hash。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_NewIndex1",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "transaction_id"
+      ],
+      "description": "普通索引，覆盖 transaction_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_NewIndex2",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_entity_id"
+      ],
+      "description": "普通索引，覆盖 ci_entity_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_NewIndex3",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "普通索引，覆盖 ci_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

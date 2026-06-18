@@ -1,0 +1,31 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_unique",
+  "label": "配置同步唯一属性",
+  "description": "配置同步唯一属性 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "ci_collection_id",
+      "type": "bigint",
+      "description": "配置集合id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "配置属性id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_collection_id",
+        "attr_id"
+      ],
+      "description": "主键索引，覆盖 ci_collection_id、attr_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

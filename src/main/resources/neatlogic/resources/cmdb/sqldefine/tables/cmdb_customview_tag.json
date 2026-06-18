@@ -1,0 +1,41 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_tag",
+  "label": "cmdb自定义视图标签表",
+  "description": "cmdb自定义视图标签表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "视图id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "tag_id",
+      "type": "bigint",
+      "description": "标签id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id",
+        "tag_id"
+      ],
+      "description": "主键索引，覆盖 customview_id、tag_id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_tag_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "tag_id"
+      ],
+      "description": "普通索引，覆盖 tag_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

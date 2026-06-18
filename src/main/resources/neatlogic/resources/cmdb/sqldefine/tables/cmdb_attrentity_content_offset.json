@@ -1,0 +1,50 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrentity_content_offset",
+  "label": "cmdb_attrentity_content_offset",
+  "description": "cmdb_attrentity_content_offset 可用于配置管理相关数据的查询、筛选和报表展示。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint unsigned",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "hash",
+      "type": "char(32)",
+      "description": "内容hash，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "start",
+      "type": "int",
+      "description": "start。"
+    },
+    {
+      "name": "end",
+      "type": "int",
+      "description": "end。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_field_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "hash"
+      ],
+      "description": "普通索引，覆盖 hash 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

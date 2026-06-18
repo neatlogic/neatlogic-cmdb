@@ -1,0 +1,55 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrexpression_rebuild_audit",
+  "label": "配置管理attrexpression_rebuild_audit表",
+  "description": "cmdb_attrexpression_rebuild_audit 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "模型id。"
+    },
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "配置项id。"
+    },
+    {
+      "name": "attr_id",
+      "type": "text",
+      "description": "修改了哪些属性，多个属性用逗号分隔。"
+    },
+    {
+      "name": "cientity_id_start",
+      "type": "bigint",
+      "description": "开始配置项id。"
+    },
+    {
+      "name": "type",
+      "type": "varchar(20)",
+      "description": "关联方式，当cientityid不为空时才有效，invoke代表更新自己的表达式属性，invoked代表更新关联配置项的表达式属性。"
+    },
+    {
+      "name": "server_id",
+      "type": "int",
+      "description": "服务器id。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

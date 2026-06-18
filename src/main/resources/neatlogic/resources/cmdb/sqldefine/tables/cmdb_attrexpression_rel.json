@@ -1,0 +1,43 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrexpression_rel",
+  "label": "cmdb_attrexpression_rel",
+  "description": "cmdb_attrexpression_rel 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "expression_ci_id",
+      "type": "bigint",
+      "description": "expression_ci_id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "expression_attr_id",
+      "type": "bigint",
+      "description": "表达式属性id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "value_attr_id",
+      "type": "bigint",
+      "description": "值属性id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "value_ci_id",
+      "type": "bigint",
+      "description": "value_ci_id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "value_ci_id",
+        "value_attr_id",
+        "expression_attr_id",
+        "expression_ci_id"
+      ],
+      "description": "主键索引，覆盖 value_ci_id、value_attr_id、expression_attr_id、expression_ci_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

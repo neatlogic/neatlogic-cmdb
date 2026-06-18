@@ -1,0 +1,115 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity",
+  "label": "CMDB",
+  "description": "CMDB 配置项实例表，用于存储企业 IT 基础设施中各类配置项（CI, Configuration Item）的实例数据。 每条记录代表一个具体的配置对象，例如服务器、数据库、中间件或应用系统。 主要字段： • id：配置项实例的唯一标识。 • ci_id：引用配置项定义表（cmdb_ci）的主键，用于确定配置项类型。 • name：配置项名称或主机名。 • status：配置项当前状态（如启用、停用、维护中等）。 • is_locked：标识该配置项是否被事务锁定（用于控制并发变更）。 • inspect_status / inspect_time：表示巡检任务的结果与时间。 • monitor_status / monitor_time：表示监控任务的最新状态与更新时间。 • renew_time：配置项最近刷新时间，用于判断数据是否过期。 • fcu / fcd / lcu / lcd：分别为创建人、创建时间、修改人、修改时间。 典型用途： • 提供 CMDB（配置管理数据库）的核心数据来源。 • 用于资产盘点、监控告警、自动化巡检、配置审计等报表。 关键索引： • ci_id 索引：便于按配置项类型查询。 • name_prefix 索引：支持名称模糊搜索。 可用于配置管理相关的状态跟踪、时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "uuid。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "引用ecmdb_ci的id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(1024)",
+      "description": "配置项名称，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "status",
+      "type": "varchar(30)",
+      "description": "状态。"
+    },
+    {
+      "name": "is_locked",
+      "type": "tinyint(1)",
+      "description": "如果有未提交事务，处于锁定状态。"
+    },
+    {
+      "name": "fcu",
+      "type": "varchar(50)",
+      "description": "创建人。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "创建时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "varchar(50)",
+      "description": "修改用户。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "修改时间。"
+    },
+    {
+      "name": "inspect_status",
+      "type": "enum('normal','warn','critical','','fatal')",
+      "description": "巡检状态。"
+    },
+    {
+      "name": "inspect_time",
+      "type": "timestamp(3)",
+      "description": "巡检时间。"
+    },
+    {
+      "name": "monitor_status",
+      "type": "enum('normal','warn','critical','','fatal')",
+      "description": "监控状态。"
+    },
+    {
+      "name": "monitor_time",
+      "type": "timestamp(3)",
+      "description": "监控时间。"
+    },
+    {
+      "name": "renew_time",
+      "type": "timestamp(3)",
+      "description": "刷新时间，用来判断是否老化。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "普通索引，覆盖 ci_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_name_prefix",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "普通索引，覆盖 name 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

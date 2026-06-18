@@ -1,0 +1,31 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_tag",
+  "label": "配置管理cientity_tag表",
+  "description": "配置管理cientity_tag表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "配置项id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "tag_id",
+      "type": "bigint",
+      "description": "标签id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "cientity_id",
+        "tag_id"
+      ],
+      "description": "主键索引，覆盖 cientity_id、tag_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

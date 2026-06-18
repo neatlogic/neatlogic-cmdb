@@ -1,0 +1,161 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_relentity",
+  "label": "cmdb配置项实例关联表",
+  "description": "cmdb配置项实例关联表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "rel_id",
+      "type": "bigint",
+      "description": "关联属性ID，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "from_cientity_id",
+      "type": "bigint",
+      "description": "来源配置项ID，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "to_cientity_id",
+      "type": "bigint",
+      "description": "目标配置项ID，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "transaction_id",
+      "type": "bigint",
+      "description": "生效事务id。"
+    },
+    {
+      "name": "from_index",
+      "type": "int",
+      "description": "数据序号，用于检索时提高效率，只会生成前N条数据的序号。"
+    },
+    {
+      "name": "to_index",
+      "type": "int",
+      "description": "数据序号，用于检索时提高效率，只会生成前N条数据的序号。"
+    },
+    {
+      "name": "insert_time",
+      "type": "timestamp(3)",
+      "description": "插入时间。"
+    },
+    {
+      "name": "renew_time",
+      "type": "timestamp(3)",
+      "description": "更新时间，用于判断老化。"
+    },
+    {
+      "name": "valid_day",
+      "type": "int",
+      "description": "有效天数，为空代表长期有效。"
+    },
+    {
+      "name": "expired_time",
+      "type": "timestamp(3)",
+      "description": "过期日期，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "relativerel_hash",
+      "type": "char(32)",
+      "description": "关联关系hash。"
+    },
+    {
+      "name": "source_relentity_id",
+      "type": "bigint",
+      "description": "源头关系id，不为空代表是级联关系，源头关系删除后这条关系也要删除，已建立普通索引，适合用于过滤、关联或排序查询。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_expiredtime",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "expired_time"
+      ],
+      "description": "普通索引，覆盖 expired_time 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_from_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "from_cientity_id"
+      ],
+      "description": "普通索引，覆盖 from_cientity_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_from_index",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "rel_id",
+        "from_cientity_id",
+        "from_index"
+      ],
+      "description": "普通索引，覆盖 rel_id、from_cientity_id、from_index 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_from_to",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "rel_id",
+        "from_cientity_id",
+        "to_cientity_id"
+      ],
+      "description": "唯一索引，覆盖 rel_id、from_cientity_id、to_cientity_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    },
+    {
+      "name": "idx_source_relentity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "source_relentity_id"
+      ],
+      "description": "普通索引，覆盖 source_relentity_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_to_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_cientity_id"
+      ],
+      "description": "普通索引，覆盖 to_cientity_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_to_index",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "rel_id",
+        "to_cientity_id",
+        "to_index"
+      ],
+      "description": "普通索引，覆盖 rel_id、to_cientity_id、to_index 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

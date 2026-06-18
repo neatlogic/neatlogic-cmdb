@@ -1,0 +1,50 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_config",
+  "label": "资源中心配置表",
+  "description": "资源中心配置表 可用于配置管理相关的时间维度统计等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "int",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "config。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "创建用户。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "创建时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改用户。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "修改时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

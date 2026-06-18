@@ -1,0 +1,46 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_relgroup",
+  "label": "cmdb_relgroup",
+  "description": "cmdb_relgroup 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "配置项id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(200)",
+      "description": "名称。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_group_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "ci_id",
+        "name"
+      ],
+      "description": "唯一索引，覆盖 ci_id、name 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_rel",
+  "label": "cmdb_customview_rel",
+  "description": "cmdb_customview_rel 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "视图id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "customview_ci_uuid",
+      "type": "char(32)",
+      "description": "customview_ci_uuid，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "uuid，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "rel_id",
+      "type": "bigint",
+      "description": "rel_id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id",
+        "uuid"
+      ],
+      "description": "主键索引，覆盖 customview_id、uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_customci_uuid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "customview_ci_uuid"
+      ],
+      "description": "普通索引，覆盖 customview_ci_uuid 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_rel_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "rel_id"
+      ],
+      "description": "普通索引，覆盖 rel_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

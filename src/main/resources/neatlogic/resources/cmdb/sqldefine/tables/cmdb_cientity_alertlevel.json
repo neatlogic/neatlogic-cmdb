@@ -1,0 +1,71 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_alertlevel",
+  "label": "配置管理cientity_alertlevel表",
+  "description": "配置管理cientity_alertlevel表，属于配置管理模块的数据表。 可用于配置管理相关数据的查询、筛选和报表展示。",
+  "fields": [
+    {
+      "name": "level",
+      "type": "int",
+      "description": "配置管理cientity_alertlevel表的level字段，数据库中要求唯一，适合用于精确查询和去重判断。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "唯一标识，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "color",
+      "type": "varchar(50)",
+      "description": "颜色。"
+    },
+    {
+      "name": "label",
+      "type": "varchar(255)",
+      "description": "名称。"
+    },
+    {
+      "name": "type",
+      "type": "enum('inspect','monitor')",
+      "description": "类型。"
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name",
+        "type"
+      ],
+      "description": "唯一索引，覆盖 name、type 字段，适合用于精确检索、唯一性判断和去重查询。"
+    },
+    {
+      "name": "uk2",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "level"
+      ],
+      "description": "唯一索引，覆盖 level 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

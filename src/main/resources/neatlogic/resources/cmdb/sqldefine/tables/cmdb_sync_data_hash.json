@@ -1,0 +1,51 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_data_hash",
+  "label": "配置管理sync_data_hash表",
+  "description": "配置管理sync_data_hash表，属于配置管理模块的数据表。 可用于配置管理相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "data_id",
+      "type": "varchar(255)",
+      "description": "数据_id值，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "data_hash",
+      "type": "char(32)",
+      "description": "数据指纹。"
+    },
+    {
+      "name": "update_time",
+      "type": "datetime",
+      "description": "更新时间，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "collection_name",
+      "type": "varchar(255)",
+      "description": "集合名称，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "data_id",
+        "collection_name"
+      ],
+      "description": "主键索引，覆盖 data_id、collection_name 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_updatetime",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "update_time"
+      ],
+      "description": "普通索引，覆盖 update_time 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

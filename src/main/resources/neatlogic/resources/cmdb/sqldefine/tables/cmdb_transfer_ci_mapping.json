@@ -1,0 +1,80 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transfer_ci_mapping",
+  "label": "配置管理transfer_ci_mapping表",
+  "description": "配置管理transfer_ci_mapping表，属于配置管理模块的数据表。 可用于配置管理相关的状态跟踪、启用状态筛选、时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "new_ci_id",
+      "type": "bigint",
+      "description": "新模型ID。"
+    },
+    {
+      "name": "new_ci_name",
+      "type": "varchar(200)",
+      "description": "新模型名称。"
+    },
+    {
+      "name": "old_ci_id",
+      "type": "bigint",
+      "description": "旧模型ID。"
+    },
+    {
+      "name": "old_ci_name",
+      "type": "varchar(200)",
+      "description": "旧模型名称。"
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint",
+      "description": "是否激活。"
+    },
+    {
+      "name": "status",
+      "type": "enum('doing','done','failed')",
+      "description": "状态。"
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "配置。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "创建人。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp",
+      "description": "创建时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp",
+      "description": "修改时间。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

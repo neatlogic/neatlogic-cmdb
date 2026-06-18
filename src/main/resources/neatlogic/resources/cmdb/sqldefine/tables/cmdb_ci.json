@@ -1,0 +1,140 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci",
+  "label": "cmdb配置项表",
+  "description": "cmdb配置项表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "英文名，数据库中要求唯一，适合用于精确查询和去重判断。"
+    },
+    {
+      "name": "label",
+      "type": "varchar(255)",
+      "description": "中文名。"
+    },
+    {
+      "name": "description",
+      "type": "varchar(1024)",
+      "description": "描述。"
+    },
+    {
+      "name": "icon",
+      "type": "varchar(255)",
+      "description": "图标。"
+    },
+    {
+      "name": "type_id",
+      "type": "bigint",
+      "description": "类型ID ecmdb_ci_type。"
+    },
+    {
+      "name": "catalog_id",
+      "type": "bigint",
+      "description": "模型目录id。"
+    },
+    {
+      "name": "parent_ci_id",
+      "type": "bigint",
+      "description": "父模型ID。"
+    },
+    {
+      "name": "name_attr_id",
+      "type": "bigint",
+      "description": "名称属性。"
+    },
+    {
+      "name": "lft",
+      "type": "int",
+      "description": "左编码，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "rht",
+      "type": "int",
+      "description": "右编码，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "is_private",
+      "type": "tinyint(1)",
+      "description": "是否私有模型，私有模型不允许修改和删除。"
+    },
+    {
+      "name": "is_menu",
+      "type": "tinyint(1)",
+      "description": "是否在菜单中显示。"
+    },
+    {
+      "name": "is_abstract",
+      "type": "tinyint(1)",
+      "description": "是否抽象模型。"
+    },
+    {
+      "name": "is_virtual",
+      "type": "tinyint(1)",
+      "description": "是否虚拟模型，虚拟模型实际上是视图不是物理表。"
+    },
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "虚拟模型配置文件id。"
+    },
+    {
+      "name": "xml",
+      "type": "longtext",
+      "description": "虚拟模型配置内容。"
+    },
+    {
+      "name": "expired_day",
+      "type": "int",
+      "description": "有效天数，0代表不超期。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_enname",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "唯一索引，覆盖 name 字段，适合用于精确检索、唯一性判断和去重查询。"
+    },
+    {
+      "name": "idx_lft",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "lft"
+      ],
+      "description": "普通索引，覆盖 lft 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_rht",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "rht"
+      ],
+      "description": "普通索引，覆盖 rht 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

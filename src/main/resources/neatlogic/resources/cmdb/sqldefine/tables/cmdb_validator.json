@@ -1,0 +1,55 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_validator",
+  "label": "cmdb校验器表",
+  "description": "cmdb校验器表 可用于配置管理相关的启用状态筛选等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(200)",
+      "description": "名称。"
+    },
+    {
+      "name": "handler",
+      "type": "varchar(255)",
+      "description": "处理器类路径。"
+    },
+    {
+      "name": "config",
+      "type": "mediumtext",
+      "description": "config。"
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "描述。"
+    },
+    {
+      "name": "error_template",
+      "type": "varchar(500)",
+      "description": "错误模版。"
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "是否激活。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci_auth",
+  "label": "cmdb配置项授权表",
+  "description": "cmdb配置项授权表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "引用ecmdb_ci的id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "auth_type",
+      "type": "enum('user','role','team','common')",
+      "description": "角色名称，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "action",
+      "type": "enum('cientityinsert','cientityupdate','cientitydelete','cientityrecover','cientityquery','cimanage','transactionmanage','passwordview')",
+      "description": "对应的操作动作，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "auth_uuid",
+      "type": "char(32)",
+      "description": "auth uuid，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_id",
+        "auth_type",
+        "action",
+        "auth_uuid"
+      ],
+      "description": "主键索引，覆盖 ci_id、auth_type、action、auth_uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

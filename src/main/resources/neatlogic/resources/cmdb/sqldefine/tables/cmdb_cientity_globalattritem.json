@@ -1,0 +1,68 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_globalattritem",
+  "label": "配置管理cientity_globalattritem表",
+  "description": "配置管理cientity_globalattritem表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "cientity关联ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "item_id",
+      "type": "bigint",
+      "description": "item关联ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "attr关联ID，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "cientity_id",
+        "attr_id",
+        "item_id"
+      ],
+      "description": "主键索引，覆盖 cientity_id、attr_id、item_id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_attr_item_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id",
+        "item_id"
+      ],
+      "description": "普通索引，覆盖 attr_id、item_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_id"
+      ],
+      "description": "普通索引，覆盖 cientity_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_item_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "item_id"
+      ],
+      "description": "普通索引，覆盖 item_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

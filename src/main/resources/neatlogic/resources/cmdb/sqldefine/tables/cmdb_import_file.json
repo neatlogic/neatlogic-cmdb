@@ -1,0 +1,25 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_import_file",
+  "label": "cmdb_import_file",
+  "description": "cmdb_import_file 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "文件ID，作为当前表记录的主键或唯一定位字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "file_id"
+      ],
+      "description": "主键索引，覆盖 file_id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

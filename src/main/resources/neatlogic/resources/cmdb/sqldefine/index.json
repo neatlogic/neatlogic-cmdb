@@ -1,0 +1,420 @@
+{
+  "moduleId": "cmdb",
+  "tables": [
+    {
+      "name": "cmdb_attr",
+      "label": "cmdb配置项属性表",
+      "description": "cmdb配置项属性表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_attrentity",
+      "label": "cmdb配置项属性实例表",
+      "description": "cmdb配置项属性实例表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_attrentity_content",
+      "label": "cmdb配置项属性实例内容表",
+      "description": "cmdb配置项属性实例内容表 可用于配置管理相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "cmdb_attrentity_content_offset",
+      "label": "cmdb_attrentity_content_offset",
+      "description": "cmdb_attrentity_content_offset 可用于配置管理相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "cmdb_attrexpression_rebuild_audit",
+      "label": "配置管理attrexpression_rebuild_audit表",
+      "description": "cmdb_attrexpression_rebuild_audit 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_attrexpression_rel",
+      "label": "cmdb_attrexpression_rel",
+      "description": "cmdb_attrexpression_rel 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_ci",
+      "label": "cmdb配置项表",
+      "description": "cmdb配置项表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_ci_auth",
+      "label": "cmdb配置项授权表",
+      "description": "cmdb配置项授权表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_ci_catalog",
+      "label": "模型目录",
+      "description": "模型目录 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_ci_customview",
+      "label": "配置模型自定义视图关联表",
+      "description": "配置模型自定义视图关联表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_ci_group",
+      "label": "模型团体关系表",
+      "description": "模型团体关系表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_ci_tree",
+      "label": "配置管理ci_tree表",
+      "description": "配置管理ci_tree表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_ci_unique",
+      "label": "cmdb_ci_unique",
+      "description": "cmdb_ci_unique 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity",
+      "label": "CMDB",
+      "description": "CMDB 配置项实例表，用于存储企业 IT 基础设施中各类配置项（CI, Configuration Item）的实例数据。 每条记录代表一个具体的配置对象，例如服务器、数据库、中间件或应用系统。 主要字段： • id：配置项实例的唯一标识。 • ci_id：引用配置项定义表（cmdb_ci）的主键，用于确定配置项类型。 • name：配置项名称或主机名。 • status：配置项当前状态（如启用、停用、维护中等）。 • is_locked：标识该配置项是否被事务锁定（用于控制并发变更）。 • inspect_status / inspect_time：表示巡检任务的结果与时间。 • monitor_status / monitor_time：表示监控任务的最新状态与更新时间。 • renew_time：配置项最近刷新时间，用于判断数据是否过期。 • fcu / fcd / lcu / lcd：分别为创建人、创建时间、修改人、修改时间。 典型用途： • 提供 CMDB（配置管理数据库）的核心数据来源。 • 用于资产盘点、监控告警、自动化巡检、配置审计等报表。 关键索引： • ci_id 索引：便于按配置项类型查询。 • name_prefix 索引：支持名称模糊搜索。 可用于配置管理相关的状态跟踪、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity_alert",
+      "label": "配置管理cientity_alert表",
+      "description": "配置管理cientity_alert表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity_alertlevel",
+      "label": "配置管理cientity_alertlevel表",
+      "description": "配置管理cientity_alertlevel表，属于配置管理模块的数据表。 可用于配置管理相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "cmdb_cientity_expiredtime",
+      "label": "配置管理cientity_expiredtime表",
+      "description": "配置管理cientity_expiredtime表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity_globalattritem",
+      "label": "配置管理cientity_globalattritem表",
+      "description": "配置管理cientity_globalattritem表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity_group",
+      "label": "配置项团体关系表",
+      "description": "配置项团体关系表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity_illegal",
+      "label": "非法配置项",
+      "description": "非法配置项 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity_inspect",
+      "label": "配置项的巡检状态表",
+      "description": "配置项的巡检状态表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity_snapshot",
+      "label": "cmdb配置项实例快照表",
+      "description": "cmdb配置项实例快照表 可用于配置管理相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "cmdb_cientity_tag",
+      "label": "配置管理cientity_tag表",
+      "description": "配置管理cientity_tag表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_cientity_transaction",
+      "label": "cmdb配置项实例事务表",
+      "description": "cmdb配置项实例事务表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_citype",
+      "label": "cmdb配置项类型表",
+      "description": "cmdb配置项类型表 可用于配置管理相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "cmdb_customview",
+      "label": "cmdb自定义视图表",
+      "description": "cmdb自定义视图表 可用于配置管理相关的启用状态筛选、时间维度统计等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_attr",
+      "label": "cmdb自定义视图属性表",
+      "description": "cmdb自定义视图属性表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_auth",
+      "label": "自定义视图授权表",
+      "description": "自定义视图授权表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_ci",
+      "label": "cmdb_customview_ci",
+      "description": "cmdb_customview_ci 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_constattr",
+      "label": "视图属性配置",
+      "description": "视图属性配置 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_globalattr",
+      "label": "cmdb自定义视图属性表",
+      "description": "cmdb自定义视图属性表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_link",
+      "label": "cmdb自定义视图关联表",
+      "description": "cmdb自定义视图关联表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_rel",
+      "label": "cmdb_customview_rel",
+      "description": "cmdb_customview_rel 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_tag",
+      "label": "cmdb自定义视图标签表",
+      "description": "cmdb自定义视图标签表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_customview_template",
+      "label": "cmdb自定义视图模板",
+      "description": "cmdb自定义视图模板 可用于配置管理相关的启用状态筛选、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_global_attr",
+      "label": "配置管理global_attr表",
+      "description": "配置管理global_attr表，属于配置管理模块的数据表。 可用于配置管理相关的启用状态筛选等报表查询场景。"
+    },
+    {
+      "name": "cmdb_global_attritem",
+      "label": "配置管理global_attritem表",
+      "description": "配置管理global_attritem表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_graph",
+      "label": "配置管理graph表",
+      "description": "配置管理graph表，属于配置管理模块的数据表。 可用于配置管理相关的启用状态筛选、时间维度统计等报表查询场景。"
+    },
+    {
+      "name": "cmdb_graph_auth",
+      "label": "配置管理graph_auth表",
+      "description": "配置管理graph_auth表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_graph_cientity",
+      "label": "配置管理graph_cientity表",
+      "description": "配置管理graph_cientity表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_graph_rel",
+      "label": "配置管理graph_rel表",
+      "description": "配置管理graph_rel表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_group",
+      "label": "团体",
+      "description": "团体 可用于配置管理相关的状态跟踪、启用状态筛选、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_group_auth",
+      "label": "cmdb_group_auth",
+      "description": "cmdb_group_auth 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_import_audit",
+      "label": "cmdb批量导入审计表",
+      "description": "cmdb批量导入审计表 可用于配置管理相关的状态跟踪、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_import_file",
+      "label": "cmdb_import_file",
+      "description": "cmdb_import_file 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_legalvalid",
+      "label": "合规设置表",
+      "description": "合规设置表 可用于配置管理相关的启用状态筛选、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_rel",
+      "label": "CI关联类型表",
+      "description": "CI关联类型表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_relativerel",
+      "label": "cmdb引用关系",
+      "description": "cmdb引用关系 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_relentity",
+      "label": "cmdb配置项实例关联表",
+      "description": "cmdb配置项实例关联表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_relgroup",
+      "label": "cmdb_relgroup",
+      "description": "cmdb_relgroup 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_reltype",
+      "label": "cmdb_reltype",
+      "description": "cmdb_reltype 可用于配置管理相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "cmdb_resourcecenter_account",
+      "label": "cmdb资源中心账号表",
+      "description": "cmdb资源中心账号表 可用于配置管理相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_resourcecenter_account_protocol",
+      "label": "cmdb资源中心账号协议表",
+      "description": "cmdb资源中心账号协议表 可用于配置管理相关的时间维度统计等报表查询场景。"
+    },
+    {
+      "name": "cmdb_resourcecenter_account_tag",
+      "label": "配置管理resourcecenter_account_tag表",
+      "description": "cmdb_resourcecenter_account_tag 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_resourcecenter_applicationlist_display",
+      "label": "配置管理resourcecenter_applicationlist_display表",
+      "description": "配置管理resourcecenter_applicationlist_display表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_resourcecenter_assetlist_display",
+      "label": "配置管理resourcecenter_assetlist_display表",
+      "description": "配置管理resourcecenter_assetlist_display表，属于配置管理模块的数据表。 可用于配置管理相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "cmdb_resourcecenter_config",
+      "label": "资源中心配置表",
+      "description": "资源中心配置表 可用于配置管理相关的时间维度统计等报表查询场景。"
+    },
+    {
+      "name": "cmdb_resourcecenter_entity",
+      "label": "cmdb_resourcecenter_entity",
+      "description": "cmdb_resourcecenter_entity 可用于配置管理相关的状态跟踪、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_resourcecenter_resource_account",
+      "label": "资源中心资源与账号关联表",
+      "description": "资源中心资源与账号关联表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_resourcecenter_resource_tag",
+      "label": "配置管理resourcecenter_resource_tag表",
+      "description": "cmdb_resourcecenter_resource_tag 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_resourcecenter_type_ci",
+      "label": "资产清单树形模型",
+      "description": "资产清单树形模型 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_schema_audit",
+      "label": "cmdb_schema_audit",
+      "description": "cmdb_schema_audit 可用于配置管理相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_audit",
+      "label": "cmdb同步记录表",
+      "description": "cmdb同步记录表 可用于配置管理相关的状态跟踪、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_ci_collection",
+      "label": "cmdb_sync_ci_collection",
+      "description": "cmdb_sync_ci_collection 可用于配置管理相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_data_audit",
+      "label": "配置管理sync_data_audit表",
+      "description": "配置管理sync_data_audit表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_data_hash",
+      "label": "配置管理sync_data_hash表",
+      "description": "配置管理sync_data_hash表，属于配置管理模块的数据表。 可用于配置管理相关的时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_mapping",
+      "label": "cmdb_sync_mapping",
+      "description": "cmdb_sync_mapping 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_objtype",
+      "label": "配置管理sync_objtype表",
+      "description": "配置管理sync_objtype表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_policy",
+      "label": "cmdb同步策略",
+      "description": "cmdb同步策略 可用于配置管理相关的启用状态筛选、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_schedule",
+      "label": "cmdb同步计划表",
+      "description": "cmdb同步计划表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_sync_unique",
+      "label": "配置同步唯一属性",
+      "description": "配置同步唯一属性 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_tag",
+      "label": "cmdb标签表",
+      "description": "cmdb标签表 可用于配置管理相关数据的查询、筛选和报表展示。"
+    },
+    {
+      "name": "cmdb_topo_template",
+      "label": "配置管理topo_template表",
+      "description": "配置管理topo_template表，属于配置管理模块的数据表。 可用于配置管理相关的启用状态筛选、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_transaction",
+      "label": "cmdb事务表",
+      "description": "cmdb事务表 可用于配置管理相关的状态跟踪、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_transactiongroup",
+      "label": "cmdb事务组表",
+      "description": "cmdb事务组表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_transfer_ci_mapping",
+      "label": "配置管理transfer_ci_mapping表",
+      "description": "配置管理transfer_ci_mapping表，属于配置管理模块的数据表。 可用于配置管理相关的状态跟踪、启用状态筛选、时间维度统计、关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_transfer_ci_mapping_audit",
+      "label": "新老配置项同步审计",
+      "description": "新老配置项同步审计 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_transfer_ci_mapping_audit_transactiongroup",
+      "label": "配置管理transfer_ci_mapping_audit_transactiongroup表",
+      "description": "配置管理transfer_ci_mapping_audit_transactiongroup表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_transfer_cientity_mapping",
+      "label": "配置管理transfer_cientity_mapping表",
+      "description": "配置管理transfer_cientity_mapping表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_transfer_schedule",
+      "label": "配置管理transfer_schedule表",
+      "description": "配置管理transfer_schedule表，属于配置管理模块的数据表。 可用于配置管理相关的启用状态筛选、时间维度统计等报表查询场景。"
+    },
+    {
+      "name": "cmdb_validator",
+      "label": "cmdb校验器表",
+      "description": "cmdb校验器表 可用于配置管理相关的启用状态筛选等报表查询场景。"
+    },
+    {
+      "name": "cmdb_view",
+      "label": "cmdb视图表",
+      "description": "cmdb视图表 可用于配置管理相关的关联查询等报表查询场景。"
+    },
+    {
+      "name": "cmdb_viewconst",
+      "label": "cmdb_viewconst",
+      "description": "cmdb_viewconst 可用于配置管理相关数据的查询、筛选和报表展示。"
+    }
+  ]
+}

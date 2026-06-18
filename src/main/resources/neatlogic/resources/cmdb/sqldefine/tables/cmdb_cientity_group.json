@@ -1,0 +1,56 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_group",
+  "label": "配置项团体关系表",
+  "description": "配置项团体关系表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "配置项ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "group_id",
+      "type": "bigint",
+      "description": "圈子id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_group_id",
+      "type": "bigint",
+      "description": "命中的规则id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "group_id",
+        "cientity_id"
+      ],
+      "description": "主键索引，覆盖 group_id、cientity_id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_ci_group_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_group_id"
+      ],
+      "description": "普通索引，覆盖 ci_group_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_id"
+      ],
+      "description": "普通索引，覆盖 cientity_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

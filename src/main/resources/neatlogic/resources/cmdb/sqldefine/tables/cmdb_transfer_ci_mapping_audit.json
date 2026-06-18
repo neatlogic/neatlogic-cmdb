@@ -1,0 +1,80 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transfer_ci_mapping_audit",
+  "label": "新老配置项同步审计",
+  "description": "新老配置项同步审计 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_mapping_id",
+      "type": "bigint",
+      "description": "模型映射id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "start_time",
+      "type": "datetime(3)",
+      "description": "开始时间。"
+    },
+    {
+      "name": "end_time",
+      "type": "datetime(3)",
+      "description": "结束时间，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "total_count",
+      "type": "int",
+      "description": "总数。"
+    },
+    {
+      "name": "change_count",
+      "type": "int",
+      "description": "变更个数。"
+    },
+    {
+      "name": "fail_count",
+      "type": "int",
+      "description": "失败个数。"
+    },
+    {
+      "name": "error",
+      "type": "text",
+      "description": "异常。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_ci_mapping_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_mapping_id"
+      ],
+      "description": "普通索引，覆盖 ci_mapping_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_end_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "end_time"
+      ],
+      "description": "普通索引，覆盖 end_time 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

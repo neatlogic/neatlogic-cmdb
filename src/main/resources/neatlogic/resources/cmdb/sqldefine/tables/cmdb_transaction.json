@@ -1,0 +1,100 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transaction",
+  "label": "cmdb事务表",
+  "description": "cmdb事务表 可用于配置管理相关的状态跟踪、时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint unsigned",
+      "description": "事务ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "模型id。"
+    },
+    {
+      "name": "status",
+      "type": "enum('commited','uncommit','recover')",
+      "description": "是否提交。"
+    },
+    {
+      "name": "create_user",
+      "type": "char(32)",
+      "description": "创建用户ID。"
+    },
+    {
+      "name": "commit_user",
+      "type": "char(32)",
+      "description": "提交用户ID。"
+    },
+    {
+      "name": "recover_user",
+      "type": "char(32)",
+      "description": "恢复用户。"
+    },
+    {
+      "name": "input_from",
+      "type": "varchar(20)",
+      "description": "数据来源类型。"
+    },
+    {
+      "name": "source",
+      "type": "varchar(100)",
+      "description": "来源。"
+    },
+    {
+      "name": "expire_time",
+      "type": "timestamp(3)",
+      "description": "快照超时时间，这时候以后没提交，自动删除。"
+    },
+    {
+      "name": "create_time",
+      "type": "timestamp(3)",
+      "description": "创建时间。"
+    },
+    {
+      "name": "commit_time",
+      "type": "timestamp(3)",
+      "description": "提交时间，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "recover_time",
+      "type": "timestamp(3)",
+      "description": "恢复时间。"
+    },
+    {
+      "name": "error",
+      "type": "text",
+      "description": "最后一次错误原因。"
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "修改备注。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_commit_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "commit_time"
+      ],
+      "description": "普通索引，覆盖 commit_time 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_applicationlist_display",
+  "label": "配置管理resourcecenter_applicationlist_display表",
+  "description": "配置管理resourcecenter_applicationlist_display表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "app_system_id",
+      "type": "bigint",
+      "description": "应用系统ID，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "app_module_id",
+      "type": "bigint",
+      "description": "应用模块ID。"
+    },
+    {
+      "name": "env_id",
+      "type": "bigint",
+      "description": "环境ID。"
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "配置信息。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "app_system_id",
+        "app_module_id",
+        "env_id"
+      ],
+      "description": "唯一索引，覆盖 app_system_id、app_module_id、env_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

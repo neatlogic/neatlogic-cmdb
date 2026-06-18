@@ -1,0 +1,45 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_viewconst",
+  "label": "cmdb_viewconst",
+  "description": "cmdb_viewconst 可用于配置管理相关数据的查询、筛选和报表展示。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "名称。"
+    },
+    {
+      "name": "label",
+      "type": "varchar(50)",
+      "description": "显示名。"
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "排序。"
+    },
+    {
+      "name": "show_type",
+      "type": "enum('none','all','list','detail')",
+      "description": "cmdb_viewconst的show_type字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

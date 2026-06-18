@@ -1,0 +1,60 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_mapping",
+  "label": "cmdb_sync_mapping",
+  "description": "cmdb_sync_mapping 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_collection_id",
+      "type": "bigint",
+      "description": "模型集合id。"
+    },
+    {
+      "name": "rel_id",
+      "type": "bigint",
+      "description": "关系id。"
+    },
+    {
+      "name": "direction",
+      "type": "enum('from','to')",
+      "description": "关系方向。"
+    },
+    {
+      "name": "global_attr_id",
+      "type": "bigint",
+      "description": "全局属性id。"
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "属性id。"
+    },
+    {
+      "name": "field",
+      "type": "varchar(100)",
+      "description": "集合字段，支持jsonpath。"
+    },
+    {
+      "name": "action",
+      "type": "enum('insert','replace','delete','update','merge')",
+      "description": "动作。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrentity_content",
+  "label": "cmdb配置项属性实例内容表",
+  "description": "cmdb配置项属性实例内容表 可用于配置管理相关数据的查询、筛选和报表展示。",
+  "fields": [
+    {
+      "name": "hash",
+      "type": "char(32)",
+      "description": "hash，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "value_hash",
+      "type": "char(32)",
+      "description": "value值的hash值，用于精确匹配，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "content",
+      "type": "longtext",
+      "description": "内容。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "hash"
+      ],
+      "description": "主键索引，覆盖 hash 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_value_hash",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "value_hash"
+      ],
+      "description": "普通索引，覆盖 value_hash 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

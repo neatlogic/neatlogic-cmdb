@@ -1,0 +1,151 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attr",
+  "label": "cmdb配置项属性表",
+  "description": "cmdb配置项属性表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "引用ecmdb_ci的id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "type",
+      "type": "varchar(50)",
+      "description": "值类型。"
+    },
+    {
+      "name": "prop_id",
+      "type": "bigint",
+      "description": "属性id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "target_ci_id",
+      "type": "bigint",
+      "description": "目标模型id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "expression",
+      "type": "varchar(255)",
+      "description": "表达式。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "英文名，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "label",
+      "type": "varchar(200)",
+      "description": "录入时的label名称。"
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "描述。"
+    },
+    {
+      "name": "validator_id",
+      "type": "bigint",
+      "description": "验证器组件id，需要在代码中实现验证器。"
+    },
+    {
+      "name": "is_required",
+      "type": "tinyint",
+      "description": "是否必填。"
+    },
+    {
+      "name": "is_searchable",
+      "type": "tinyint",
+      "description": "是否允许搜索。"
+    },
+    {
+      "name": "is_term",
+      "type": "tinyint",
+      "description": "是否专有名词。"
+    },
+    {
+      "name": "is_unique",
+      "type": "tinyint(1)",
+      "description": "0不唯一，1同类唯一，2全局唯一。"
+    },
+    {
+      "name": "input_type",
+      "type": "enum('at','mt')",
+      "description": "属性录入方式。"
+    },
+    {
+      "name": "group_name",
+      "type": "varchar(50)",
+      "description": "属性分组。"
+    },
+    {
+      "name": "is_private",
+      "type": "tinyint(1)",
+      "description": "私有属性。"
+    },
+    {
+      "name": "config",
+      "type": "text",
+      "description": "属性设置。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_name",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "普通索引，覆盖 name 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_prop_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "prop_id"
+      ],
+      "description": "普通索引，覆盖 prop_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_target_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "target_ci_id"
+      ],
+      "description": "普通索引，覆盖 target_ci_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uk_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "ci_id",
+        "name"
+      ],
+      "description": "唯一索引，覆盖 ci_id、name 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

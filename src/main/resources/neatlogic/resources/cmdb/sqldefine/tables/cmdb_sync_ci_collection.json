@@ -1,0 +1,102 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_ci_collection",
+  "label": "cmdb_sync_ci_collection",
+  "description": "cmdb_sync_ci_collection 可用于配置管理相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "配置项id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "collection_name",
+      "type": "varchar(100)",
+      "description": "collection name。"
+    },
+    {
+      "name": "parent_key",
+      "type": "varchar(100)",
+      "description": "父属性，可以为空。"
+    },
+    {
+      "name": "collect_mode",
+      "type": "enum('initiative','passive')",
+      "description": "collect mode。"
+    },
+    {
+      "name": "is_auto_commit",
+      "type": "tinyint",
+      "description": "是否自动提交。"
+    },
+    {
+      "name": "is_allow_multiple",
+      "type": "tinyint",
+      "description": "是否允许更新多条数据。"
+    },
+    {
+      "name": "match_mode",
+      "type": "enum('key','level')",
+      "description": "匹配模式。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "创建时间。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "创建人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "修改时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改人。"
+    },
+    {
+      "name": "last_sync_date",
+      "type": "timestamp(3)",
+      "description": "最后一次成功同步时间。"
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "说明。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "ci_id",
+        "collection_name",
+        "parent_key"
+      ],
+      "description": "唯一索引，覆盖 ci_id、collection_name、parent_key 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

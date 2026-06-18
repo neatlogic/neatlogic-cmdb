@@ -1,0 +1,90 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_alert",
+  "label": "配置管理cientity_alert表",
+  "description": "配置管理cientity_alert表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "cientity关联ID，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "cientity_uuid",
+      "type": "char(32)",
+      "description": "cientity关联UUID，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "ip",
+      "type": "varchar(50)",
+      "description": "配置管理cientity_alert表的ip字段。"
+    },
+    {
+      "name": "level",
+      "type": "int",
+      "description": "配置管理cientity_alert表的level字段。"
+    },
+    {
+      "name": "alert_time",
+      "type": "timestamp(3)",
+      "description": "时间字段。"
+    },
+    {
+      "name": "metric_name",
+      "type": "varchar(255)",
+      "description": "配置管理cientity_alert表的metric_name字段。"
+    },
+    {
+      "name": "metric_value",
+      "type": "varchar(255)",
+      "description": "配置管理cientity_alert表的metric_value字段。"
+    },
+    {
+      "name": "alert_message",
+      "type": "varchar(500)",
+      "description": "配置管理cientity_alert表的alert_message字段。"
+    },
+    {
+      "name": "alert_link",
+      "type": "varchar(255)",
+      "description": "配置管理cientity_alert表的alert_link字段。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_id"
+      ],
+      "description": "普通索引，覆盖 cientity_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_cientity_uuid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_uuid"
+      ],
+      "description": "普通索引，覆盖 cientity_uuid 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

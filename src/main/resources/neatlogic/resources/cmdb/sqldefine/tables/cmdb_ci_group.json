@@ -1,0 +1,61 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci_group",
+  "label": "模型团体关系表",
+  "description": "模型团体关系表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "模型id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "group_id",
+      "type": "bigint",
+      "description": "团体id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "rule",
+      "type": "text",
+      "description": "规则。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_group_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "group_id"
+      ],
+      "description": "普通索引，覆盖 group_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uk_ci_id",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "ci_id",
+        "group_id"
+      ],
+      "description": "唯一索引，覆盖 ci_id、group_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

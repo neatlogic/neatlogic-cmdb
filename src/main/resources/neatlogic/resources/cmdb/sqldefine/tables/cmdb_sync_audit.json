@@ -1,0 +1,110 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_audit",
+  "label": "cmdb同步记录表",
+  "description": "cmdb同步记录表 可用于配置管理相关的状态跟踪、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_collection_id",
+      "type": "bigint",
+      "description": "同步配置id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "start_time",
+      "type": "timestamp(3)",
+      "description": "开始时间，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "end_time",
+      "type": "timestamp(3)",
+      "description": "结束时间，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "data_count",
+      "type": "int",
+      "description": "需处理的数据量。"
+    },
+    {
+      "name": "input_from",
+      "type": "varchar(20)",
+      "description": "触发方式。"
+    },
+    {
+      "name": "status",
+      "type": "enum('doing','done','pausing','paused')",
+      "description": "状态。"
+    },
+    {
+      "name": "transaction_group_id",
+      "type": "bigint",
+      "description": "事务组id。"
+    },
+    {
+      "name": "server_id",
+      "type": "int",
+      "description": "服务器id。"
+    },
+    {
+      "name": "error",
+      "type": "longtext",
+      "description": "异常。"
+    },
+    {
+      "name": "current_data_id",
+      "type": "varchar(255)",
+      "description": "当前数据id，用于恢复执行时用。"
+    },
+    {
+      "name": "config",
+      "type": "text",
+      "description": "额外配置。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_ci_collection_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_collection_id"
+      ],
+      "description": "普通索引，覆盖 ci_collection_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_end_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "end_time"
+      ],
+      "description": "普通索引，覆盖 end_time 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_start_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "start_time"
+      ],
+      "description": "普通索引，覆盖 start_time 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

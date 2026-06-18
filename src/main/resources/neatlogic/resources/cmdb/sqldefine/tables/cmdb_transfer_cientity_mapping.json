@@ -1,0 +1,92 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transfer_cientity_mapping",
+  "label": "配置管理transfer_cientity_mapping表",
+  "description": "配置管理transfer_cientity_mapping表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "old_cientity_id",
+      "type": "bigint",
+      "description": "旧配置项ID，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "old_cientity_name",
+      "type": "varchar(255)",
+      "description": "旧配置项名称。"
+    },
+    {
+      "name": "old_ci_id",
+      "type": "bigint",
+      "description": "旧模型ID。"
+    },
+    {
+      "name": "old_ci_name",
+      "type": "varchar(255)",
+      "description": "旧模型名称。"
+    },
+    {
+      "name": "new_cientity_id",
+      "type": "bigint",
+      "description": "新配置项ID，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "new_cientity_name",
+      "type": "varchar(255)",
+      "description": "新配置项名称。"
+    },
+    {
+      "name": "new_ci_id",
+      "type": "bigint",
+      "description": "新模型ID。"
+    },
+    {
+      "name": "new_ci_name",
+      "type": "varchar(255)",
+      "description": "新模型名称。"
+    },
+    {
+      "name": "is_exists",
+      "type": "tinyint",
+      "description": "配置项是否已存在。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_new_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "new_cientity_id"
+      ],
+      "description": "普通索引，覆盖 new_cientity_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_oldcientityid_newciid_oldciid",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "old_cientity_id",
+        "new_ci_id",
+        "old_ci_id"
+      ],
+      "description": "唯一索引，覆盖 old_cientity_id、new_ci_id、old_ci_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

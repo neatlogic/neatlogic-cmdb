@@ -1,0 +1,95 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_account",
+  "label": "cmdb资源中心账号表",
+  "description": "cmdb资源中心账号表 可用于配置管理相关的时间维度统计、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "名称，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "account",
+      "type": "varchar(100)",
+      "description": "账号。"
+    },
+    {
+      "name": "password",
+      "type": "text",
+      "description": "密码。"
+    },
+    {
+      "name": "protocol_id",
+      "type": "bigint",
+      "description": "协议id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "type",
+      "type": "enum('public','private')",
+      "description": "类型。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "创建人。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp",
+      "description": "创建时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp",
+      "description": "修改时间。"
+    },
+    {
+      "name": "is_default",
+      "type": "tinyint(1)",
+      "description": "是否该协议默认账号。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": " idx_protocolid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "protocol_id"
+      ],
+      "description": "普通索引，覆盖 protocol_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_name",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "普通索引，覆盖 name 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

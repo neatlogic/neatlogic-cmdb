@@ -1,0 +1,90 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview",
+  "label": "cmdb自定义视图表",
+  "description": "cmdb自定义视图表 可用于配置管理相关的启用状态筛选、时间维度统计等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "名称，数据库中要求唯一，适合用于精确查询和去重判断。"
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "是否激活。"
+    },
+    {
+      "name": "is_private",
+      "type": "tinyint(1)",
+      "description": "是否私有视图。"
+    },
+    {
+      "name": "type",
+      "type": "enum('private','public','scene')",
+      "description": "类型。"
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "说明。"
+    },
+    {
+      "name": "icon",
+      "type": "varchar(32)",
+      "description": "图标。"
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "所有人uuid。"
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp",
+      "description": "创建时间。"
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "修改人。"
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp",
+      "description": "修改时间。"
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "配置。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "唯一索引，覆盖 name 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_snapshot",
+  "label": "cmdb配置项实例快照表",
+  "description": "cmdb配置项实例快照表 可用于配置管理相关数据的查询、筛选和报表展示。",
+  "fields": [
+    {
+      "name": "hash",
+      "type": "char(32)",
+      "description": "hash，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "content",
+      "type": "longtext",
+      "description": "内容。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "hash"
+      ],
+      "description": "主键索引，覆盖 hash 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

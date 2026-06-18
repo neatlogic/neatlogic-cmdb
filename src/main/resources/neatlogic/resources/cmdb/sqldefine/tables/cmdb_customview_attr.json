@@ -1,0 +1,91 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_attr",
+  "label": "cmdb自定义视图属性表",
+  "description": "cmdb自定义视图属性表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "视图id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "customview_ci_uuid",
+      "type": "char(32)",
+      "description": "模型在视图中的唯一id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "uuid，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "属性id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "唯一标识。"
+    },
+    {
+      "name": "alias",
+      "type": "varchar(255)",
+      "description": "别名。"
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "顺序。"
+    },
+    {
+      "name": "is_hidden",
+      "type": "tinyint",
+      "description": "是否隐藏。"
+    },
+    {
+      "name": "is_primary",
+      "type": "tinyint",
+      "description": "是否主键。"
+    },
+    {
+      "name": "condition",
+      "type": "text",
+      "description": "条件，json结构。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id",
+        "uuid"
+      ],
+      "description": "主键索引，覆盖 customview_id、uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_attr_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id"
+      ],
+      "description": "普通索引，覆盖 attr_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_customviewci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "customview_ci_uuid"
+      ],
+      "description": "普通索引，覆盖 customview_ci_uuid 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

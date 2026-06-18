@@ -1,0 +1,76 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_ci",
+  "label": "cmdb_customview_ci",
+  "description": "cmdb_customview_ci 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "视图id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "在视图中的uuid，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "模型id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "排序。"
+    },
+    {
+      "name": "is_hidden",
+      "type": "tinyint(1)",
+      "description": "是否在topo中展示。"
+    },
+    {
+      "name": "alias",
+      "type": "varchar(50)",
+      "description": "别名。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "唯一标识。"
+    },
+    {
+      "name": "is_start",
+      "type": "tinyint(1)",
+      "description": "是否起始模型。"
+    },
+    {
+      "name": "is_aggregation",
+      "type": "tinyint",
+      "description": "是否聚合模型所有属性。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id",
+        "uuid"
+      ],
+      "description": "主键索引，覆盖 customview_id、uuid 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "普通索引，覆盖 ci_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

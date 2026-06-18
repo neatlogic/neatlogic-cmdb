@@ -1,0 +1,51 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_objtype",
+  "label": "配置管理sync_objtype表",
+  "description": "配置管理sync_objtype表，属于配置管理模块的数据表。 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "主键ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "obj_category",
+      "type": "varchar(255)",
+      "description": "对象大类，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "obj_type",
+      "type": "varchar(255)",
+      "description": "对象小类。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "模型id。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "uk_obj",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "obj_category",
+        "obj_type"
+      ],
+      "description": "唯一索引，覆盖 obj_category、obj_type 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

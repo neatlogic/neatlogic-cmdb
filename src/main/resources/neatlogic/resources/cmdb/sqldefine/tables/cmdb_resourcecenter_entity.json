@@ -1,0 +1,70 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_entity",
+  "label": "cmdb_resourcecenter_entity",
+  "description": "cmdb_resourcecenter_entity 可用于配置管理相关的状态跟踪、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "名称，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "label",
+      "type": "varchar(255)",
+      "description": "标识。"
+    },
+    {
+      "name": "type",
+      "type": "enum('resource','scene')",
+      "description": "类型。"
+    },
+    {
+      "name": "status",
+      "type": "enum('ready','pending','error','')",
+      "description": "状态。"
+    },
+    {
+      "name": "error",
+      "type": "longtext",
+      "description": "error。"
+    },
+    {
+      "name": "xml",
+      "type": "mediumtext",
+      "description": "配置信息。"
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "description": "描述。"
+    },
+    {
+      "name": "init_time",
+      "type": "timestamp(3)",
+      "description": "init time。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "模型id。"
+    },
+    {
+      "name": "config",
+      "type": "mediumtext",
+      "description": "配置信息。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "name"
+      ],
+      "description": "主键索引，覆盖 name 字段，适合用于唯一定位记录和主表关联查询。"
+    }
+  ]
+}

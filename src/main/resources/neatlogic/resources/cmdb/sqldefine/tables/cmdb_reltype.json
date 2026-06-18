@@ -1,0 +1,70 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_reltype",
+  "label": "cmdb_reltype",
+  "description": "cmdb_reltype 可用于配置管理相关数据的查询、筛选和报表展示。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "name",
+      "type": "varchar(100)",
+      "description": "名称，数据库中要求唯一，适合用于精确查询和去重判断。"
+    },
+    {
+      "name": "is_showintopo",
+      "type": "tinyint(1)",
+      "description": "是否在拓扑图中显示。"
+    },
+    {
+      "name": "from_cnname",
+      "type": "varchar(100)",
+      "description": "调用方名称。"
+    },
+    {
+      "name": "to_cnname",
+      "type": "varchar(100)",
+      "description": "目标方名称。"
+    },
+    {
+      "name": "from_enname",
+      "type": "varchar(100)",
+      "description": "调用方英文名。"
+    },
+    {
+      "name": "to_enname",
+      "type": "varchar(100)",
+      "description": "目标方英文名。"
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "备注。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "uk_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "唯一索引，覆盖 name 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrentity",
+  "label": "cmdb配置项属性实例表",
+  "description": "cmdb配置项属性实例表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "from_cientity_id",
+      "type": "bigint",
+      "description": "所属配置项id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "to_cientity_id",
+      "type": "bigint",
+      "description": "引用配置项id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "属性id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "from_ci_id",
+      "type": "bigint",
+      "description": "所属配置项模型id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "to_ci_id",
+      "type": "bigint",
+      "description": "引用配置项模型id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "transaction_id",
+      "type": "bigint",
+      "description": "事务id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "from_index",
+      "type": "int",
+      "description": "数据序号，用于检索时提高效率，只会生成前N条数据的序号。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_attr_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id"
+      ],
+      "description": "普通索引，覆盖 attr_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_from_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "from_ci_id"
+      ],
+      "description": "普通索引，覆盖 from_ci_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_to_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_ci_id"
+      ],
+      "description": "普通索引，覆盖 to_ci_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_to_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_cientity_id"
+      ],
+      "description": "普通索引，覆盖 to_cientity_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "idx_transaction_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "transaction_id"
+      ],
+      "description": "普通索引，覆盖 transaction_id 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uk_from_cientity_id",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "from_cientity_id",
+        "attr_id",
+        "to_cientity_id"
+      ],
+      "description": "唯一索引，覆盖 from_cientity_id、attr_id、to_cientity_id 字段，适合用于精确检索、唯一性判断和去重查询。"
+    }
+  ]
+}

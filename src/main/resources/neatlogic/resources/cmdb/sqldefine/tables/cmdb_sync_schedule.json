@@ -1,0 +1,45 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_schedule",
+  "label": "cmdb同步计划表",
+  "description": "cmdb同步计划表 可用于配置管理相关的关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "cron",
+      "type": "varchar(500)",
+      "description": "cron表达式。"
+    },
+    {
+      "name": "policy_id",
+      "type": "bigint",
+      "description": "策略id，已建立普通索引，适合用于过滤、关联或排序查询。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_policy_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "policy_id"
+      ],
+      "description": "普通索引，覆盖 policy_id 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}

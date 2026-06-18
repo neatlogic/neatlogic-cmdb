@@ -1,0 +1,95 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_import_audit",
+  "label": "cmdb批量导入审计表",
+  "description": "cmdb批量导入审计表 可用于配置管理相关的状态跟踪、关联查询等报表查询场景。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "import_user",
+      "type": "char(32)",
+      "description": "导入用户。"
+    },
+    {
+      "name": "import_date",
+      "type": "timestamp(3)",
+      "description": "导入时间，已建立普通索引，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "finish_date",
+      "type": "timestamp(3)",
+      "description": "完成时间。"
+    },
+    {
+      "name": "action",
+      "type": "enum('append','update','all')",
+      "description": "append：增量导入；update：存量导入；all：全部导入。"
+    },
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "导入附件的id。"
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "引用cmdb_ci的id。"
+    },
+    {
+      "name": "success_count",
+      "type": "int",
+      "description": "导入数量。"
+    },
+    {
+      "name": "failed_count",
+      "type": "int",
+      "description": "失败数量。"
+    },
+    {
+      "name": "status",
+      "type": "enum('running','success','failed')",
+      "description": "状态。"
+    },
+    {
+      "name": "error",
+      "type": "longtext",
+      "description": "错误信息。"
+    },
+    {
+      "name": "total_count",
+      "type": "int",
+      "description": "总数。"
+    },
+    {
+      "name": "server_id",
+      "type": "int",
+      "description": "应用ID。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录和主表关联查询。"
+    },
+    {
+      "name": "idx_import_date",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "import_date"
+      ],
+      "description": "普通索引，覆盖 import_date 字段，适合用于过滤、关联或排序查询。"
+    }
+  ]
+}
