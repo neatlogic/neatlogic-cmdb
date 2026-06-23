@@ -1,0 +1,68 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_attr_metric",
+  "label": "CMDB配置项属性性能数据表",
+  "description": "CMDB配置项属性性能数据表，用于记录配置项事务提交时保存的数值型属性性能数据。",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "id，作为当前表记录的主键或唯一定位字段。"
+    },
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "配置项id。"
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "属性id。"
+    },
+    {
+      "name": "metric_time",
+      "type": "timestamp(3)",
+      "description": "性能数据时间。"
+    },
+    {
+      "name": "value",
+      "type": "decimal(30,10)",
+      "description": "性能数据值。"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "主键索引，覆盖 id 字段，适合用于唯一定位记录。"
+    },
+    {
+      "name": "idx_cientity_attr_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_id",
+        "attr_id",
+        "metric_time"
+      ],
+      "description": "普通索引，覆盖 cientity_id、attr_id、metric_time 字段，适合用于查询单个配置项属性的时间序列数据。"
+    },
+    {
+      "name": "idx_attr_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id",
+        "metric_time"
+      ],
+      "description": "普通索引，覆盖 attr_id、metric_time 字段，适合用于按属性和时间查询性能数据。"
+    }
+  ]
+}

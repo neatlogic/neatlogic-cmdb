@@ -60,6 +60,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrMetricMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
@@ -78,6 +79,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
@@ -98,6 +100,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Resource
     private AttrEntityMapper attrEntityMapper;
+
+    @Resource
+    private CiEntityAttrMetricMapper ciEntityAttrMetricMapper;
 
     @Resource
     private TransactionMapper transactionMapper;
@@ -2006,6 +2011,45 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
 
     /**
+     * 收集已开启“另存为性能数据”的普通数字属性值，后续在配置项基础数据提交成功后统一写入。
+     */
+    private void addCiEntityAttrMetric(List<CiEntityAttrMetricVo> metricList, CiEntityTransactionVo ciEntityTransactionVo, AttrEntityTransactionVo attrEntityTransactionVo) {
+        if (!isMetricAttr(attrEntityTransactionVo) || CollectionUtils.isEmpty(attrEntityTransactionVo.getValueList())) {
+            return;
+        }
+        for (int i = 0; i < attrEntityTransactionVo.getValueList().size(); i++) {
+            String value = attrEntityTransactionVo.getValueList().getString(i);
+            if (StringUtils.isBlank(value)) {
+                continue;
+            }
+            try {
+                CiEntityAttrMetricVo metricVo = new CiEntityAttrMetricVo();
+                metricVo.setCiEntityId(ciEntityTransactionVo.getCiEntityId());
+                metricVo.setAttrId(attrEntityTransactionVo.getAttrId());
+                metricVo.setValue(new BigDecimal(value.trim()));
+                metricList.add(metricVo);
+            } catch (NumberFormatException ignored) {
+                // 属性值校验链路会负责拦截非法数字，这里只跳过无法转成时间序列数值的残余输入。
+            }
+        }
+    }
+
+    /**
+     * 性能数据只支持普通数字属性；开关保存在数字属性扩展配置 config.isMetric 中。
+     */
+    private boolean isMetricAttr(AttrEntityTransactionVo attrEntityTransactionVo) {
+        if (attrEntityTransactionVo == null || !"number".equals(attrEntityTransactionVo.getAttrType()) || Boolean.TRUE.equals(attrEntityTransactionVo.isNeedTargetCi())) {
+            return false;
+        }
+        JSONObject config = attrEntityTransactionVo.getAttrConfig();
+        if (MapUtils.isEmpty(config)) {
+            return false;
+        }
+        Object isMetric = config.get("isMetric");
+        return Objects.equals(isMetric, 1) || Boolean.TRUE.equals(isMetric) || Objects.equals(String.valueOf(isMetric), "1");
+    }
+
+    /**
      * 提交事务 修改规则:
      * editMode针对单次修改。editMode=Global下，提供属性或关系代表修改，不提供代表删除；editMode=Partial下，提供属性或关系代表修改，不提供代表不修改
      * saveMode针对单个属性或关系，saveMode=replace，代表覆盖，最后结果是修改或删除；saveMode=merge，代表合并，最后结果是添加新成员或维持不变。
@@ -2136,6 +2180,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
             ciEntityVo.setExpiredDay(ciVo.getExpiredDay());
             List<AttrEntityVo> rebuildAttrEntityList = new ArrayList<>();
+            List<CiEntityAttrMetricVo> metricList = new ArrayList<>();
             for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
                 AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
                 if (attrEntityVo.isNeedTargetCi()) {
@@ -2162,6 +2207,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         ciEntityVo.setName(attrEntityVo.getValue());
                         updateCiEntityName(ciEntityVo);
                     }
+                    addCiEntityAttrMetric(metricList, ciEntityTransactionVo, attrEntityTransactionVo);
                 }
             }
             //处理全局属性
@@ -2200,6 +2246,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 }
                 topicName = "cmdb/cientity/recover";
                 eventType = CiEntityEventType.RECOVER;
+            }
+            if (CollectionUtils.isNotEmpty(metricList)) {
+                Date metricTime = new Date();
+                for (CiEntityAttrMetricVo metricVo : metricList) {
+                    metricVo.setMetricTime(metricTime);
+                }
+                ciEntityAttrMetricMapper.insertCiEntityAttrMetricList(metricList);
             }
             /*
             写入关系信息
@@ -2512,6 +2565,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
         ciEntityMapper.deleteCiEntityBaseInfo(ciEntityVo);
+        // 性能时间序列不参与主查询，删除配置项时需要显式清理。
+        ciEntityAttrMetricMapper.deleteCiEntityAttrMetricByCiEntityId(ciEntityVo.getId());
         //删除全局属性
         globalAttrMapper.deleteGlobalAttrEntityByCiEntityId(ciEntityVo.getId());
         for (CiVo ci : ciList) {
