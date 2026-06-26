@@ -56,8 +56,8 @@ public class AddCollectionHandler extends AfterRegisterBase {
             JSONObject oldData = mongoTemplate.findOne(query, JSONObject.class, "COLLECT_OS");
             Document dataObj = new Document();
             dataObj.put("_OBJ_CATEGORY", "OS");
-            dataObj.put("_OBJ_TYPE", tagentVo.getOsType());
-            dataObj.put("OS_TYPE", tagentVo.getOsType());
+            dataObj.put("_OBJ_TYPE", AddCiEntityHandler.capitalizeFirst(tagentVo.getOsType()));
+            dataObj.put("OS_TYPE", AddCiEntityHandler.capitalizeFirst(tagentVo.getOsType()));
             dataObj.put("MGMT_IP", tagentVo.getIp());
             dataObj.put("CPU_ARCH", tagentVo.getOsbit());
             dataObj.put("HOSTNAME", tagentVo.getName());
