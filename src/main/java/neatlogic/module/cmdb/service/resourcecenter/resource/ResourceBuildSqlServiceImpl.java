@@ -856,11 +856,13 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
             List<String> filterItemFieldNameList = new ArrayList<>();
             filterItemFieldNameList.add("ip");
             filterItemFieldNameList.add("port");
+            filterItemFieldNameList.add("type_id");
             filterItemFieldNameList.add("type_name");
             config.setSelectItemFieldNameList(selectItemFieldNameList);
             config.setFilterItemFieldNameList(filterItemFieldNameList);
             Map<String, Column> fieldName2ColumnMap = new HashMap<>();
             PlainSelect plainSelect = getPlainSelect(config, fieldName2ColumnMap);
+            $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("type_id").toString(), "typeId");
             $sql.addSelectColumn(plainSelect, fieldName2ColumnMap.get("type_name").toString(), "typeName");
             $sql.addWhereExpression(plainSelect, $sql.exp(fieldName2ColumnMap.get("ip").toString(), "=", $sql.value(ip)));
             if (port != null) {
@@ -1239,7 +1241,14 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
     @Override
     public String buildGetAppResourceListByIdListSql(ResourceSearchVo searchVo) {
         ResourceEntityVo resourceEntityVo = resourceEntityMapper.getResourceEntityByName(searchVo.getViewName());
-        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(resourceEntityVo.getConfig().getSceneTemplateName());
+        // 应用资源查询可能直接传动态视图名，不能只依赖场景模板名，否则未配置模板时会生成空select。
+        List<String> fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(searchVo.getViewName());
+        if (CollectionUtils.isEmpty(fieldNameList)) {
+            String sceneTemplateName = resourceEntityVo.getConfig().getSceneTemplateName();
+            if (StringUtils.isNotBlank(sceneTemplateName)) {
+                fieldNameList = ResourceEntityFactory.getFieldNameListByViewName(sceneTemplateName);
+            }
+        }
         return buildGetAppResourceListByIdListSql(searchVo, fieldNameList);
     }
 
@@ -1569,6 +1578,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         config.setFilterItemFieldNameList(new ArrayList<>());
         return config;
     }
+
     /**
      * 对字段映射配置信息进行有效性检查及填充缺省数据
      */

@@ -1085,6 +1085,7 @@
         a.`ip`,
         a.`id`,
         a.`port`,
+        a.`type_id` AS typeId,
         a.`type_name` AS typeName
         FROM
         @{DATA_SCHEMA}.`scence_ipobject_detail` a
