@@ -25,6 +25,7 @@ import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.scheduler.core.JobBase;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.framework.util.SnowflakeUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
@@ -72,8 +73,8 @@ public class ClearExpiredRelEntityScheduleJob extends JobBase {
     }
 
     @Override
-    public void reloadJob(JobObject jobObject) {
-        schedulerManager.loadJob(jobObject);
+    public void reloadJob(JobObject jobObject, JobLoadTriggerType triggerType) {
+        schedulerManager.loadJob(jobObject, triggerType);
     }
 
     @Override
@@ -81,7 +82,7 @@ public class ClearExpiredRelEntityScheduleJob extends JobBase {
         JobObject jobObject = new JobObject.Builder("EXPIRED-RELENTITY-CLEARER", this.getGroupName(), this.getClassName(), tenantUuid)
                 .withCron(CRON_EXPRESSION)
                 .build();
-        this.reloadJob(jobObject);
+        this.reloadJob(jobObject, JobLoadTriggerType.SERVER_RESTART);
     }
 
     private RelVo getRelById(Long relId) {
