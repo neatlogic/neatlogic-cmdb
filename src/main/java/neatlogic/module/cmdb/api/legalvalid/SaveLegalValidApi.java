@@ -25,6 +25,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.scheduler.core.IJob;
 import neatlogic.framework.scheduler.core.SchedulerManager;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.module.cmdb.dao.mapper.legalvalid.LegalValidMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -83,7 +84,7 @@ public class SaveLegalValidApi extends PrivateApiComponentBase {
             IJob handler = SchedulerManager.getHandler("neatlogic.module.cmdb.schedule.handler.LegalValidScheduleJob");
             String tenantUuid = TenantContext.get().getTenantUuid();
             JobObject newJobObject = new JobObject.Builder(legalValidVo.getId().toString(), handler.getGroupName(), handler.getClassName(), tenantUuid).withCron(legalValidVo.getCron()).addData("legalValidId", legalValidVo.getId()).build();
-            schedulerManager.loadJob(newJobObject);
+            schedulerManager.loadJob(newJobObject, JobLoadTriggerType.INITIAL_CREATE);
         }
         return null;
     }
