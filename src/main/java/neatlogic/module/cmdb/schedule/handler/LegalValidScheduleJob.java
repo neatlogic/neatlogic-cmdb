@@ -16,6 +16,7 @@ import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.cmdb.dto.legalvalid.LegalValidVo;
 import neatlogic.framework.scheduler.core.JobBase;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.module.cmdb.dao.mapper.legalvalid.LegalValidMapper;
 import neatlogic.module.cmdb.legalvalid.LegalValidManager;
 import org.apache.commons.collections4.CollectionUtils;
@@ -55,12 +56,12 @@ public class LegalValidScheduleJob extends JobBase {
     }
 
     @Override
-    public void reloadJob(JobObject jobObject) {
+    public void reloadJob(JobObject jobObject, JobLoadTriggerType triggerType) {
         String tenantUuid = jobObject.getTenantUuid();
         LegalValidVo jobVo = legalValidMapper.getLegalValidById(Long.valueOf(jobObject.getJobName()));
         if (jobVo != null) {
             JobObject newJobObject = new JobObject.Builder(jobVo.getId().toString(), this.getGroupName(), this.getClassName(), tenantUuid).withCron(jobVo.getCron()).addData("legalValidId", jobVo.getId()).build();
-            schedulerManager.loadJob(newJobObject);
+            schedulerManager.loadJob(newJobObject, triggerType);
         } else {
             schedulerManager.unloadJob(jobObject);
         }
@@ -74,7 +75,7 @@ public class LegalValidScheduleJob extends JobBase {
         if (CollectionUtils.isNotEmpty(jobList)) {
             for (LegalValidVo vo : jobList) {
                 JobObject newJobObject = new JobObject.Builder(vo.getId().toString(), this.getGroupName(), this.getClassName(), tenantUuid).withCron(vo.getCron()).addData("legalValidId", vo.getId()).build();
-                schedulerManager.loadJob(newJobObject);
+                schedulerManager.loadJob(newJobObject, JobLoadTriggerType.SERVER_RESTART);
             }
         }
     }
