@@ -18,6 +18,7 @@ import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.common.constvalue.InputFrom;
 import neatlogic.framework.scheduler.core.JobBase;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -59,8 +60,8 @@ public class ExpiredCiEntityCleanerJob extends JobBase {
     }
 
     @Override
-    public void reloadJob(JobObject jobObject) {
-        schedulerManager.loadJob(jobObject);
+    public void reloadJob(JobObject jobObject, JobLoadTriggerType triggerType) {
+        schedulerManager.loadJob(jobObject, triggerType);
     }
 
     @Override
@@ -70,7 +71,7 @@ public class ExpiredCiEntityCleanerJob extends JobBase {
                 .withCron("0 0 1 * * ?")
                 //.withCron("0 * * * * ?")//测试用
                 .build();
-        this.reloadJob(jobObject);
+        this.reloadJob(jobObject, JobLoadTriggerType.SERVER_RESTART);
     }
 
     @Override

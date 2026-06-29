@@ -29,6 +29,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.scheduler.core.IJob;
 import neatlogic.framework.scheduler.core.SchedulerManager;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.module.cmdb.service.sync.SyncService;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +77,7 @@ public class SaveSyncPolicyApi extends PrivateApiComponentBase {
             String tenantUuid = TenantContext.get().getTenantUuid();
             for (SyncScheduleVo cron : syncPolicyVo.getCronList()) {
                 JobObject newJobObject = new JobObject.Builder(cron.getId().toString(), handler.getGroupName(), handler.getClassName(), tenantUuid).withCron(cron.getCron()).addData("policyId", cron.getPolicyId()).build();
-                schedulerManager.loadJob(newJobObject);
+                schedulerManager.loadJob(newJobObject, JobLoadTriggerType.INITIAL_CREATE);
             }
         }
         return null;

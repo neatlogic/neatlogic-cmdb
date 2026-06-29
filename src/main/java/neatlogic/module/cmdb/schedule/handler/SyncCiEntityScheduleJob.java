@@ -18,6 +18,7 @@ import neatlogic.framework.cmdb.dto.sync.SyncPolicyVo;
 import neatlogic.framework.cmdb.dto.sync.SyncScheduleVo;
 import neatlogic.framework.scheduler.core.JobBase;
 import neatlogic.framework.scheduler.dto.JobObject;
+import neatlogic.framework.scheduler.enums.JobLoadTriggerType;
 import neatlogic.module.cmdb.dao.mapper.sync.SyncMapper;
 import neatlogic.module.cmdb.service.sync.CiSyncManager;
 import org.apache.commons.collections4.CollectionUtils;
@@ -55,12 +56,12 @@ public class SyncCiEntityScheduleJob extends JobBase {
     }
 
     @Override
-    public void reloadJob(JobObject jobObject) {
+    public void reloadJob(JobObject jobObject, JobLoadTriggerType triggerType) {
         String tenantUuid = jobObject.getTenantUuid();
         SyncScheduleVo jobVo = syncMapper.getSyncScheduleById(Long.valueOf(jobObject.getJobName()));
         if (jobVo != null) {
             JobObject newJobObject = new JobObject.Builder(jobVo.getId().toString(), this.getGroupName(), this.getClassName(), tenantUuid).withCron(jobVo.getCron()).addData("policyId", jobVo.getPolicyId()).build();
-            schedulerManager.loadJob(newJobObject);
+            schedulerManager.loadJob(newJobObject, triggerType);
         } else {
             schedulerManager.unloadJob(jobObject);
         }
@@ -72,7 +73,7 @@ public class SyncCiEntityScheduleJob extends JobBase {
         if (CollectionUtils.isNotEmpty(jobList)) {
             for (SyncScheduleVo vo : jobList) {
                 JobObject newJobObject = new JobObject.Builder(vo.getId().toString(), this.getGroupName(), this.getClassName(), tenantUuid).withCron(vo.getCron()).addData("policyId", vo.getPolicyId()).build();
-                schedulerManager.loadJob(newJobObject);
+                schedulerManager.loadJob(newJobObject, JobLoadTriggerType.SERVER_RESTART);
             }
         }
     }
