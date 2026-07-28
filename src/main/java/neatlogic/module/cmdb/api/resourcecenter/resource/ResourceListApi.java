@@ -81,6 +81,7 @@ public class ResourceListApi extends PrivateApiComponentBase {
 
     @Input({
             @Param(name = "keyword", type = ApiParamType.STRING, xss = true, desc = "common.keyword"),
+            @Param(name = "ipList", type = ApiParamType.JSONARRAY, desc = "common.ip"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "common.typeid"),
             @Param(name = "protocolIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.protocolidlist"),
             @Param(name = "stateIdList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.stateidlist"),

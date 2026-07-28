@@ -152,6 +152,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="ipList != null and ipList.size() > 0">
+            AND a.`ip` IN
+            <foreach collection="ipList" item="ip" open="(" separator="," close=")">
+                #{ip}
+            </foreach>
+        </if>
         <if test="inspectStatusList != null and inspectStatusList.size() > 0">
             AND a.`inspect_status` IN
             <foreach collection="inspectStatusList" item="inspectStatus" open="(" separator="," close=")">
@@ -219,6 +225,12 @@
     </sql>
 
     <sql id="resource_ipobject_pre_where">
+        <if test="preCondition.ipList != null and preCondition.ipList.size() > 0">
+            AND a.`ip` IN
+            <foreach collection="preCondition.ipList" item="ip" open="(" separator="," close=")">
+                #{ip}
+            </foreach>
+        </if>
         <if test="preCondition.typeIdList != null and preCondition.typeIdList.size() > 0">
             AND a.`type_id` IN
             <foreach collection="preCondition.typeIdList" item="typeId" open="(" separator="," close=")">

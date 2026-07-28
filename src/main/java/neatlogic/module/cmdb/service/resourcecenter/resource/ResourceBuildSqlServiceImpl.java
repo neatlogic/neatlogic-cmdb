@@ -2094,6 +2094,9 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getIdList())) {
             filterItemFieldNameSet.add("id");
         }
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getIpList())) {
+            filterItemFieldNameSet.add("ip");
+        }
         if (CollectionUtils.isNotEmpty(queryCriteriaVo.getInspectStatusList())) {
             filterItemFieldNameSet.add("inspect_status");
         }
@@ -2155,6 +2158,9 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
 //        SqlVo sqlVo = new SqlVo();
         List<JoinVo> joinList = new ArrayList<>();
         List<ExpressionVo> whereExpressionList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(queryCriteriaVo.getIpList())) {
+            whereExpressionList.add($sql.exp(fieldName2ColumnMap.get("ip").toString(), "in", queryCriteriaVo.getIpList()));
+        }
         /*
         <if test="keywordList != null and keywordList.size() > 0">
             JOIN fulltextindex_field_cmdb ffc ON ffc.target_id = a.id AND ffc.target_field IN (#{nameFieldAttrId}, #{ipFieldAttrId})
