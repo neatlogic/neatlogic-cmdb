@@ -11,24 +11,21 @@
 package neatlogic.module.cmdb.portal.widget;
 
 import neatlogic.framework.portal.widget.core.IPortalWidget;
-import neatlogic.framework.portal.widget.core.IPortalWidgetGroup;
 
 public enum CmdbPortalWidget implements IPortalWidget {
-    cmdbAssetHealth("cmdbAssetHealth", "资产健康概览", 1, CmdbPortalWidgetGroup.cmdbGroup1),
-    cmdbAbnormalAsset("cmdbAbnormalAsset", "异常资产", 2, CmdbPortalWidgetGroup.cmdbGroup1),
-    cmdbPendingChange("cmdbPendingChange", "待处理变更", 3, CmdbPortalWidgetGroup.cmdbGroup2),
-    cmdbAssetDistribution("cmdbAssetDistribution", "资产类型与健康分布", 4, CmdbPortalWidgetGroup.cmdbGroup2),
+    cmdbAssetHealth("cmdbAssetHealth", "资产健康概览", 1),
+    cmdbAbnormalAsset("cmdbAbnormalAsset", "异常资产", 2),
+    cmdbPendingChange("cmdbPendingChange", "待处理变更", 3),
+    cmdbAssetDistribution("cmdbAssetDistribution", "资产类型与健康分布", 4),
     ;
     private final String value;
     private final String text;
     private final Integer sort;
-    private final IPortalWidgetGroup group;
 
-    CmdbPortalWidget(String value, String text, Integer sort, IPortalWidgetGroup group) {
+    CmdbPortalWidget(String value, String text, Integer sort) {
         this.value = value;
         this.text = text;
         this.sort = sort;
-        this.group = group;
     }
 
     @Override
@@ -44,10 +41,5 @@ public enum CmdbPortalWidget implements IPortalWidget {
     @Override
     public Integer getSort() {
         return this.sort;
-    }
-
-    @Override
-    public IPortalWidgetGroup getGroup() {
-        return this.group;
     }
 }
