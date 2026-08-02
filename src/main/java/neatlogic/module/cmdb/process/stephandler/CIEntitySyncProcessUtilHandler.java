@@ -58,7 +58,7 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
 
     @Override
     public String[] getRegulateKeyList() {
-        return new String[]{"authorityList", "notifyPolicyConfig", "actionConfig", "customButtonList", "customStatusList", "replaceableTextList", "workerPolicyConfig", "formSceneUuid", "formSceneName", "autoStart", "isNeedUploadFile", "isNeedContent", "isRequired", "commentTemplateId", "tagList", "handlerList"};
+        return new String[]{"authorityList", "notifyPolicyConfig", "actionConfig", "customButtonList", "customStatusList", "replaceableTextList", "workerPolicyConfig", "formSceneUuid", "formSceneName", "autoStart", "isNeedUploadFile", "isNeedContent", "isRequired", "commentTemplateId", "tagList", "handlerList", "isAllowProcessOnMobile"};
     }
 
 }
