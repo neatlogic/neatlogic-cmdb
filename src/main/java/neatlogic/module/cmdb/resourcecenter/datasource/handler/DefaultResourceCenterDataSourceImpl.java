@@ -31,6 +31,7 @@ import neatlogic.framework.cmdb.resourcecenter.datasource.core.Ordered;
 import neatlogic.framework.common.constvalue.InspectStatus;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.common.dto.ValueTextVo;
+import neatlogic.framework.util.$;
 import neatlogic.framework.util.TableResultUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityCachedMapper;
@@ -81,7 +82,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
     @PostConstruct
     public void init() {
         headFieldHandlerMap.put(new ValueTextVo("id", "ID"), (resourceVo, cacheData) -> resourceVo.getId());
-        headFieldHandlerMap.put(new ValueTextVo("ip", "IP地址"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("ip", "nfddv.deployversionenvinstancevo.ip.name"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
             resultObj.put("ip", resourceVo.getIp());
             resultObj.put("port", resourceVo.getPort());
@@ -89,7 +90,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             resultObj.put("id", resourceVo.getId());
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("ci", "模型"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("ci", "cmdb.ci"), (resourceVo, cacheData) -> {
             if (resourceVo.getTypeId() == null) {
                 return null;
             }
@@ -107,8 +108,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("name", "名称"), (resourceVo, cacheData) -> resourceVo.getName());
-        headFieldHandlerMap.put(new ValueTextVo("monitor", "监控状态"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("name", "common.name"), (resourceVo, cacheData) -> resourceVo.getName());
+        headFieldHandlerMap.put(new ValueTextVo("monitor", "term.cmdb.monitorstatus"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
             if (StringUtils.isNotBlank(resourceVo.getMonitorStatus())) {
                 JSONObject statusJson = InspectStatus.getInspectStatusJson(resourceVo.getMonitorStatus());
@@ -121,7 +122,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("inspect", "巡检状态"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("inspect", "term.cmdb.inspectstatus"), (resourceVo, cacheData) -> {
             JSONObject resultObj = new JSONObject();
             if (StringUtils.isNotBlank(resourceVo.getInspectStatus())) {
                 JSONObject statusJson = InspectStatus.getInspectStatusJson(resourceVo.getInspectStatus());
@@ -134,7 +135,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("appEnvironment", "应用环境"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("appEnvironment", "term.cmdb.appenv"), (resourceVo, cacheData) -> {
             if (resourceVo.getEnvId() == null) {
                 return null;
             }
@@ -158,7 +159,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("appModule", "应用模块"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("appModule", "term.cmdb.appmodule"), (resourceVo, cacheData) -> {
             if (resourceVo.getAppModuleId() == null) {
                 return null;
             }
@@ -174,7 +175,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("appSystem", "应用系统"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("appSystem", "term.cmdb.appsystem"), (resourceVo, cacheData) -> {
             if (resourceVo.getAppSystemId() == null) {
                 return null;
             }
@@ -190,7 +191,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("allIpList", "IP列表"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("allIpList", "common.iplist"), (resourceVo, cacheData) -> {
             JSONArray resultList = new JSONArray();
             List<IpVo> ipList = resourceVo.getAllIp();
             if (CollectionUtils.isNotEmpty(ipList)) {
@@ -208,7 +209,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultList;
         });
-        headFieldHandlerMap.put(new ValueTextVo("businessGroupList", "所属部门"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("businessGroupList", "common.belongtodepartment"), (resourceVo, cacheData) -> {
             JSONArray resultList = new JSONArray();
             List<BgVo> bgList = resourceVo.getBgList();
             if (CollectionUtils.isNotEmpty(bgList)) {
@@ -226,7 +227,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultList;
         });
-        headFieldHandlerMap.put(new ValueTextVo("ownerList", "所有者"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("ownerList", "common.owner"), (resourceVo, cacheData) -> {
             JSONArray resultList = new JSONArray();
             List<OwnerVo> ownerList = resourceVo.getOwnerList();
             if (CollectionUtils.isNotEmpty(ownerList)) {
@@ -244,7 +245,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultList;
         });
-        headFieldHandlerMap.put(new ValueTextVo("state", "资产状态"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("state", "term.cmdb.assetstatus"), (resourceVo, cacheData) -> {
             if (resourceVo.getStateId() == null) {
                 return null;
             }
@@ -258,12 +259,12 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("networkArea", "网络区域"), (resourceVo, cacheData) -> resourceVo.getNetworkArea());
-        headFieldHandlerMap.put(new ValueTextVo("maintenanceWindow", "维护窗口"), (resourceVo, cacheData) -> resourceVo.getMaintenanceWindow());
-        headFieldHandlerMap.put(new ValueTextVo("tagList", "标签"), (resourceVo, cacheData) -> resourceVo.getTagList());
-        headFieldHandlerMap.put(new ValueTextVo("accountList", "账号"), (resourceVo, cacheData) -> resourceVo.getAccountList());
-        headFieldHandlerMap.put(new ValueTextVo("description", "描述"), (resourceVo, cacheData) -> resourceVo.getDescription());
-        headFieldHandlerMap.put(new ValueTextVo("vendor", "厂商"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("networkArea", "common.networkarea"), (resourceVo, cacheData) -> resourceVo.getNetworkArea());
+        headFieldHandlerMap.put(new ValueTextVo("maintenanceWindow", "nmdaae.savedeployappconfiginstanceapi.input.param.desc.maintenancewindow"), (resourceVo, cacheData) -> resourceVo.getMaintenanceWindow());
+        headFieldHandlerMap.put(new ValueTextVo("tagList", "common.tag"), (resourceVo, cacheData) -> resourceVo.getTagList());
+        headFieldHandlerMap.put(new ValueTextVo("accountList", "common.account"), (resourceVo, cacheData) -> resourceVo.getAccountList());
+        headFieldHandlerMap.put(new ValueTextVo("description", "common.description"), (resourceVo, cacheData) -> resourceVo.getDescription());
+        headFieldHandlerMap.put(new ValueTextVo("vendor", "common.vendor"), (resourceVo, cacheData) -> {
             if (resourceVo.getVendorId() == null) {
                 return null;
             }
@@ -278,7 +279,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             return resultObj;
 
         });
-        headFieldHandlerMap.put(new ValueTextVo("dataCenter", "数据中心"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("dataCenter", "common.datacenter"), (resourceVo, cacheData) -> {
             if (resourceVo.getDataCenterId() == null) {
                 return null;
             }
@@ -292,7 +293,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return resultObj;
         });
-        headFieldHandlerMap.put(new ValueTextVo("fcu", "创建者"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("fcu", "common.createuser"), (resourceVo, cacheData) -> {
             String fcu = resourceVo.getFcu();
             if (StringUtils.isNotBlank(fcu)) {
                 JSONObject resultObj = new JSONObject();
@@ -302,8 +303,8 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return null;
         });
-        headFieldHandlerMap.put(new ValueTextVo("fcd", "创建日期"), (resourceVo, cacheData) -> resourceVo.getFcd());
-        headFieldHandlerMap.put(new ValueTextVo("lcu", "修改者"), (resourceVo, cacheData) -> {
+        headFieldHandlerMap.put(new ValueTextVo("fcd", "common.createdate"), (resourceVo, cacheData) -> resourceVo.getFcd());
+        headFieldHandlerMap.put(new ValueTextVo("lcu", "common.editor"), (resourceVo, cacheData) -> {
             String lcu = resourceVo.getLcu();
             if (StringUtils.isNotBlank(lcu)) {
                 JSONObject resultObj = new JSONObject();
@@ -313,7 +314,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             }
             return null;
         });
-        headFieldHandlerMap.put(new ValueTextVo("lcd", "修改日期"), (resourceVo, cacheData) -> resourceVo.getLcd());
+        headFieldHandlerMap.put(new ValueTextVo("lcd", "common.editdate"), (resourceVo, cacheData) -> resourceVo.getLcd());
     }
 
     private JSONObject getResultObj(CiEntityVo ciEntityVo) {
@@ -910,7 +911,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             if (valueTextVo != null) {
                 JSONObject thead = new JSONObject();
                 thead.put("key", valueTextVo.getValue());
-                thead.put("title", valueTextVo.getText());
+                thead.put("title", $.t(valueTextVo.getText()));
                 theadList.add(thead);
             }
         }
@@ -933,7 +934,7 @@ public class DefaultResourceCenterDataSourceImpl implements IResourceCenterDataS
             if (Objects.equals(valueTextVo.getValue(), "accountList")) {
                 continue;
             }
-            resultList.add(valueTextVo);
+            resultList.add(new ValueTextVo(valueTextVo.getValue(), $.t(valueTextVo.getText())));
         }
         return resultList;
     }
