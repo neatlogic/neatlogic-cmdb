@@ -63,6 +63,7 @@
         a.`password` as passwordCipher,
         b.name as protocol,
         b.`port` as protocolPort,
+        a.`is_default` as isDefault,
         a.`fcu`,
         a.`fcd`,
         a. `lcu`,
@@ -516,7 +517,9 @@
         </if>
         `protocol_id` ,
         `type` ,
-        `is_default`,
+        <if test="isDefault != null">
+            `is_default`,
+        </if>
         `lcu`,
         `lcd`,
         `fcu`,
@@ -531,7 +534,9 @@
         </if>
         #{protocolId},
         #{type},
-        #{isDefault},
+        <if test="isDefault != null">
+            #{isDefault},
+        </if>
         #{lcu},
         now(3),
         #{fcu},

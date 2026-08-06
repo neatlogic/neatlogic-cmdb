@@ -177,7 +177,7 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         paramAccountVo.setLcu(UserContext.get().getUserUuid());
 
         //一个协议只能存一个默认账号。例如，ssh协议当前默认账号为app，如果在编辑root账号时，把root设置为默认账号，需要替换掉原有的app默认账号表示标识。root代替app成为了新的ssh协议默认账号。
-        if (Objects.equals(type, AccountType.PUBLIC.getValue()) && paramAccountVo.getIsDefault() == 1) {
+        if (Objects.equals(type, AccountType.PUBLIC.getValue()) && Objects.equals(paramAccountVo.getIsDefault(), 1)) {
             resourceAccountMapper.resetAccountDefaultByProtocolIdAndAccount(paramAccountVo.getProtocolId(), paramAccountVo.getAccount());
         }
 
