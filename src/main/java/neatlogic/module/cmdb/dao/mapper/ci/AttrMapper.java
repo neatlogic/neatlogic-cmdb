@@ -50,6 +50,8 @@ public interface AttrMapper extends IAttrCrossoverMapper {
 
     List<AttrVo> getDeclaredAttrListByCiId(Long ciId);
 
+    List<AttrVo> getAttrListByType(String type);
+
     int checkAttrNameIsRepeat(AttrVo attrVo);
 
     int updateAttr(AttrVo attrVo);

@@ -225,6 +225,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     Long getCiEntityIdByCiNameAndCiEntityName(@Param("ciName") String ciName, @Param("ciEntityName") String ciEntityName);
 
+    Long getCiEntityIdByCiIdAndAttrIdAndAttrValue(@Param("ciId") Long ciId, @Param("attrId") Long attrId, @Param("attrValue") String attrValue);
+
     void deleteAttrEntityByFromCiEntityIdAndAttrId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
 
     void insertCiEntityExpiredTime(CiEntityVo ciEntityVo);
