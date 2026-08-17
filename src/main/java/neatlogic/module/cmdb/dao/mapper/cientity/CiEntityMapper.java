@@ -22,6 +22,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     CiEntityExpiredTimeVo getCiEntityExpiredTimeById(Long ciEntityId);
@@ -226,6 +227,8 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
     Long getCiEntityIdByCiNameAndCiEntityName(@Param("ciName") String ciName, @Param("ciEntityName") String ciEntityName);
 
     Long getCiEntityIdByCiIdAndAttrIdAndAttrValue(@Param("ciId") Long ciId, @Param("attrId") Long attrId, @Param("attrValue") String attrValue);
+
+    List<Map<String, Object>> getCiEntityIdAndAttrValueByCiIdAndAttrIdAndKeyword(@Param("ciId") Long ciId, @Param("attrId") Long id, @Param("keyword") String keyword);
 
     void deleteAttrEntityByFromCiEntityIdAndAttrId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
 
