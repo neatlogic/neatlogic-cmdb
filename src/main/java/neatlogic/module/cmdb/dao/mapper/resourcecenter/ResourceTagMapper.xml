@@ -71,7 +71,7 @@
         `id`,
         `name`,
         `description`,
-        (select count(1) from `cmdb_resourcecenter_resource_tag` where `tag_id` = `id`) as assetsCount
+        (select count(1) from `cmdb_cientity_tag` where `tag_id` = `id`) as assetsCount
         from `cmdb_tag`
         <where>
             <if test="keyword != null and keyword != ''">
@@ -98,7 +98,7 @@
 
     <select id="checkTagHasBeenReferredById" parameterType="java.lang.Long" resultType="int">
         select count(1)
-        from `cmdb_resourcecenter_resource_tag`
+        from `cmdb_cientity_tag`
         where `tag_id` = #{value}
     </select>
 
@@ -129,10 +129,10 @@
     <select id="getResourceTagListByResourceIdList" parameterType="java.util.List"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceTagVo">
         SELECT
-        `resource_id` AS resourceId,
+        `cientity_id` AS resourceId,
         `tag_id` AS tagId
-        FROM `cmdb_resourcecenter_resource_tag`
-        WHERE `resource_id` in
+        FROM `cmdb_cientity_tag`
+        WHERE `cientity_id` in
         <foreach collection="list" item="resourceId" open="(" separator="," close=")">
             #{resourceId}
         </foreach>
@@ -152,7 +152,7 @@
     </select>
 
     <insert id="insertIgnoreResourceTag" parameterType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceTagVo">
-        INSERT IGNORE INTO `cmdb_resourcecenter_resource_tag` (`resource_id`, `tag_id`) VALUES
+        INSERT IGNORE INTO `cmdb_cientity_tag` (`cientity_id`, `tag_id`) VALUES
         <foreach collection="list" item="resourceTag" separator=",">
             (#{resourceTag.resourceId}, #{resourceTag.tagId})
         </foreach>
@@ -182,13 +182,13 @@
 
     <delete id="deleteResourceTagByResourceId" parameterType="java.lang.Long">
         DELETE
-        FROM `cmdb_resourcecenter_resource_tag`
-        WHERE `resource_id` = #{value}
+        FROM `cmdb_cientity_tag`
+        WHERE `cientity_id` = #{value}
     </delete>
 
     <delete id="deleteResourceTagByResourceIdAndTagIdList">
-        DELETE FROM `cmdb_resourcecenter_resource_tag`
-        WHERE `resource_id` IN
+        DELETE FROM `cmdb_cientity_tag`
+        WHERE `cientity_id` IN
         <foreach collection="resourceIdList" item="resourceId" open="(" separator="," close=")">
             #{resourceId}
         </foreach>
