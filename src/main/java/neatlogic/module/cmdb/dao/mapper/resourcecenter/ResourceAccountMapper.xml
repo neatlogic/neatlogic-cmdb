@@ -481,9 +481,7 @@
             a.`name` = #{name},
         </if>
         a.`account` = #{account},
-        <if test="passwordCipher != null">
-            a.`password` = #{passwordCipher, typeHandler=CompressHandler},
-        </if>
+        a.`password` = #{passwordCipher, typeHandler=CompressHandler},
         a.protocol_id = #{protocolId},
         <if test="isDefault != null">
             a.`is_default` = #{isDefault},
