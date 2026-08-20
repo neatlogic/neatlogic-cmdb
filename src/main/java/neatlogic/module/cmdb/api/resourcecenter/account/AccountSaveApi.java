@@ -20,14 +20,17 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.enums.resourcecenter.AccountType;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNameRepeatsException;
 import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.common.util.RC4Util;
 import neatlogic.framework.dto.FieldValidResultVo;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
+import neatlogic.framework.util.PasswordRSAUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +68,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
             @Param(name = "id", type = ApiParamType.LONG, desc = "common.id"),
             @Param(name = "name", type = ApiParamType.STRING, maxLength = 200, isRequired = true, desc = "common.name"),
             @Param(name = "account", type = ApiParamType.STRING, maxLength = 80, desc = "common.username"),
-            @Param(name = "passwordPlain", type = ApiParamType.STRING, isRequired = false, desc = "common.password"),
+            @Param(name = "passwordCipher", type = ApiParamType.STRING, isRequired = false, desc = "common.password"),
             @Param(name = "protocolId", type = ApiParamType.LONG, isRequired = true, desc = "term.cmdb.protocol"),
             @Param(name = "port", type = ApiParamType.INTEGER, isRequired = false, desc = "term.cmdb.port"),
             @Param(name = "tagIdList", type = ApiParamType.JSONARRAY, isRequired = false, desc = "common.tagidlist"),
@@ -80,6 +83,13 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     @Override
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
+        String passwordCipher = paramAccountVo.getPasswordCipher();
+        System.out.println("passwordCipher = " + passwordCipher);
+        if (StringUtils.isNotBlank(passwordCipher)) {
+            String passwordPlain = PasswordRSAUtil.decrypt(passwordCipher);
+            System.out.println("passwordPlain = " + passwordPlain);
+            paramAccountVo.setPasswordCipher(RC4Util.encrypt(passwordPlain));
+        }
         Long id = paramObj.getLong("id");
         return resourceCenterAccountService.saveAccount(id, paramAccountVo);
     }
