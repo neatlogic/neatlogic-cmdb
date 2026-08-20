@@ -69,15 +69,11 @@ public class AccountGetApi extends PrivateApiComponentBase {
         if (account == null) {
             throw new ResourceCenterAccountNotFoundException(id);
         }
-        System.out.println("account.getPasswordCipher(1) = " + account.getPasswordCipher());
         if (StringUtils.isNotBlank(account.getPasswordCipher())) {
             // 数据库存量密码仍为RC4密文，查询时转换成RSA密文供前端安全回显和回传。
             String passwordPlain = RC4Util.decrypt(account.getPasswordCipher());
-            System.out.println("passwordPlain = " + passwordPlain);
             String passwordCipher = PasswordRSAUtil.encrypt(passwordPlain);
-            System.out.println("passwordCipher = " + passwordCipher);
             account.setPasswordCipher(passwordCipher);
-            System.out.println("PasswordRSAUtil.decrypt(passwordCipher) = " + PasswordRSAUtil.decrypt(passwordCipher));
         }
         List<TagVo> tagVoList = resourceAccountMapper.getTagListByAccountId(id);
         if (CollectionUtils.isNotEmpty(tagVoList)) {

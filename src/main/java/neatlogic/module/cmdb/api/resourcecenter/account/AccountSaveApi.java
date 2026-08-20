@@ -84,10 +84,8 @@ public class AccountSaveApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject paramObj) throws Exception {
         AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
         String passwordCipher = paramAccountVo.getPasswordCipher();
-        System.out.println("passwordCipher = " + passwordCipher);
         if (StringUtils.isNotBlank(passwordCipher)) {
             String passwordPlain = PasswordRSAUtil.decrypt(passwordCipher);
-            System.out.println("passwordPlain = " + passwordPlain);
             paramAccountVo.setPasswordCipher(RC4Util.encrypt(passwordPlain));
         }
         Long id = paramObj.getLong("id");
