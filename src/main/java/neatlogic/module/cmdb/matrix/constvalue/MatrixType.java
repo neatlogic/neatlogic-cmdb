@@ -20,8 +20,8 @@ import neatlogic.framework.util.$;
  * @since 2021/11/16 15:21
  **/
 public enum MatrixType implements IMatrixType {
-    CMDBCI("cmdbci", "nmcfe.cmdbfulltextindextype.cientity", "ciId", 4),
-    CMDBCUSTOMVIEW("cmdbcustomview", "nmcmc.matrixtype.cmdbcustomview", "customViewId", 5)
+//    CMDBCI("cmdbci", "nmcfe.cmdbfulltextindextype.cientity", "ciId", 4),
+//    CMDBCUSTOMVIEW("cmdbcustomview", "nmcmc.matrixtype.cmdbcustomview", "customViewId", 5)
     ;
 
     private String value;

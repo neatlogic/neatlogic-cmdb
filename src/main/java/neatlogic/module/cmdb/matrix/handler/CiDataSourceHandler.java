@@ -69,7 +69,7 @@ import java.util.stream.Collectors;
  * @author linbq
  * @since 2021/11/15 14:35
  **/
-@Component
+//@Component
 public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     private final static Logger logger = LoggerFactory.getLogger(CiDataSourceHandler.class);
@@ -106,7 +106,8 @@ public class CiDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     @Override
     public String getHandler() {
-        return MatrixType.CMDBCI.getValue();
+        return "";
+//        return MatrixType.CMDBCI.getValue();
     }
 
     @Override

@@ -46,7 +46,7 @@ import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
+//@Component
 public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase {
 
     private final static Logger logger = LoggerFactory.getLogger(CmdbCustomViewDataSourceHandler.class);
@@ -59,7 +59,8 @@ public class CmdbCustomViewDataSourceHandler extends MatrixDataSourceHandlerBase
 
     @Override
     public String getHandler() {
-        return MatrixType.CMDBCUSTOMVIEW.getValue();
+        return "";
+//        return MatrixType.CMDBCUSTOMVIEW.getValue();
     }
 
     @Override
