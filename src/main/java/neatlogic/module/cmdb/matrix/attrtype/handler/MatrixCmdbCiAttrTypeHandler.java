@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-@Service
+//@Service
 public class MatrixCmdbCiAttrTypeHandler extends MatrixAttrTypeBase {
     private final Logger logger = LoggerFactory.getLogger(MatrixCmdbCiAttrTypeHandler.class);
 
