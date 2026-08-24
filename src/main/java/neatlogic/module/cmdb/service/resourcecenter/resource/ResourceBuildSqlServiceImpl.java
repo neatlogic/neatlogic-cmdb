@@ -2137,15 +2137,15 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         if (isTagMatchAll(queryCriteriaVo)) {
             for (int i = 0; i < tagIdList.size(); i++) {
                 String alias = baseAlias + "_tag_" + i;
-                joinList.add($sql.join("join", "cmdb_resourcecenter_resource_tag", alias).withOn(
+                joinList.add($sql.join("join", "cmdb_cientity_tag", alias).withOn(
                         $sql.exp(
-                                $sql.exp(alias + ".resource_id", "=", idColumn.toString()),
+                                $sql.exp(alias + ".cientity_id", "=", idColumn.toString()),
                                 "and",
                                 $sql.exp(alias + ".tag_id", "=", tagIdList.get(i))
                         )));
             }
         } else {
-            joinList.add($sql.join("left join", "cmdb_resourcecenter_resource_tag", baseAlias).withOn($sql.exp(baseAlias + ".resource_id", "=", idColumn.toString())));
+            joinList.add($sql.join("left join", "cmdb_cientity_tag", baseAlias).withOn($sql.exp(baseAlias + ".cientity_id", "=", idColumn.toString())));
             whereExpressionList.add($sql.exp(baseAlias + ".tag_id", "in", tagIdList));
         }
     }
@@ -2291,7 +2291,7 @@ public class ResourceBuildSqlServiceImpl implements ResourceBuildSqlService, IRe
         }
         /*
         <if test="tagIdList != null and tagIdList.size() > 0">
-            LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+            LEFT JOIN `cmdb_cientity_tag` d ON d.`cientity_id` = a.`id`
         </if>
 
         <if test="tagIdList != null and tagIdList.size() > 0">

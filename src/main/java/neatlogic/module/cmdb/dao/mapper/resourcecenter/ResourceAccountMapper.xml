@@ -343,7 +343,6 @@
         SELECT cra.id,
                cra.name,
                cra.account,
-               cra.`password`,
                crap.`name` as protocol,
                crap.`port` as protocolPort,
                cra.`fcu`,
@@ -363,7 +362,6 @@
         SELECT cra.id,
                cra.name,
                cra.account,
-               cra.`password`,
                crap.`name` as protocol,
                crap.`port` as protocolPort,
                cra.`fcu`,
@@ -483,9 +481,7 @@
             a.`name` = #{name},
         </if>
         a.`account` = #{account},
-        <if test="passwordCipher != null">
-            a.`password` = #{passwordCipher, typeHandler=CompressHandler},
-        </if>
+        a.`password` = #{passwordCipher, typeHandler=CompressHandler},
         a.protocol_id = #{protocolId},
         <if test="isDefault != null">
             a.`is_default` = #{isDefault},

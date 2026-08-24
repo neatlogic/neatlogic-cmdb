@@ -313,13 +313,13 @@
             <choose>
                 <when test="tagMatchMode != null and tagMatchMode == 'all'">
                     <foreach collection="tagIdList" item="tagId" index="index">
-                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
-                        ON d_${index}.`resource_id` = a.`id`
+                        INNER JOIN `cmdb_cientity_tag` d_${index}
+                        ON d_${index}.`cientity_id` = a.`id`
                         AND d_${index}.`tag_id` = #{tagId}
                     </foreach>
                 </when>
                 <otherwise>
-                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                    LEFT JOIN `cmdb_cientity_tag` d ON d.`cientity_id` = a.`id`
                 </otherwise>
             </choose>
         </if>
@@ -369,13 +369,13 @@
             <choose>
                 <when test="tagMatchMode != null and tagMatchMode == 'all'">
                     <foreach collection="tagIdList" item="tagId" index="index">
-                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
-                        ON d_${index}.`resource_id` = a.`id`
+                        INNER JOIN `cmdb_cientity_tag` d_${index}
+                        ON d_${index}.`cientity_id` = a.`id`
                         AND d_${index}.`tag_id` = #{tagId}
                     </foreach>
                 </when>
                 <otherwise>
-                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                    LEFT JOIN `cmdb_cientity_tag` d ON d.`cientity_id` = a.`id`
                 </otherwise>
             </choose>
         </if>
@@ -422,13 +422,13 @@
             <choose>
                 <when test="tagMatchMode != null and tagMatchMode == 'all'">
                     <foreach collection="tagIdList" item="tagId" index="index">
-                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
-                        ON d_${index}.`resource_id` = a.`id`
+                        INNER JOIN `cmdb_cientity_tag` d_${index}
+                        ON d_${index}.`cientity_id` = a.`id`
                         AND d_${index}.`tag_id` = #{tagId}
                     </foreach>
                 </when>
                 <otherwise>
-                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                    LEFT JOIN `cmdb_cientity_tag` d ON d.`cientity_id` = a.`id`
                 </otherwise>
             </choose>
         </if>
@@ -436,13 +436,13 @@
             <choose>
                 <when test="preCondition.tagMatchMode != null and preCondition.tagMatchMode == 'all'">
                     <foreach collection="preCondition.tagIdList" item="tagId" index="index">
-                        INNER JOIN `cmdb_resourcecenter_resource_tag` p_d_${index}
-                        ON p_d_${index}.`resource_id` = a.`id`
+                        INNER JOIN `cmdb_cientity_tag` p_d_${index}
+                        ON p_d_${index}.`cientity_id` = a.`id`
                         AND p_d_${index}.`tag_id` = #{tagId}
                     </foreach>
                 </when>
                 <otherwise>
-                    LEFT JOIN `cmdb_resourcecenter_resource_tag` p_d ON p_d.`resource_id` = a.`id`
+                    LEFT JOIN `cmdb_cientity_tag` p_d ON p_d.`cientity_id` = a.`id`
                 </otherwise>
             </choose>
         </if>
@@ -506,13 +506,13 @@
             <choose>
                 <when test="tagMatchMode != null and tagMatchMode == 'all'">
                     <foreach collection="tagIdList" item="tagId" index="index">
-                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
-                        ON d_${index}.`resource_id` = a.`id`
+                        INNER JOIN `cmdb_cientity_tag` d_${index}
+                        ON d_${index}.`cientity_id` = a.`id`
                         AND d_${index}.`tag_id` = #{tagId}
                     </foreach>
                 </when>
                 <otherwise>
-                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                    LEFT JOIN `cmdb_cientity_tag` d ON d.`cientity_id` = a.`id`
                 </otherwise>
             </choose>
         </if>
@@ -520,13 +520,13 @@
             <choose>
                 <when test="preCondition.tagMatchMode != null and preCondition.tagMatchMode == 'all'">
                     <foreach collection="preCondition.tagIdList" item="tagId" index="index">
-                        INNER JOIN `cmdb_resourcecenter_resource_tag` p_d_${index}
-                        ON p_d_${index}.`resource_id` = a.`id`
+                        INNER JOIN `cmdb_cientity_tag` p_d_${index}
+                        ON p_d_${index}.`cientity_id` = a.`id`
                         AND p_d_${index}.`tag_id` = #{tagId}
                     </foreach>
                 </when>
                 <otherwise>
-                    LEFT JOIN `cmdb_resourcecenter_resource_tag` p_d ON p_d.`resource_id` = a.`id`
+                    LEFT JOIN `cmdb_cientity_tag` p_d ON p_d.`cientity_id` = a.`id`
                 </otherwise>
             </choose>
         </if>
@@ -1743,13 +1743,13 @@
             <choose>
                 <when test="tagMatchMode != null and tagMatchMode == 'all'">
                     <foreach collection="tagIdList" item="tagId" index="index">
-                        INNER JOIN `cmdb_resourcecenter_resource_tag` d_${index}
-                        ON d_${index}.`resource_id` = a.`id`
+                        INNER JOIN `cmdb_cientity_tag` d_${index}
+                        ON d_${index}.`cientity_id` = a.`id`
                         AND d_${index}.`tag_id` = #{tagId}
                     </foreach>
                 </when>
                 <otherwise>
-                    LEFT JOIN `cmdb_resourcecenter_resource_tag` d ON d.`resource_id` = a.`id`
+                    LEFT JOIN `cmdb_cientity_tag` d ON d.`cientity_id` = a.`id`
                 </otherwise>
             </choose>
         </if>
