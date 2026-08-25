@@ -107,6 +107,7 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
             attrObj.put("uid", "global_" + globalAttrVo.getId());
             attrObj.put("name", globalAttrVo.getName());
             attrObj.put("label", globalAttrVo.getLabel());
+            attrObj.put("itemType", "global_attr");
             returnList.add(attrObj);
         }
         for (AttrVo attrVo : attrList) {
@@ -120,6 +121,13 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
             attrObj.put("name", attrVo.getName());
             attrObj.put("label", attrVo.getLabel());
             attrObj.put("targetCiId", attrVo.getTargetCiId());
+            attrObj.put("targetCiName", attrVo.getTargetCiName());
+            attrObj.put("targetCiLabel", attrVo.getTargetCiLabel());
+            if (attrVo.getTargetCiId() == null) {
+                attrObj.put("itemType", "attr");
+            } else {
+                attrObj.put("itemType", "reference_attr");
+            }
             returnList.add(attrObj);
         }
         for (RelVo relVo : relList) {
@@ -136,6 +144,14 @@ public class SearchCiAttrRelListApi extends PrivateApiComponentBase {
             }
             JSONObject relObj = new JSONObject();
             relObj.put("id", relVo.getId());
+            relObj.put("itemType", "relation");
+            relObj.put("direction", relVo.getDirection());
+            relObj.put("fromCiId", relVo.getFromCiId());
+            relObj.put("toCiId", relVo.getToCiId());
+            relObj.put("fromCiName", relVo.getFromName());
+            relObj.put("fromCiLabel", relVo.getFromLabel());
+            relObj.put("toCiName", relVo.getToName());
+            relObj.put("toCiLabel", relVo.getToLabel());
             if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
                 relObj.put("uid", "relfrom_" + relVo.getId());
                 relObj.put("name", relVo.getToName());
