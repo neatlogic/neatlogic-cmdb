@@ -205,11 +205,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         }
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
         if (CollectionUtils.isNotEmpty(attrIdList)) {
-            attrList = attrList.stream().filter(d -> attrIdList.contains(d.getId())).collect(Collectors.toList());
+            attrList = attrList.stream().filter(d -> attrIdList.contains(d.getId())).toList();
         }
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
         if (CollectionUtils.isNotEmpty(relIdList)) {
-            relList = relList.stream().filter(d -> relIdList.contains(d.getId())).collect(Collectors.toList());
+            relList = relList.stream().filter(d -> relIdList.contains(d.getId())).toList();
         }
         ciEntityVo.setCiList(ciList);
         ciEntityVo.setId(ciEntityId);
@@ -302,6 +302,22 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     @Override
     public CiEntityVo getCiEntityById(CiEntityVo ciEntityVo) {
         return getCiEntityByIdLite(ciEntityVo.getCiId(), ciEntityVo.getId(), false, ciEntityVo.isLimitRelEntity(), ciEntityVo.isLimitAttrEntity(), ciEntityVo.getGlobalAttrIdList(), ciEntityVo.getAttrIdList(), ciEntityVo.getRelIdList(), null, null);
+    }
+
+    /**
+     * RAG 等投影场景需要区分“没有选择字段”和“查询全部字段”，使用不存在的 ID 占位，
+     * 避免改变通用详情接口中空列表代表全部字段的历史语义。
+     */
+    @Override
+    public CiEntityVo getCiEntityByIdForProjection(Long ciId, Long ciEntityId,
+                                                   List<Long> attrIdList, Integer maxAttrEntity) {
+        List<Long> projectionAttrIdList = attrIdList;
+        if (CollectionUtils.isEmpty(projectionAttrIdList)) {
+            projectionAttrIdList = Collections.singletonList(-1L);
+        }
+        List<Long> emptyProjection = Collections.singletonList(-1L);
+        return getCiEntityByIdLite(ciId, ciEntityId, false, true, true,
+                emptyProjection, projectionAttrIdList, emptyProjection, maxAttrEntity, 0);
     }
 
 
@@ -437,8 +453,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
         }
         if (CollectionUtils.isNotEmpty(ciEntityVo.getIdList())) {
-            ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
-            ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
+            ciEntityVo.setLimitRelEntity(isLimitRelEntity == null || isLimitRelEntity);
+            ciEntityVo.setLimitAttrEntity(isLimitAttrEntity == null || isLimitAttrEntity);
             //如果限制了关系和引用属性个数，可以直接用search方式搜索，否则需要单个返回配置项，避免多个关系和属性笛卡尔积导致OOM
             /*if (ciEntityVo.isLimitRelEntity() && ciEntityVo.isLimitAttrEntity()) {
                 List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
@@ -559,8 +575,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         Boolean isLimitRelEntity = ciEntityVo.isLimitRelEntity();
         Boolean isLimitAttrEntity = ciEntityVo.isLimitAttrEntity();
 
-        ciEntityVo.setLimitRelEntity(isLimitRelEntity != null ? isLimitRelEntity : true);
-        ciEntityVo.setLimitAttrEntity(isLimitAttrEntity != null ? isLimitAttrEntity : true);
+        ciEntityVo.setLimitRelEntity(isLimitRelEntity == null || isLimitRelEntity);
+        ciEntityVo.setLimitAttrEntity(isLimitAttrEntity == null || isLimitAttrEntity);
 //        List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
 
 //        ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
@@ -1122,7 +1138,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                 if (attrEntityCount > 0) {
                                     List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                    throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                    throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).toList());
                                 }
                             }
                         } else {
@@ -1297,7 +1313,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         }
                     } else {
                         //筛选出非删除数据
-                        fromRelEntityTransactionList = fromRelEntityTransactionList.stream().filter(d -> !Objects.equals(d.getAction(), RelActionType.DELETE.getValue())).collect(Collectors.toList());
+                        fromRelEntityTransactionList = fromRelEntityTransactionList.stream().filter(d -> !Objects.equals(d.getAction(), RelActionType.DELETE.getValue())).toList();
                         //如果没有replace或update的数据，fromRelEntityList主要用来校验RelRuleType=O的规则，因此取两条数据即可
                         fromRelEntityList = relEntityMapper.getRelEntityByFromCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
                     }
@@ -1392,7 +1408,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         }
                     } else {
                         //筛选出非删除数据
-                        toRelEntityTransactionList = toRelEntityTransactionList.stream().filter(d -> !Objects.equals(d.getAction(), RelActionType.DELETE.getValue())).collect(Collectors.toList());
+                        toRelEntityTransactionList = toRelEntityTransactionList.stream().filter(d -> !Objects.equals(d.getAction(), RelActionType.DELETE.getValue())).toList();
                         //如果没有replace或update的数据，fromRelEntityList主要用来校验RelRuleType=O的规则，因此取两条数据即可
                         toRelEntityList = relEntityMapper.getRelEntityByToCiEntityIdAndRelId(ciEntityTransactionVo.getCiEntityId(), relVo.getId(), 2L);
 
@@ -1442,7 +1458,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityConditionVo.setCiId(ciEntityTransactionVo.getCiId());
             for (Long attrId : ciVo.getUniqueAttrIdList()) {
                 Optional<AttrVo> op = attrList.stream().filter(d -> d.getId().equals(attrId)).findFirst();
-                if (!op.isPresent()) {
+                if (op.isEmpty()) {
                     throw new AttrNotFoundException(attrId);
                 }
                 AttrEntityTransactionVo attrEntityTransactionVo = ciEntityTransactionVo.getAttrEntityTransactionByAttrId(attrId);
@@ -1459,7 +1475,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         } else {
                             throw new CiUniqueAttrNotFoundException(op.get());
                         }
-                    }).collect(Collectors.toList()));
+                    }).toList());
                     valueList.add(String.join(",", filterVo.getValueList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 } else {
@@ -1478,7 +1494,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 } else {
                                     throw new CiUniqueAttrNotFoundException(op.get());
                                 }
-                            }).collect(Collectors.toList()));
+                            }).toList());
                             valueList.add(String.join(",", filterVo.getValueList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
@@ -1512,7 +1528,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         boolean hasChange = false;
         if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityTransactionList())) {
             if (CollectionUtils.isNotEmpty(oldAttrEntityList)) {
-                List<AttrEntityTransactionVo> oldAttrEntityTransactionList = oldAttrEntityList.stream().map(AttrEntityTransactionVo::new).collect(Collectors.toList());
+                List<AttrEntityTransactionVo> oldAttrEntityTransactionList = oldAttrEntityList.stream().map(AttrEntityTransactionVo::new).toList();
                 // 去掉没变化的修改
                 ciEntityTransactionVo.removeAttrEntityData(oldAttrEntityTransactionList);
                 if (MapUtils.isNotEmpty(ciEntityTransactionVo.getAttrEntityData())) {
@@ -1525,7 +1541,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         //去掉没有变化全局属性修改
         if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getGlobalAttrTransactionList())) {
             if (CollectionUtils.isNotEmpty(oldGlobalAttrEntityList)) {
-                List<GlobalAttrEntityTransactionVo> oldGlobalAttrTransactionList = oldGlobalAttrEntityList.stream().map(GlobalAttrEntityTransactionVo::new).collect(Collectors.toList());
+                List<GlobalAttrEntityTransactionVo> oldGlobalAttrTransactionList = oldGlobalAttrEntityList.stream().map(GlobalAttrEntityTransactionVo::new).toList();
                 // 去掉没变化的修改
                 ciEntityTransactionVo.removeGlobalAttrEntityData(oldGlobalAttrTransactionList);
                 if (MapUtils.isNotEmpty(ciEntityTransactionVo.getGlobalAttrEntityData())) {
@@ -1693,7 +1709,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                         int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                         if (attrEntityCount > 0) {
                                             List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                            throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                            throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).toList());
                                         }
                                     }
                                 } else {
@@ -1768,7 +1784,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).toList());
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         }
                     }
@@ -1838,7 +1854,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                     int attrEntityCount = ciEntityMapper.getAttrEntityCountByAttrIdAndValue(ciEntityTransactionVo.getCiEntityId(), attrVo.getId(), toCiEntityIdList);
                                     if (attrEntityCount > 0) {
                                         List<CiEntityVo> toCiEntityList = ciEntityMapper.getCiEntityBaseInfoByIdList(toCiEntityIdList);
-                                        throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.toList()));
+                                        throw new AttrEntityDuplicateException(ciVo, attrVo.getLabel(), toCiEntityList.stream().map(CiEntityVo::getName).toList());
                                     }
                                 } else {
                                     //检查配置项表对应字段是否已被其他配置项使用
@@ -1890,7 +1906,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         }
                         //判断关系多选
                         if (RelRuleType.O.getValue().equals(relVo.getToRule())) {
-                            List<RelEntityTransactionVo> insertEntityList = fromRelEntityTransactionList.stream().filter(r -> r.getAction().equals(RelActionType.INSERT.getValue())).collect(Collectors.toList());
+                            List<RelEntityTransactionVo> insertEntityList = fromRelEntityTransactionList.stream().filter(r -> r.getAction().equals(RelActionType.INSERT.getValue())).toList();
                             if (CollectionUtils.isNotEmpty(insertEntityList)) {
                                 if (insertEntityList.size() > 1) {
                                     throw new RelEntityMultipleException(relVo.getToLabel());
@@ -1982,7 +1998,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).toList());
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             AttrEntityVo attrEntityVo = oldEntity.getAttrEntityByAttrId(attrId);
@@ -1990,7 +2006,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 AttrFilterVo filterVo = new AttrFilterVo();
                                 filterVo.setAttrId(attrId);
                                 filterVo.setExpression(SearchExpression.EQ.getExpression());
-                                filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                                filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).toList());
                                 ciEntityConditionVo.addAttrFilter(filterVo);
                             }
                         }
@@ -2179,7 +2195,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
             CiEntityVo ciEntityVo = new CiEntityVo(ciEntityTransactionVo);
             ciEntityVo.setExpiredDay(ciVo.getExpiredDay());
-            List<AttrEntityVo> rebuildAttrEntityList = new ArrayList<>();
+            //List<AttrEntityVo> rebuildAttrEntityList = new ArrayList<>();
             List<CiEntityAttrMetricVo> metricList = new ArrayList<>();
             for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
                 AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
@@ -2190,7 +2206,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
                         ciEntityMapper.insertAttrEntity(attrEntityVo);
                     }
-                    rebuildAttrEntityList.add(attrEntityVo);
+                    //rebuildAttrEntityList.add(attrEntityVo);
                     //更新配置项名称
                     if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
                         List<CiEntityVo> invokeCiEntityList = ciEntityMapper.getCiEntityBaseInfoByAttrIdAndFromCiEntityId(ciEntityVo.getId(), attrEntityVo.getAttrId());
@@ -2261,7 +2277,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             if (CollectionUtils.isNotEmpty(relEntityTransactionList)) {
                 //记录对端配置项的事务，如果同一个配置项则不需要添加多个事务
                 Map<Long, CiEntityTransactionVo> ciEntityTransactionMap = new HashMap<>();
-                List<RelEntityVo> rebuildRelEntityList = new ArrayList<>();
+                //List<RelEntityVo> rebuildRelEntityList = new ArrayList<>();
                 for (RelEntityTransactionVo relEntityTransactionVo : relEntityTransactionList) {
                     //如果不是自己引用自己，则需要补充对端配置项事务，此块需要在真正删除数据前处理
                     if (!relEntityTransactionVo.getFromCiEntityId().equals(relEntityTransactionVo.getToCiEntityId())) {
@@ -2310,7 +2326,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     if (relEntityTransactionVo.getAction().equals(RelActionType.DELETE.getValue())) {
                         RelEntityVo relEntityVo = relEntityMapper.getRelEntityByFromCiEntityIdAndToCiEntityIdAndRelId(relEntityTransactionVo.getFromCiEntityId(), relEntityTransactionVo.getToCiEntityId(), relEntityTransactionVo.getRelId());
                         relEntityMapper.deleteRelEntityByRelIdFromCiEntityIdToCiEntityId(relEntityTransactionVo.getRelId(), relEntityTransactionVo.getFromCiEntityId(), relEntityTransactionVo.getToCiEntityId());
-                        rebuildRelEntityList.add(new RelEntityVo(relEntityTransactionVo));
+                        //rebuildRelEntityList.add(new RelEntityVo(relEntityTransactionVo));
                         //删除级联关系
                         RelativeRelManager.delete(relEntityVo);
                     } else if (relEntityTransactionVo.getAction().equals(RelActionType.INSERT.getValue())
@@ -2319,7 +2335,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         RelEntityVo newRelEntityVo = new RelEntityVo(relEntityTransactionVo);
                         if (relEntityMapper.checkRelEntityIsExists(newRelEntityVo) == 0) {
                             relEntityMapper.insertRelEntity(newRelEntityVo);
-                            rebuildRelEntityList.add(newRelEntityVo);
+                            //rebuildRelEntityList.add(newRelEntityVo);
                         }
                         //添加级联关系
                         RelativeRelManager.insert(newRelEntityVo);

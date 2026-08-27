@@ -35,6 +35,12 @@ import java.util.Map;
 public interface CiEntityService {
     CiEntityVo getCiEntityById(CiEntityVo ciEntityVo);
 
+    /**
+     * 按明确属性投影读取配置项；空属性列表表示不读取任何属性和关系。
+     */
+    CiEntityVo getCiEntityByIdForProjection(Long ciId, Long ciEntityId,
+                                             List<Long> attrIdList, Integer maxAttrEntity);
+
 
 
     List<CiEntityVo> getCiEntityNameByIdList(Long ciId, List<Long> ciEntityIdList);
