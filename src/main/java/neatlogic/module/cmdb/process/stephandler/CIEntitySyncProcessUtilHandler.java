@@ -5,11 +5,14 @@ import neatlogic.framework.process.constvalue.ProcessTaskOperationType;
 import neatlogic.framework.process.constvalue.ProcessTaskStepOperationType;
 import neatlogic.framework.process.dto.ProcessTaskStepVo;
 import neatlogic.framework.process.operationauth.core.IOperationType;
+import neatlogic.framework.process.spring.condition.ProcessComponentLoadCondition;
 import neatlogic.framework.process.stephandler.core.ProcessStepInternalHandlerBase;
 import neatlogic.module.cmdb.process.notifyhandler.CiEntitySyncNotifyHandler;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 @Service
+@Conditional(ProcessComponentLoadCondition.class)
 //@Deprecated
 public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBase {
 

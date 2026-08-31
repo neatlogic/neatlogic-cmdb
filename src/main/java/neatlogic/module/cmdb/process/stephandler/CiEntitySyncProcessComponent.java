@@ -38,6 +38,7 @@ import neatlogic.framework.process.dto.ProcessTaskStepDataVo;
 import neatlogic.framework.process.dto.ProcessTaskStepVo;
 import neatlogic.framework.process.dto.ProcessTaskStepWorkerVo;
 import neatlogic.framework.process.exception.processtask.ProcessTaskException;
+import neatlogic.framework.process.spring.condition.ProcessComponentLoadCondition;
 import neatlogic.framework.process.stephandler.core.ProcessStepHandlerBase;
 import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -48,6 +49,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -58,6 +60,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Conditional(ProcessComponentLoadCondition.class)
 //@Deprecated
 public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
     static Logger logger = LoggerFactory.getLogger(CiEntitySyncProcessComponent.class);
