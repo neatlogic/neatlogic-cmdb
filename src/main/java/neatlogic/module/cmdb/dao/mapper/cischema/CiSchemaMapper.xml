@@ -132,7 +132,8 @@
         `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
         <if test="ciVo.attrList!=null and ciVo.attrList.size() > 0">
             <foreach collection="ciVo.attrList" item="attrVo">
-                <if test="attrVo.ciId == ciVo.id and attrVo.targetCiId == null and attrVo.needCiEntityColumn == true">
+                <!-- cmdb_attr_invoke属性不在配置项动态表中创建值字段。 -->
+                <if test="attrVo.ciId == ciVo.id and attrVo.targetCiId == null and attrVo.invokeAttr == false">
                     `${attrVo.id}`
                     <choose>
                         <when test="attrVo.type == 'number'">
@@ -170,7 +171,8 @@
         </if>
         <if test="ciVo.attrList!=null and ciVo.attrList.size() > 0">
             <foreach collection="ciVo.attrList" item="attrVo">
-                <if test="attrVo.ciId == ciVo.id and attrVo.targetCiId == null and attrVo.needCiEntityColumn == true">
+                <!-- 仅为动态表属性创建字段索引。 -->
+                <if test="attrVo.ciId == ciVo.id and attrVo.targetCiId == null and attrVo.invokeAttr == false">
                     <if test="attrVo.type == 'number' or attrVo.type == 'date' or attrVo.type == 'time' or attrVo.type == 'datetime' or attrVo.type == 'enum' or attrVo.type == 'set'">
                         KEY `index_${attrVo.id}` (`${attrVo.id}`) USING BTREE,
                     </if>

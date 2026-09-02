@@ -165,7 +165,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 AttrVo attrVo = attrMap.get(Long.parseLong(key.replace("attr_", "")));
                 if (attrVo != null) {
                     IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-                    if (handler != null && handler.isCanSort() && handler.isNeedCiEntityColumn()) {
+                    // 引用表属性没有可用于ORDER BY的动态字段。
+                    if (handler != null && handler.isCanSort() && !handler.isInvokeAttr()) {
                         sortConfigList.add(new SortVo(attrVo.getCiId(), attrVo.getId(), sortConfig.getString(key)));
                     }
                 }

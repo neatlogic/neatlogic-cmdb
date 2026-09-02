@@ -74,9 +74,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
 
-        //去掉所有引用属性
+        // 去掉目标模型引用属性和使用cmdb_attr_invoke存储的属性。
         customViewAttrList = customViewAttrList.stream()
-                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && attr.getAttrVo().getNeedCiEntityColumn())
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().isInvokeAttr())
                 .collect(Collectors.toList());
         Map<String, AttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
@@ -161,9 +161,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
     @Override
     public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
-        //去掉所有引用属性
+        // 去掉目标模型引用属性和使用cmdb_attr_invoke存储的属性。
         customViewAttrList = customViewAttrList.stream()
-                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && attr.getAttrVo().getNeedCiEntityColumn())
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().isInvokeAttr())
                 .collect(Collectors.toList());
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
@@ -336,9 +336,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         CustomViewGlobalAttrVo customViewGlobalAttrVo = customViewMapper.getCustomViewGlobalAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
 
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
-        //去掉所有引用属性
+        // 去掉目标模型引用属性和使用cmdb_attr_invoke存储的属性。
         customViewAttrList = customViewAttrList.stream()
-                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && attr.getAttrVo().getNeedCiEntityColumn())
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().isInvokeAttr())
                 .collect(Collectors.toList());
 
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));

@@ -383,8 +383,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
 
         if (CollectionUtils.isNotEmpty(ciEntityVo.getSortList())) {
+            // 引用表属性没有动态表字段，不能参与动态字段排序。
             Set<Long> sortableAttrIdSet = attrList.stream()
-                    .filter(AttrVo::getNeedCiEntityColumn)
+                    .filter(attrVo -> !attrVo.isInvokeAttr())
                     .map(AttrVo::getId)
                     .collect(Collectors.toSet());
             ciEntityVo.setSortList(ciEntityVo.getSortList().stream()
@@ -2442,17 +2443,19 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 continue;
             }
             JSONArray oldValueList;
-            if (handler.isNeedCiEntityColumn()) {
-                oldValueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrVo.getId());
-            } else {
+            // 引用属性从cmdb_attr_invoke读取旧值，普通属性沿用事务快照。
+            if (handler.isInvokeAttr()) {
                 oldValueList = attrInvokeManager.getValueList(ciEntityTransactionVo.getCiEntityId(), attrVo);
+            } else {
+                oldValueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrVo.getId());
             }
             JSONArray newValueList = attrEntityTransactionVo.getValueList();
             if (newValueList == null) {
                 newValueList = new JSONArray();
             }
             handler.afterSaveCiEntity(attrVo, ciEntityTransactionVo.getCiEntityId(), newValueList, oldValueList);
-            if (!handler.isNeedCiEntityColumn()) {
+            // 只有引用属性需要替换cmdb_attr_invoke中的索引记录。
+            if (handler.isInvokeAttr()) {
                 attrInvokeManager.replaceAttrInvoke(attrVo, ciEntityTransactionVo.getCiEntityId(), newValueList);
             }
         }
@@ -2465,10 +2468,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                 if (handler != null) {
                     JSONArray valueList;
-                    if (handler.isNeedCiEntityColumn()) {
-                        valueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrVo.getId());
-                    } else {
+                    // 删除时按实际存储位置获取待传递给属性处理器的旧值。
+                    if (handler.isInvokeAttr()) {
                         valueList = attrInvokeManager.getValueList(ciEntityTransactionVo.getCiEntityId(), attrVo);
+                    } else {
+                        valueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrVo.getId());
                     }
                     handler.afterDeleteCiEntity(attrVo, ciEntityTransactionVo.getCiEntityId(), valueList);// resourcepool_cabinet_device
                 }

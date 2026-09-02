@@ -84,7 +84,8 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
         Set<Long> ciIdSet = new HashSet<>();
         if (CollectionUtils.isNotEmpty(attrList)) {
             for (AttrVo attr : attrList) {
-                if (attr.getTargetCiId() == null && attr.getNeedCiEntityColumn()) {
+                // 专有名词批量查询只能读取动态表字段，引用属性由详情还原链路处理。
+                if (attr.getTargetCiId() == null && !attr.isInvokeAttr()) {
                     List<String> wordList = attrEntityMapper.getAttrValueByCiId(attr);
                     FullTextIndexUtil.addWord(wordList);
                 } else if (attr.getTargetCiId() != null) {

@@ -91,7 +91,8 @@ public class AttrServiceImpl implements AttrService {
         attrVo.setCiVo(ciVo);
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
         handler.afterInsert(attrVo);
-        if (!handler.isNeedTargetCi() && handler.isNeedCiEntityColumn()) {
+        // 非引用模型且不使用cmdb_attr_invoke的属性才需要创建动态表字段。
+        if (!handler.isNeedTargetCi() && !handler.isInvokeAttr()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
             CountDownLatch latch = new CountDownLatch(1);
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
@@ -168,7 +169,8 @@ public class AttrServiceImpl implements AttrService {
         attrVo.setCiVo(ciVo);
 
         handler.afterUpdate(attrVo);
-        if (!handler.isNeedTargetCi() && handler.isNeedCiEntityColumn()) {
+        // 引用表属性没有动态字段，不执行字段索引和类型维护。
+        if (!handler.isNeedTargetCi() && !handler.isInvokeAttr()) {
             //补充字典到全文检索
             if (Objects.equals(attrVo.getIsTerm(), 1)) {
                 IFullTextIndexHandler fullTextHandler = FullTextIndexHandlerFactory.getHandler(CmdbFullTextIndexType.CIENTITY.getType());

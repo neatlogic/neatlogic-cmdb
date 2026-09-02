@@ -64,14 +64,15 @@ public class AttrInvokeManager implements IAttrInvokeCrossoverService {
         if (CollectionUtils.isEmpty(ciEntityList) || CollectionUtils.isEmpty(attrList)) {
             return;
         }
-        List<AttrVo> externalAttrList = attrList.stream()
-                .filter(attrVo -> !attrVo.getNeedCiEntityColumn())
+        // 仅批量还原使用cmdb_attr_invoke表存储的属性。
+        List<AttrVo> invokeAttrList = attrList.stream()
+                .filter(AttrVo::isInvokeAttr)
                 .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(externalAttrList)) {
+        if (CollectionUtils.isEmpty(invokeAttrList)) {
             return;
         }
         List<Long> ciEntityIdList = ciEntityList.stream().map(CiEntityVo::getId).filter(id -> id != null).distinct().collect(Collectors.toList());
-        List<Long> attrIdList = externalAttrList.stream().map(AttrVo::getId).distinct().collect(Collectors.toList());
+        List<Long> attrIdList = invokeAttrList.stream().map(AttrVo::getId).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(ciEntityIdList) || CollectionUtils.isEmpty(attrIdList)) {
             return;
         }
@@ -88,7 +89,7 @@ public class AttrInvokeManager implements IAttrInvokeCrossoverService {
 
         for (CiEntityVo ciEntityVo : ciEntityList) {
             Map<Long, List<AttrInvokeVo>> entityInvokeMap = invokeMap.getOrDefault(ciEntityVo.getId(), Collections.emptyMap());
-            for (AttrVo attrVo : externalAttrList) {
+            for (AttrVo attrVo : invokeAttrList) {
                 IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                 JSONArray valueList = handler.convertAttrInvokeListToValueList(attrVo, entityInvokeMap.getOrDefault(attrVo.getId(), Collections.emptyList()));
                 if (valueList == null) {

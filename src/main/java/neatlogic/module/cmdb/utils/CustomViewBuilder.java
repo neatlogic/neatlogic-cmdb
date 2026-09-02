@@ -172,7 +172,8 @@ public class CustomViewBuilder {
 
         if (CollectionUtils.isNotEmpty(customViewVo.getAttrList())) {
             for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
-                if (attrVo.getAttrVo().getTargetCiId() == null && attrVo.getAttrVo().getNeedCiEntityColumn()) {
+                // 物化视图只声明实际存在于动态表中的普通属性字段。
+                if (attrVo.getAttrVo().getTargetCiId() == null && !attrVo.getAttrVo().isInvokeAttr()) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
                 }
@@ -463,7 +464,8 @@ public class CustomViewBuilder {
 
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
-                if (attrVo.getTargetCiId() == null && attrVo.getNeedCiEntityColumn()) {
+                // cmdb_attr_invoke属性没有动态列，不能加入物化视图投影。
+                if (attrVo.getTargetCiId() == null && !attrVo.isInvokeAttr()) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
                 } /*else {
@@ -578,7 +580,8 @@ public class CustomViewBuilder {
 
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
-                if (attrVo.getTargetCiId() == null && attrVo.getNeedCiEntityColumn()) {
+                // cmdb_attr_invoke属性没有动态列，不能加入物化视图投影。
+                if (attrVo.getTargetCiId() == null && !attrVo.isInvokeAttr()) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
                 } /*else {
