@@ -95,7 +95,9 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
             if (isHasTargetCiId.equals(1)) {
                 attrList = attrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() != null).collect(Collectors.toList());
             } else if (isHasTargetCiId.equals(0)) {
-                attrList = attrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
+                attrList = attrList.stream()
+                        .filter(attr -> attr.getAttrVo().getTargetCiId() == null && attr.getAttrVo().getNeedCiEntityColumn())
+                        .collect(Collectors.toList());
             }
         }
         returnObj.put("attrList", attrList);

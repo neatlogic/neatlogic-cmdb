@@ -31,6 +31,7 @@ import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.service.cientity.AttrInvokeManager;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,9 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private AttrInvokeManager attrInvokeManager;
 
     @Resource
     private AttrMapper attrMapper;
@@ -131,6 +135,7 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
         List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, null).build().getCiEntity();
         if (returnCiEntityVo != null) {
+            attrInvokeManager.hydrateCiEntity(returnCiEntityVo, attrList);
             //拼接引用属性数据
             Long attrEntityLimit = null;
             if (CollectionUtils.isNotEmpty(attrList)) {

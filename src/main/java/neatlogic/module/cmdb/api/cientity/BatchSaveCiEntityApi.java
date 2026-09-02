@@ -374,6 +374,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
     @Description(desc = "nmcac.batchsavecientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
+        System.out.println("jsonObj = " + jsonObj);
         boolean needCommit = jsonObj.getBooleanValue("needCommit");
         boolean isSimple = jsonObj.getBooleanValue("isSimple");
         JSONArray ciEntityObjList;
@@ -389,7 +390,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
         boolean allowCommit = true;
 
         List<CiEntityTransactionVo> ciEntityTransactionList = CiEntityUtils.generateCiEntityTransaction(ciEntityObjList);
-
+        System.out.println("ciEntityTransactionList.get(0).getAttrEntityData() = " + ciEntityTransactionList.get(0).getAttrEntityData());
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             Long id = ciEntityTransactionVo.getCiEntityId();
             Long ciId = ciEntityTransactionVo.getCiId();

@@ -84,10 +84,10 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
         Set<Long> ciIdSet = new HashSet<>();
         if (CollectionUtils.isNotEmpty(attrList)) {
             for (AttrVo attr : attrList) {
-                if (attr.getTargetCiId() == null) {
+                if (attr.getTargetCiId() == null && attr.getNeedCiEntityColumn()) {
                     List<String> wordList = attrEntityMapper.getAttrValueByCiId(attr);
                     FullTextIndexUtil.addWord(wordList);
-                } else {
+                } else if (attr.getTargetCiId() != null) {
                     if (!ciIdSet.contains(attr.getTargetCiId())) {
                         List<String> wordList = ciEntityMapper.getCiEntityNameByCiId(attr.getTargetCiId());
                         FullTextIndexUtil.addWord(wordList);

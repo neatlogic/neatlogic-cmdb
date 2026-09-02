@@ -172,7 +172,7 @@ public class CustomViewBuilder {
 
         if (CollectionUtils.isNotEmpty(customViewVo.getAttrList())) {
             for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
-                if (attrVo.getAttrVo().getTargetCiId() == null) {
+                if (attrVo.getAttrVo().getTargetCiId() == null && attrVo.getAttrVo().getNeedCiEntityColumn()) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
                 }
@@ -463,7 +463,7 @@ public class CustomViewBuilder {
 
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
-                if (attrVo.getTargetCiId() == null) {
+                if (attrVo.getTargetCiId() == null && attrVo.getNeedCiEntityColumn()) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
                 } /*else {
@@ -578,7 +578,7 @@ public class CustomViewBuilder {
 
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
-                if (attrVo.getTargetCiId() == null) {
+                if (attrVo.getTargetCiId() == null && attrVo.getNeedCiEntityColumn()) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
                 } /*else {

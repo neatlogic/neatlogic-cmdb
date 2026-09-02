@@ -389,7 +389,9 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
                         for (AttrVo attrVo : attrList) {
                             //这里的attrList包含了所有集成模型的属性，不是自己模型的属性就不要添加
-                            if (attrVo.getCiId().equals(ciVo.getId()) && attrVo.getTargetCiId() == null) {
+                            if (attrVo.getCiId().equals(ciVo.getId())
+                                    && attrVo.getTargetCiId() == null
+                                    && attrVo.getNeedCiEntityColumn()) {
                                 ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
                                 if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
                                     if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {

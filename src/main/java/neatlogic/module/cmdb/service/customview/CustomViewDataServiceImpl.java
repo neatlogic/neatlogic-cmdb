@@ -75,7 +75,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
 
         //去掉所有引用属性
-        customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
+        customViewAttrList = customViewAttrList.stream()
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && attr.getAttrVo().getNeedCiEntityColumn())
+                .collect(Collectors.toList());
         Map<String, AttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(customViewAttrList)) {
@@ -160,7 +162,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
     public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         //去掉所有引用属性
-        customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
+        customViewAttrList = customViewAttrList.stream()
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && attr.getAttrVo().getNeedCiEntityColumn())
+                .collect(Collectors.toList());
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
@@ -333,7 +337,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
 
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         //去掉所有引用属性
-        customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
+        customViewAttrList = customViewAttrList.stream()
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && attr.getAttrVo().getNeedCiEntityColumn())
+                .collect(Collectors.toList());
 
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));

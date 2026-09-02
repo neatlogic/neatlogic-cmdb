@@ -232,6 +232,24 @@ public interface CiEntityMapper extends ICiEntityCrossoverMapper {
 
     void deleteAttrEntityByFromCiEntityIdAndAttrId(@Param("fromCiEntityId") Long fromCiEntityId, @Param("attrId") Long attrId);
 
+    List<AttrInvokeVo> getAttrInvokeListByAttrId(Long attrId);
+
+    List<AttrInvokeVo> getAttrInvokeListByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
+
+    List<AttrInvokeVo> getAttrInvokeListByAttrTypeAndTypeAndInvokeIdList(@Param("attrType") String attrType, @Param("type") String type, @Param("invokeIdList") List<Long> invokeIdList);
+
+    List<AttrInvokeVo> getAttrInvokeListByCiEntityIdListAndAttrIdList(@Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("attrIdList") List<Long> attrIdList);
+
+    int insertAttrInvokeList(@Param("attrInvokeList") List<AttrInvokeVo> attrInvokeList);
+
+    int updateAttrInvokeList(@Param("attrInvokeList") List<AttrInvokeVo> attrInvokeList);
+
+    int deleteAttrInvokeByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
+
+    int deleteAttrInvokeByCiEntityId(Long ciEntityId);
+
+    int deleteAttrInvokeByAttrId(Long attrId);
+
     void insertCiEntityExpiredTime(CiEntityVo ciEntityVo);
 
     void updateCiEntityExpiredTime(CiEntityExpiredTimeVo ciEntityExpiredTimeVo);

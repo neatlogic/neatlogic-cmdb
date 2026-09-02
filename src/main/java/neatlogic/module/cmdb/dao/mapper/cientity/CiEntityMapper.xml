@@ -611,9 +611,9 @@
                     <when test="attr.needTargetCi == true ">
                         `cmdb_attrentity_${attr.id}`.`to_cientity_id` AS `attr_${attr.id}`,
                     </when>
-                    <otherwise>
+                    <when test="attr.needCiEntityColumn == true"><!-- 新增 -->
                         ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
-                    </otherwise>
+                    </when>
                 </choose>
             </if>
         </foreach>
@@ -742,6 +742,23 @@
                 </choose>-->
             </if>
         </foreach>
+        <if test="attrFilterList != null and attrFilterList.size() > 0"><!-- 新增 -->
+            <foreach collection="attrFilterList" item="attrFilter">
+                <if test="attrFilter.type == 'computerroomposition' and ((attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null')">
+                    LEFT JOIN cmdb_attr_invoke `cmdb_attr_invoke_${attrFilter.attrId}`
+                    ON `ci_base`.id = `cmdb_attr_invoke_${attrFilter.attrId}`.cientity_id
+                    AND `cmdb_attr_invoke_${attrFilter.attrId}`.attr_id = #{attrFilter.attrId}
+                    <choose>
+                        <when test="attrFilter.expression == 'equal'">
+                            AND `cmdb_attr_invoke_${attrFilter.attrId}`.type IN ('datacenter', 'computerroom', 'cabinet')
+                        </when>
+                        <otherwise>
+                            AND `cmdb_attr_invoke_${attrFilter.attrId}`.type = 'device'
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+        </if>
         <if test="attrCiEntityFilter != null ">
             JOIN `cmdb_attrentity` `cmdb_attrentity_${attrCiEntityFilter.attrId}` ON
             `cmdb_attrentity_${attrCiEntityFilter.attrId}`.`attr_id` = #{attrCiEntityFilter.attrId} and
@@ -1137,6 +1154,23 @@
                 <foreach collection="attrFilterList" item="attrFilter">
                     <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
                         <choose>
+                            <when test="attrFilter.type == 'computerroomposition'"><!-- 新增 -->
+                                AND
+                                <choose>
+                                    <when test="attrFilter.expression == 'equal'">
+                                        `cmdb_attr_invoke_${attrFilter.attrId}`.invoke_id IN
+                                        <foreach collection="attrFilter.valueList" item="value" open="(" close=")" separator=",">
+                                            #{value}
+                                        </foreach>
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-null'">
+                                        `cmdb_attr_invoke_${attrFilter.attrId}`.id IS NULL
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-not-null'">
+                                        `cmdb_attr_invoke_${attrFilter.attrId}`.id IS NOT NULL
+                                    </when>
+                                </choose>
+                            </when>
                             <when test="attrFilter.needTargetCi == true">
                                 AND
                                 <choose>
@@ -1430,7 +1464,7 @@
 
     <sql id="ciEntityColumnSqlLite">
         <foreach collection="attrList" item="attr">
-            <if test="attr.needTargetCi == false ">
+            <if test="attr.needTargetCi == false and attr.needCiEntityColumn == true">
                 ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
             </if>
         </foreach>
@@ -1784,7 +1818,7 @@
         INSERT INTO ${ciTableName}
         (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.needCiEntityColumn == true and attr.fromCiId == ciId">
                 `${attr.attrId}`,
                 `${attr.attrId}_hash`,
             </if>
@@ -1792,7 +1826,7 @@
         cientity_id
         ) VALUES (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.needCiEntityColumn == true and attr.fromCiId == ciId">
                 #{attr.value},
                 #{attr.value, typeHandler=Md5Handler},
             </if>
@@ -1800,7 +1834,7 @@
         #{id}
         ) ON DUPLICATE KEY UPDATE
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.needCiEntityColumn == true and attr.fromCiId == ciId">
                 `${attr.attrId}` = #{attr.value},
                 `${attr.attrId}_hash` = #{attr.value,typeHandler=Md5Handler},
             </if>
@@ -1811,7 +1845,7 @@
     <insert id="insertCiEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
         INSERT ignore INTO ${ciTableName} (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.needCiEntityColumn == true and attr.fromCiId == ciId">
                 `${attr.attrId}`,
                 `${attr.attrId}_hash`,
             </if>
@@ -1819,7 +1853,7 @@
         cientity_id)
         VALUES (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.needCiEntityColumn == true and attr.fromCiId == ciId">
                 #{attr.value},
                 #{attr.value,typeHandler=Md5Handler},
             </if>
@@ -1996,4 +2030,95 @@
             #{parentCi.id} AND `ci_${parentCi.id}_attrentity`.`from_cientity_id` = `ci`.`cientity_id`
         </foreach>
     </delete>
+    <select id="getAttrInvokeListByAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
+        SELECT id,
+               cientity_id AS ciEntityId,
+               attr_id AS attrId,
+               type,
+               invoke_id AS invokeId
+        FROM cmdb_attr_invoke
+        WHERE attr_id = #{value}
+    </select>
+
+    <select id="getAttrInvokeListByCiEntityIdAndAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
+        SELECT id,
+               cientity_id AS ciEntityId,
+               attr_id AS attrId,
+               type,
+               invoke_id AS invokeId
+        FROM cmdb_attr_invoke
+        WHERE cientity_id = #{ciEntityId}
+          AND attr_id = #{attrId}
+    </select>
+
+    <select id="getAttrInvokeListByAttrTypeAndTypeAndInvokeIdList" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
+        SELECT ai.id,
+               ai.cientity_id AS ciEntityId,
+               ai.attr_id AS attrId,
+               ai.type,
+               ai.invoke_id AS invokeId
+        FROM cmdb_attr a
+        JOIN cmdb_attr_invoke ai ON ai.attr_id = a.id
+          AND ai.type = #{type}
+          AND ai.invoke_id IN
+        <foreach collection="invokeIdList" item="invokeId" open="(" close=")" separator=",">
+            #{invokeId}
+        </foreach>
+        WHERE a.type = #{attrType}
+    </select>
+
+    <select id="getAttrInvokeListByCiEntityIdListAndAttrIdList" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
+        SELECT id,
+               cientity_id AS ciEntityId,
+               attr_id AS attrId,
+               type,
+               invoke_id AS invokeId
+        FROM cmdb_attr_invoke
+        WHERE cientity_id IN
+        <foreach collection="ciEntityIdList" item="ciEntityId" open="(" close=")" separator=",">
+            #{ciEntityId}
+        </foreach>
+          AND attr_id IN
+        <foreach collection="attrIdList" item="attrId" open="(" close=")" separator=",">
+            #{attrId}
+        </foreach>
+    </select>
+
+    <insert id="insertAttrInvokeList">
+        INSERT INTO cmdb_attr_invoke (id, cientity_id, attr_id, type, invoke_id)
+        VALUES
+        <foreach collection="attrInvokeList" item="attrInvoke" separator=",">
+            (#{attrInvoke.id}, #{attrInvoke.ciEntityId}, #{attrInvoke.attrId}, #{attrInvoke.type}, #{attrInvoke.invokeId})
+        </foreach>
+    </insert>
+
+    <update id="updateAttrInvokeList">
+        UPDATE cmdb_attr_invoke
+        SET invoke_id = CASE id
+        <foreach collection="attrInvokeList" item="attrInvoke">
+            WHEN #{attrInvoke.id} THEN #{attrInvoke.invokeId}
+        </foreach>
+        END
+        WHERE id IN
+        <foreach collection="attrInvokeList" item="attrInvoke" open="(" close=")" separator=",">
+            #{attrInvoke.id}
+        </foreach>
+    </update>
+
+    <delete id="deleteAttrInvokeByCiEntityIdAndAttrId">
+        DELETE FROM cmdb_attr_invoke
+        WHERE cientity_id = #{ciEntityId}
+          AND attr_id = #{attrId}
+    </delete>
+
+    <delete id="deleteAttrInvokeByCiEntityId">
+        DELETE FROM cmdb_attr_invoke
+        WHERE cientity_id = #{value}
+    </delete>
+
+    <delete id="deleteAttrInvokeByAttrId">
+        DELETE FROM cmdb_attr_invoke
+        WHERE attr_id = #{value}
+    </delete>
+
 </mapper>
