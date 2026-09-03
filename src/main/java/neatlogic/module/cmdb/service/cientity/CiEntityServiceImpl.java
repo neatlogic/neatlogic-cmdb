@@ -420,6 +420,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         attrFilterVo.setCiId(attrVo.getCiId());
                         attrFilterVo.setType(attrVo.getType());
                         attrFilterVo.setNeedTargetCi(attrVo.isNeedTargetCi());
+                        attrFilterVo.setIsInvokeAttr(attrVo.isInvokeAttr());
                         isExists = true;
                         break;
                     }
@@ -1484,18 +1485,30 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     AttrFilterVo filterVo = new AttrFilterVo();
                     filterVo.setAttrId(attrId);
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
-                    filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
+                    JSONArray valueArray = new JSONArray();
+                    for (Object d : attrEntityTransactionVo.getValueList()) {
                         if (d != null) {
                             if (StringUtils.isBlank(d.toString())) {
                                 throw new CiUniqueAttrNotFoundException(op.get());
                             }
-                            return d.toString();
+                            valueArray.add(d);
                         } else {
                             throw new CiUniqueAttrNotFoundException(op.get());
                         }
-                    }).toList());
+                    }
+                    filterVo.setValueList(valueArray);
+//                    filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
+//                        if (d != null) {
+//                            if (StringUtils.isBlank(d.toString())) {
+//                                throw new CiUniqueAttrNotFoundException(op.get());
+//                            }
+//                            return d.toString();
+//                        } else {
+//                            throw new CiUniqueAttrNotFoundException(op.get());
+//                        }
+//                    }).toList());
                     // 唯一属性仍按字符串值参与重复校验。
-                    valueList.add(String.join(",", filterVo.getStringValueList()));
+                    valueList.add(String.join(",", filterVo.getValueList().stream().map(Object::toString).toList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 } else {
                     if (oldEntity != null) {
@@ -1504,18 +1517,30 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityVo.getValueList().stream().map(d -> {
+                            JSONArray valueArray = new JSONArray();
+                            for (Object d : attrEntityTransactionVo.getValueList()) {
                                 if (d != null) {
                                     if (StringUtils.isBlank(d.toString())) {
                                         throw new CiUniqueAttrNotFoundException(op.get());
                                     }
-                                    return d.toString();
+                                    valueArray.add(d);
                                 } else {
                                     throw new CiUniqueAttrNotFoundException(op.get());
                                 }
-                            }).toList());
+                            }
+                            filterVo.setValueList(valueArray);
+//                            filterVo.setValueList(attrEntityVo.getValueList().stream().map(d -> {
+//                                if (d != null) {
+//                                    if (StringUtils.isBlank(d.toString())) {
+//                                        throw new CiUniqueAttrNotFoundException(op.get());
+//                                    }
+//                                    return d.toString();
+//                                } else {
+//                                    throw new CiUniqueAttrNotFoundException(op.get());
+//                                }
+//                            }).toList());
                             // 唯一属性仍按字符串值参与重复校验。
-                            valueList.add(String.join(",", filterVo.getStringValueList()));
+                            valueList.add(String.join(",", filterVo.getValueList().stream().map(Object::toString).toList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             throw new CiUniqueAttrNotFoundException(op.get());
