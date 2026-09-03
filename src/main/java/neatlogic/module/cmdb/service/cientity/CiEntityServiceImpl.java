@@ -2642,16 +2642,20 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         Long ciId = ciEntityVo.getCiId();
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-        ciEntityMapper.insertCiEntityBaseInfo(ciEntityVo);// cmdb_cientity
+        // cmdb_cientity
+        ciEntityMapper.insertCiEntityBaseInfo(ciEntityVo);
 
         if (ciEntityVo.getExpiredDay() != null && ciEntityVo.getExpiredDay() > 0) {
-            ciEntityMapper.insertCiEntityExpiredTime(ciEntityVo);// cmdb_cientity_expiredtime
+            // cmdb_cientity_expiredtime
+            ciEntityMapper.insertCiEntityExpiredTime(ciEntityVo);
         } else {
-            ciEntityMapper.deleteCiEntityExpiredTimeByCiEntityId(ciEntityVo.getId());// cmdb_cientity_expiredtime
+            // cmdb_cientity_expiredtime
+            ciEntityMapper.deleteCiEntityExpiredTimeByCiEntityId(ciEntityVo.getId());
         }
         for (CiVo ci : ciList) {
             ciEntityVo.setCiId(ci.getId());
-            ciEntityMapper.insertCiEntity(ciEntityVo);// cmdb_xxx
+            // cmdb_xxx
+            ciEntityMapper.insertCiEntity(ciEntityVo);
         }
         ciEntityVo.setCiId(ciId);
     }
@@ -2701,12 +2705,15 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         // cmdb_cientity_globalattritem
         ciEntityMapper.deleteCiEntityBaseInfo(ciEntityVo);
         // 性能时间序列不参与主查询，删除配置项时需要显式清理。
-        ciEntityAttrMetricMapper.deleteCiEntityAttrMetricByCiEntityId(ciEntityVo.getId());// cmdb_cientity_attr_metric
+        // cmdb_cientity_attr_metric
+        ciEntityAttrMetricMapper.deleteCiEntityAttrMetricByCiEntityId(ciEntityVo.getId());
         //删除全局属性
-        globalAttrMapper.deleteGlobalAttrEntityByCiEntityId(ciEntityVo.getId());// cmdb_cientity_globalattritem
+        // cmdb_cientity_globalattritem
+        globalAttrMapper.deleteGlobalAttrEntityByCiEntityId(ciEntityVo.getId());
         for (CiVo ci : ciList) {
             ciEntityVo.setCiId(ci.getId());
-            ciEntityMapper.deleteCiEntity(ciEntityVo);// 删除动态表cmdb_xxxx数据
+            // 删除动态表cmdb_xxxx数据
+            ciEntityMapper.deleteCiEntity(ciEntityVo);
         }
     }
 

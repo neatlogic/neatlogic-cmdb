@@ -19,7 +19,7 @@ import neatlogic.framework.cmdb.crossover.IAttrInvokeCrossoverService;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrInvokeMapper;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -36,19 +36,19 @@ import java.util.stream.Collectors;
 public class AttrInvokeManager implements IAttrInvokeCrossoverService {
 
     @Resource
-    private CiEntityMapper ciEntityMapper;
+    private CiEntityAttrInvokeMapper ciEntityAttrInvokeMapper;
 
     public void replaceAttrInvoke(AttrVo attrVo, Long ciEntityId, JSONArray valueList) {
-        ciEntityMapper.deleteAttrInvokeByCiEntityIdAndAttrId(ciEntityId, attrVo.getId());
+        ciEntityAttrInvokeMapper.deleteAttrInvokeByCiEntityIdAndAttrId(ciEntityId, attrVo.getId());
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
         List<AttrInvokeVo> attrInvokeList = handler.convertValueListToAttrInvokeList(attrVo, ciEntityId, valueList);
         if (CollectionUtils.isNotEmpty(attrInvokeList)) {
-            ciEntityMapper.insertAttrInvokeList(attrInvokeList);
+            ciEntityAttrInvokeMapper.insertAttrInvokeList(attrInvokeList);
         }
     }
 
     public JSONArray getValueList(Long ciEntityId, AttrVo attrVo) {
-        List<AttrInvokeVo> attrInvokeList = ciEntityMapper.getAttrInvokeListByCiEntityIdAndAttrId(ciEntityId, attrVo.getId());
+        List<AttrInvokeVo> attrInvokeList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdAndAttrId(ciEntityId, attrVo.getId());
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
         JSONArray valueList = handler.convertAttrInvokeListToValueList(attrVo, attrInvokeList);
         return valueList == null ? new JSONArray() : valueList;
@@ -77,7 +77,7 @@ public class AttrInvokeManager implements IAttrInvokeCrossoverService {
             return;
         }
 
-        List<AttrInvokeVo> attrInvokeList = ciEntityMapper.getAttrInvokeListByCiEntityIdListAndAttrIdList(ciEntityIdList, attrIdList);
+        List<AttrInvokeVo> attrInvokeList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdListAndAttrIdList(ciEntityIdList, attrIdList);
         Map<Long, Map<Long, List<AttrInvokeVo>>> invokeMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(attrInvokeList)) {
             for (AttrInvokeVo attrInvokeVo : attrInvokeList) {
@@ -102,16 +102,16 @@ public class AttrInvokeManager implements IAttrInvokeCrossoverService {
     }
 
     public void deleteByCiEntityId(Long ciEntityId) {
-        ciEntityMapper.deleteAttrInvokeByCiEntityId(ciEntityId);
+        ciEntityAttrInvokeMapper.deleteAttrInvokeByCiEntityId(ciEntityId);
     }
 
     public void deleteByAttrId(Long attrId) {
-        ciEntityMapper.deleteAttrInvokeByAttrId(attrId);
+        ciEntityAttrInvokeMapper.deleteAttrInvokeByAttrId(attrId);
     }
 
     @Override
     public List<AttrInvokeVo> getAttrInvokeListByAttrId(Long attrId) {
-        return ciEntityMapper.getAttrInvokeListByAttrId(attrId);
+        return ciEntityAttrInvokeMapper.getAttrInvokeListByAttrId(attrId);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class AttrInvokeManager implements IAttrInvokeCrossoverService {
         if (CollectionUtils.isEmpty(invokeIdList)) {
             return Collections.emptyList();
         }
-        return ciEntityMapper.getAttrInvokeListByAttrTypeAndTypeAndInvokeIdList(attrType, type, invokeIdList);
+        return ciEntityAttrInvokeMapper.getAttrInvokeListByAttrTypeAndTypeAndInvokeIdList(attrType, type, invokeIdList);
     }
 
     @Override
@@ -127,13 +127,13 @@ public class AttrInvokeManager implements IAttrInvokeCrossoverService {
         if (CollectionUtils.isEmpty(ciEntityIdList) || CollectionUtils.isEmpty(attrIdList)) {
             return Collections.emptyList();
         }
-        return ciEntityMapper.getAttrInvokeListByCiEntityIdListAndAttrIdList(ciEntityIdList, attrIdList);
+        return ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdListAndAttrIdList(ciEntityIdList, attrIdList);
     }
 
     @Override
     public void updateAttrInvokeList(List<AttrInvokeVo> attrInvokeList) {
         if (CollectionUtils.isNotEmpty(attrInvokeList)) {
-            ciEntityMapper.updateAttrInvokeList(attrInvokeList);
+            ciEntityAttrInvokeMapper.updateAttrInvokeList(attrInvokeList);
         }
     }
 }
