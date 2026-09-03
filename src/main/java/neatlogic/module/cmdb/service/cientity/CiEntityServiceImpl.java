@@ -452,6 +452,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityVo.setLimitRelEntity(false);
             ciEntityVo.setLimitAttrEntity(false);
             if (ciEntityVo.getNeedRowNum()) {
+                System.out.println("ciEntityVo.getAttrFilterList(222) = " + JSONObject.toJSONString(ciEntityVo.getAttrFilterList()));
                 int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
                 if (logger.isInfoEnabled()) {
                     logger.info("查询配置项行数，行数{}，耗时{}ms", rowNum, System.currentTimeMillis() - time);
@@ -1493,7 +1494,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             throw new CiUniqueAttrNotFoundException(op.get());
                         }
                     }).toList());
-                    valueList.add(String.join(",", filterVo.getValueList()));
+                    // 唯一属性仍按字符串值参与重复校验。
+                    valueList.add(String.join(",", filterVo.getStringValueList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 } else {
                     if (oldEntity != null) {
@@ -1512,7 +1514,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                     throw new CiUniqueAttrNotFoundException(op.get());
                                 }
                             }).toList());
-                            valueList.add(String.join(",", filterVo.getValueList()));
+                            // 唯一属性仍按字符串值参与重复校验。
+                            valueList.add(String.join(",", filterVo.getStringValueList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             throw new CiUniqueAttrNotFoundException(op.get());

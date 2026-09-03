@@ -1159,9 +1159,10 @@
                                 AND
                                 <choose>
                                     <when test="attrFilter.expression == 'equal'">
-                                        `cmdb_attr_invoke_${attrFilter.attrId}`.invoke_id IN
-                                        <foreach collection="attrFilter.valueList" item="value" open="(" close=")" separator=",">
-                                            #{value}
+                                        <!-- 结构化过滤值同时匹配位置层级和引用ID，多选节点之间为OR关系。 -->
+                                        <foreach collection="attrFilter.valueList" item="value" open="(" close=")" separator=" OR ">
+                                            (`cmdb_attr_invoke_${attrFilter.attrId}`.type = LOWER(#{value.type})
+                                            AND `cmdb_attr_invoke_${attrFilter.attrId}`.invoke_id = #{value.invokeId})
                                         </foreach>
                                     </when>
                                     <when test="attrFilter.expression == 'is-null'">

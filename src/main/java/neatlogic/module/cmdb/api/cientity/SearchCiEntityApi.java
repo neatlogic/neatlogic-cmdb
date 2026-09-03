@@ -131,7 +131,9 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
     })
     @Output({@Param(explode = BasePageVo.class),
             @Param(name = "tbodyList", type = ApiParamType.JSONARRAY, explode = CiEntityVo[].class),
-            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.output.param.desc")})
+            @Param(name = "theadList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchattrtargetcientityapi.output.param.desc"),
+//            @Param(name = "attrFilterList", type = ApiParamType.JSONARRAY, desc = "后端实际参与查询的属性过滤条件")
+            })
     @Description(desc = "nmcac.searchcientityapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
@@ -158,6 +160,8 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
         for (AttrVo attrVo : attrList) {
             attrMap.put(attrVo.getId(), attrVo);
         }
+        // 引用表属性只接受合法的引用ID，避免空值或展示对象进入MyBatis过滤条件。
+//        normalizeInvokeAttrFilterList(ciEntityVo, attrMap);
         JSONObject sortConfig = jsonObj.getJSONObject("sortConfig");
         if (MapUtils.isNotEmpty(sortConfig)) {
             List<SortVo> sortConfigList = new ArrayList<>();
@@ -502,8 +506,110 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             returnObj.put("theadList", theadList);
             returnObj.put("sortList", sortList);
         }
+        // 返回最终生效的条件，前端据此恢复复杂属性的多选值和搜索状态。
+//        returnObj.put("attrFilterList", ciEntityVo.getAttrFilterList());
         return returnObj;
     }
+
+    /**
+     * 规范化保存到cmdb_attr_invoke表的属性过滤条件。
+     * 等于条件仅保留合法的位置类型和正整数引用ID，空条件和不支持的表达式不参与查询；为空、不为空无需取值。
+     *
+     * @param ciEntityVo 配置项搜索条件
+     * @param attrMap    当前模型可用属性
+     */
+//    private void normalizeInvokeAttrFilterList(CiEntityVo ciEntityVo, Map<Long, AttrVo> attrMap) {
+//        if (CollectionUtils.isEmpty(ciEntityVo.getAttrFilterList())) {
+//            return;
+//        }
+//        Iterator<AttrFilterVo> iterator = ciEntityVo.getAttrFilterList().iterator();
+//        while (iterator.hasNext()) {
+//            AttrFilterVo attrFilterVo = iterator.next();
+//            AttrVo attrVo = attrMap.get(attrFilterVo.getAttrId());
+//            IAttrValueHandler handler = attrVo == null ? null : AttrValueHandlerFactory.getHandler(attrVo.getType());
+//            if (handler == null || !handler.isInvokeAttr()) {
+//                continue;
+//            }
+//            String expression = attrFilterVo.getExpression();
+//            if (Objects.equals(expression, SearchExpression.NULL.getExpression())
+//                    || Objects.equals(expression, SearchExpression.NOTNULL.getExpression())) {
+//                // 空值判断由引用记录是否存在决定，不应携带位置ID。
+//                attrFilterVo.setValueList(new JSONArray());
+//                continue;
+//            }
+//            if (!Objects.equals(expression, SearchExpression.EQ.getExpression())) {
+//                iterator.remove();
+//                continue;
+//            }
+//            JSONArray invokeValueList = normalizeInvokeValueList(attrFilterVo.getValueList());
+//            if (CollectionUtils.isEmpty(invokeValueList)) {
+//                iterator.remove();
+//            } else {
+//                attrFilterVo.setValueList(invokeValueList);
+//            }
+//        }
+//        System.out.println("ciEntityVo.getAttrFilterList() = " + JSONObject.toJSONString(ciEntityVo.getAttrFilterList()));
+//    }
+
+    /**
+     * 校验机房位置多选值，并统一为可供MyBatis绑定的类型和引用ID对象。
+     *
+     * @param valueList 前端结构化属性值列表
+     * @return 去重后的合法机房位置引用列表
+     */
+//    private JSONArray normalizeInvokeValueList(JSONArray valueList) {
+//        JSONArray invokeValueList = new JSONArray();
+//        if (CollectionUtils.isEmpty(valueList)) {
+//            return invokeValueList;
+//        }
+//        Set<String> invokeValueSet = new LinkedHashSet<>();
+//        for (Object value : valueList) {
+//            // 兼容FastJSON将通用Map反序列化为对象的场景，标量值仍按新契约丢弃。
+//            Object jsonValue = JSON.toJSON(value);
+//            if (!(jsonValue instanceof JSONObject)) {
+//                continue;
+//            }
+//            JSONObject invokeValue = (JSONObject) jsonValue;
+//            String type = normalizeInvokeType(invokeValue.getString("type"));
+//            String invokeIdText = invokeValue.getString("invokeId");
+//            if (StringUtils.isBlank(type) || StringUtils.isBlank(invokeIdText)) {
+//                continue;
+//            }
+//            try {
+//                long invokeId = Long.parseLong(invokeIdText.trim());
+//                String uniqueKey = type.toLowerCase(Locale.ROOT) + ":" + invokeId;
+//                if (invokeId > 0L && invokeValueSet.add(uniqueKey)) {
+//                    // invokeId按字符串返回，避免JavaScript大整数精度丢失导致树节点无法回显。
+//                    invokeValueList.add(new JSONObject().fluentPut("type", type).fluentPut("invokeId", Long.toString(invokeId)));
+//                }
+//            } catch (NumberFormatException ignored) {
+//                // 非法引用ID不能进入cmdb_attr_invoke查询条件。
+//            }
+//        }
+//        return invokeValueList;
+//    }
+
+    /**
+     * 将机房位置层级名称统一为前后端约定的引用类型。
+     *
+     * @param type 前端位置类型
+     * @return 合法引用类型，非法类型返回null
+     */
+//    private String normalizeInvokeType(String type) {
+//        if (StringUtils.isBlank(type)) {
+//            return null;
+//        }
+//        switch (type.trim().toLowerCase(Locale.ROOT)) {
+//            case "datacenter":
+//                return "datacenter";
+//            case "computerroom":
+//                return "computerRoom";
+//            case "cabinet":
+//                return "cabinet";
+//            default:
+//                return null;
+//        }
+//    }
 
     /**
      * 判断配置项之间的父子兄弟关系
