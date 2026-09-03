@@ -743,9 +743,10 @@
                 </choose>-->
             </if>
         </foreach>
-        <if test="attrFilterList != null and attrFilterList.size() > 0"><!-- 新增 -->
+        <!-- 引用表属性根据处理器标识关联cmdb_attr_invoke，不再依赖具体属性类型。 -->
+        <if test="attrFilterList != null and attrFilterList.size() > 0">
             <foreach collection="attrFilterList" item="attrFilter">
-                <if test="attrFilter.type == 'computerroomposition' and ((attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null')">
+                <if test="attrFilter.isInvokeAttr == true and ((attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null')">
                     LEFT JOIN cmdb_attr_invoke `cmdb_attr_invoke_${attrFilter.attrId}`
                     ON `ci_base`.id = `cmdb_attr_invoke_${attrFilter.attrId}`.cientity_id
                     AND `cmdb_attr_invoke_${attrFilter.attrId}`.attr_id = #{attrFilter.attrId}
@@ -1155,7 +1156,8 @@
                 <foreach collection="attrFilterList" item="attrFilter">
                     <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
                         <choose>
-                            <when test="attrFilter.type == 'computerroomposition'"><!-- 新增 -->
+                            <!-- 引用表属性统一通过isInvokeAttr标识进入独立索引查询。 -->
+                            <when test="attrFilter.isInvokeAttr == true">
                                 AND
                                 <choose>
                                     <when test="attrFilter.expression == 'equal'">
