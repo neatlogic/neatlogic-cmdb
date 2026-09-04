@@ -389,6 +389,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
         boolean allowCommit = true;
 
         List<CiEntityTransactionVo> ciEntityTransactionList = CiEntityUtils.generateCiEntityTransaction(ciEntityObjList);
+
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             Long id = ciEntityTransactionVo.getCiEntityId();
             Long ciId = ciEntityTransactionVo.getCiId();

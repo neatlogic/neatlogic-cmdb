@@ -138,7 +138,6 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
         List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, null).build().getCiEntity();
         if (returnCiEntityVo != null) {
-//            attrInvokeManager.hydrateCiEntity(returnCiEntityVo, attrList);
             //拼接引用属性数据
             Long attrEntityLimit = null;
             if (CollectionUtils.isNotEmpty(attrList)) {
