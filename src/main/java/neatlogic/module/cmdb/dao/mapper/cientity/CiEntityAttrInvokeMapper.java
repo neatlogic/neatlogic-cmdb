@@ -10,28 +10,21 @@
 
 package neatlogic.module.cmdb.dao.mapper.cientity;
 
+import neatlogic.framework.cmdb.crossover.ICiEntityAttrInvokeCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface CiEntityAttrInvokeMapper {
+public interface CiEntityAttrInvokeMapper extends ICiEntityAttrInvokeCrossoverMapper {
 
-    List<AttrInvokeVo> getAttrInvokeListByAttrId(Long attrId);
+    List<Long> getCiEntityIdListByAttrId(Long attrId);
 
     List<AttrInvokeVo> getAttrInvokeListByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
 
-    List<AttrInvokeVo> getAttrInvokeListByAttrTypeAndTypeAndInvokeIdList(@Param("attrType") String attrType, @Param("type") String type, @Param("invokeIdList") List<Long> invokeIdList);
-
-    List<AttrInvokeVo> getAttrInvokeListByCiEntityIdListAndAttrIdList(@Param("ciEntityIdList") List<Long> ciEntityIdList, @Param("attrIdList") List<Long> attrIdList);
-
     int insertAttrInvokeList(@Param("attrInvokeList") List<AttrInvokeVo> attrInvokeList);
 
-    int updateAttrInvokeList(@Param("attrInvokeList") List<AttrInvokeVo> attrInvokeList);
-
     int deleteAttrInvokeByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
-
-    int deleteAttrInvokeByCiEntityId(Long ciEntityId);
 
     int deleteAttrInvokeByAttrId(Long attrId);
 }

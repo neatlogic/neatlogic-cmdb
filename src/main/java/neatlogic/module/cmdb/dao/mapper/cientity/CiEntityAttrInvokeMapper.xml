@@ -2,13 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrInvokeMapper">
 
-    <select id="getAttrInvokeListByAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
-        SELECT id,
-               cientity_id AS ciEntityId,
-               attr_id AS attrId,
-               type,
-               invoke_id AS invokeId
-        FROM cmdb_attr_invoke
+    <select id="getCiEntityIdListByAttrId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT DISTINCT
+               cientity_id
+        FROM `cmdb_attr_invoke`
         WHERE attr_id = #{value}
     </select>
 
@@ -18,42 +15,9 @@
                attr_id AS attrId,
                type,
                invoke_id AS invokeId
-        FROM cmdb_attr_invoke
+        FROM `cmdb_attr_invoke`
         WHERE cientity_id = #{ciEntityId}
           AND attr_id = #{attrId}
-    </select>
-
-    <select id="getAttrInvokeListByAttrTypeAndTypeAndInvokeIdList" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
-        SELECT ai.id,
-        ai.cientity_id AS ciEntityId,
-        ai.attr_id AS attrId,
-        ai.type,
-        ai.invoke_id AS invokeId
-        FROM cmdb_attr a
-        JOIN cmdb_attr_invoke ai ON ai.attr_id = a.id
-        AND ai.type = #{type}
-        AND ai.invoke_id IN
-        <foreach collection="invokeIdList" item="invokeId" open="(" close=")" separator=",">
-            #{invokeId}
-        </foreach>
-        WHERE a.type = #{attrType}
-    </select>
-
-    <select id="getAttrInvokeListByCiEntityIdListAndAttrIdList" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
-        SELECT id,
-        cientity_id AS ciEntityId,
-        attr_id AS attrId,
-        type,
-        invoke_id AS invokeId
-        FROM cmdb_attr_invoke
-        WHERE cientity_id IN
-        <foreach collection="ciEntityIdList" item="ciEntityId" open="(" close=")" separator=",">
-            #{ciEntityId}
-        </foreach>
-        AND attr_id IN
-        <foreach collection="attrIdList" item="attrId" open="(" close=")" separator=",">
-            #{attrId}
-        </foreach>
     </select>
 
     <insert id="insertAttrInvokeList">
@@ -64,32 +28,14 @@
         </foreach>
     </insert>
 
-    <update id="updateAttrInvokeList">
-        UPDATE cmdb_attr_invoke
-        SET invoke_id = CASE id
-        <foreach collection="attrInvokeList" item="attrInvoke">
-            WHEN #{attrInvoke.id} THEN #{attrInvoke.invokeId}
-        </foreach>
-        END
-        WHERE id IN
-        <foreach collection="attrInvokeList" item="attrInvoke" open="(" close=")" separator=",">
-            #{attrInvoke.id}
-        </foreach>
-    </update>
-
     <delete id="deleteAttrInvokeByCiEntityIdAndAttrId">
-        DELETE FROM cmdb_attr_invoke
+        DELETE FROM `cmdb_attr_invoke`
         WHERE cientity_id = #{ciEntityId}
           AND attr_id = #{attrId}
     </delete>
 
-    <delete id="deleteAttrInvokeByCiEntityId">
-        DELETE FROM cmdb_attr_invoke
-        WHERE cientity_id = #{value}
-    </delete>
-
     <delete id="deleteAttrInvokeByAttrId">
-        DELETE FROM cmdb_attr_invoke
+        DELETE FROM `cmdb_attr_invoke`
         WHERE attr_id = #{value}
     </delete>
 </mapper>

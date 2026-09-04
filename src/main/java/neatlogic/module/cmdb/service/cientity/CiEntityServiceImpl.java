@@ -463,7 +463,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityVo.setLimitRelEntity(false);
             ciEntityVo.setLimitAttrEntity(false);
             if (ciEntityVo.getNeedRowNum()) {
-                System.out.println("ciEntityVo.getAttrFilterList(222) = " + JSONObject.toJSONString(ciEntityVo.getAttrFilterList()));
                 int rowNum = ciEntityMapper.searchCiEntityIdCount(ciEntityVo);
                 if (logger.isInfoEnabled()) {
                     logger.info("查询配置项行数，行数{}，耗时{}ms", rowNum, System.currentTimeMillis() - time);
