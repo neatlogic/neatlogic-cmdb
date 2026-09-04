@@ -20,6 +20,7 @@ import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrInvokeHandler;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.cientityevent.CiEntityEventManager;
 import neatlogic.framework.cmdb.cientityevent.CiEntityEventType;
@@ -59,10 +60,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrMetricMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.*;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
@@ -121,7 +119,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     private CiViewMapper ciViewMapper;
 
     @Resource
-    private AttrInvokeManager attrInvokeManager;
+    private CiEntityAttrInvokeMapper ciEntityAttrInvokeMapper;
 
     @Override
     public CiEntityVo getCiEntityBaseInfoById(Long ciEntityId) {
@@ -228,7 +226,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, relList).isFlattenAttr(flattenAttr).build().getCiEntity();
         if (returnCiEntityVo != null) {
-            attrInvokeManager.hydrateCiEntity(returnCiEntityVo, attrList);
+//            attrInvokeManager.hydrateCiEntity(returnCiEntityVo, attrList);
             //拼接全局属性数据
             GlobalAttrVo ga = new GlobalAttrVo();
             ga.setIsActive(1);
@@ -264,6 +262,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
+                    } else if (attrVo.isInvokeAttr()) {
+                        List<AttrInvokeVo> attrInvokeList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
+                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                        JSONArray valueList = null;
+                        if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+                            valueList = attrInvokeHandler.convertAttrInvokeListToValueList(attrVo, attrInvokeList);
+                        }
+                        if (valueList == null) {
+                            valueList = new JSONArray();
+                        }
+                        JSONArray actualValueList = handler.getActualValueList(attrVo, valueList);
+                        returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                     }
                 }
             }
@@ -598,7 +608,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
 //        ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
         List<CiEntityVo> ciEntityList = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, ciEntityVo.getAttrList(), ciEntityVo.getRelList()).build().getCiEntityList();
-        attrInvokeManager.hydrateCiEntityList(ciEntityList, attrList);
+//        attrInvokeManager.hydrateCiEntityList(ciEntityList, attrList);
         return ciEntityList;
     }
 
@@ -2212,7 +2222,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             this.updateInvokedExpressionAttr(deleteCiEntityVo);
 
             this.deleteCiEntity(deleteCiEntityVo);
-            this.deleteExternalAttr(ciEntityTransactionVo);//增加
+            this.deleteInvokeAttr(ciEntityTransactionVo);//增加
 
             //修改事务状态
             transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
@@ -2263,6 +2273,14 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         }
                         updateCiEntityName(ciEntityVo);
                     }
+                } else if (attrEntityVo.isInvokeAttr()) {
+//                    if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())) {
+//                        ciEntityAttrInvokeMapper.deleteAttrInvokeByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
+////                        ciEntityMapper.deleteAttrEntityByFromCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
+//                    }
+//                    if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
+//                        ciEntityMapper.insertAttrEntity(attrEntityVo);
+//                    }
                 } else {
                     //更新配置项名称
                     if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
@@ -2309,7 +2327,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 topicName = "cmdb/cientity/recover";
                 eventType = CiEntityEventType.RECOVER;
             }
-            this.saveExternalAttr(ciEntityTransactionVo);//增加
+            this.saveInvokeAttr(ciEntityTransactionVo);//增加
             if (CollectionUtils.isNotEmpty(metricList)) {
                 Date metricTime = new Date();
                 for (CiEntityAttrMetricVo metricVo : metricList) {
@@ -2455,58 +2473,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
             return ciEntityVo.getId();
         }
-    }
-
-    private void saveExternalAttr(CiEntityTransactionVo ciEntityTransactionVo) {
-        if (CollectionUtils.isEmpty(ciEntityTransactionVo.getAttrEntityTransactionList())) {
-            return;
-        }
-        for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
-            AttrVo attrVo = attrMapper.getAttrById(attrEntityTransactionVo.getAttrId());
-            if (attrVo == null) {
-                continue;
-            }
-            IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-            if (handler == null) {
-                continue;
-            }
-            JSONArray oldValueList;
-            // 引用属性从cmdb_attr_invoke读取旧值，普通属性沿用事务快照。
-            if (handler.isInvokeAttr()) {
-                oldValueList = attrInvokeManager.getValueList(ciEntityTransactionVo.getCiEntityId(), attrVo);
-            } else {
-                oldValueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrVo.getId());
-            }
-            JSONArray newValueList = attrEntityTransactionVo.getValueList();
-            if (newValueList == null) {
-                newValueList = new JSONArray();
-            }
-            handler.afterSaveCiEntity(attrVo, ciEntityTransactionVo.getCiEntityId(), newValueList, oldValueList);
-            // 只有引用属性需要替换cmdb_attr_invoke中的索引记录。
-            if (handler.isInvokeAttr()) {
-                attrInvokeManager.replaceAttrInvoke(attrVo, ciEntityTransactionVo.getCiEntityId(), newValueList);
-            }
-        }
-    }
-
-    private void deleteExternalAttr(CiEntityTransactionVo ciEntityTransactionVo) {
-        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
-        if (CollectionUtils.isNotEmpty(attrList)) {
-            for (AttrVo attrVo : attrList) {
-                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-                if (handler != null) {
-                    JSONArray valueList;
-                    // 删除时按实际存储位置获取待传递给属性处理器的旧值。
-                    if (handler.isInvokeAttr()) {
-                        valueList = attrInvokeManager.getValueList(ciEntityTransactionVo.getCiEntityId(), attrVo);
-                    } else {
-                        valueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrVo.getId());
-                    }
-                    handler.afterDeleteCiEntity(attrVo, ciEntityTransactionVo.getCiEntityId(), valueList);// resourcepool_cabinet_device
-                }
-            }
-        }
-        attrInvokeManager.deleteByCiEntityId(ciEntityTransactionVo.getCiEntityId());// cmdb_attr_invoke
     }
 
     private JSONArray getSnapshotAttrValueList(CiEntityTransactionVo ciEntityTransactionVo, Long attrId) {
@@ -2715,6 +2681,110 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             // 删除动态表cmdb_xxxx数据
             ciEntityMapper.deleteCiEntity(ciEntityVo);
         }
+    }
+    private void saveInvokeAttr(CiEntityTransactionVo ciEntityTransactionVo) {
+        CiEntityVo oldCiEntityVo = ciEntityTransactionVo.getOldCiEntityVo();
+        for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
+            IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityTransactionVo.getAttrType());
+            if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+//                JSONArray oldValueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrEntityTransactionVo.getAttrId());
+                JSONArray oldValueList = new JSONArray();
+                if (oldCiEntityVo != null) {
+                    AttrEntityVo attrEntityVo = oldCiEntityVo.getAttrEntityByAttrId(attrEntityTransactionVo.getAttrId());
+                    if (attrEntityVo != null && attrEntityVo.getValueList() != null) {
+                        oldValueList = attrEntityVo.getValueList();
+                    }
+                }
+                AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
+//                JSONArray newValueList = attrEntityTransactionVo.getValueList();
+//                if (newValueList == null) {
+//                    newValueList = new JSONArray();
+//                }
+//                AttrVo attrVo = attrMapper.getAttrById(attrEntityTransactionVo.getAttrId());
+                attrInvokeHandler.afterSaveCiEntity(attrEntityVo, oldValueList);
+                // 只有引用属性需要替换cmdb_attr_invoke中的索引记录。
+//                attrInvokeManager.replaceAttrInvoke(attrVo, ciEntityTransactionVo.getCiEntityId(), newValueList);
+                ciEntityAttrInvokeMapper.deleteAttrInvokeByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
+//                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                List<AttrInvokeVo> attrInvokeList = attrInvokeHandler.convertValueListToAttrInvokeList(attrEntityVo);
+                if (CollectionUtils.isNotEmpty(attrInvokeList)) {
+                    ciEntityAttrInvokeMapper.insertAttrInvokeList(attrInvokeList);
+                }
+            }
+        }
+    }
+
+    private void deleteInvokeAttr(CiEntityTransactionVo ciEntityTransactionVo) {
+        CiEntityVo oldCiEntityVo = ciEntityTransactionVo.getOldCiEntityVo();
+        if (oldCiEntityVo != null) {
+            List<AttrEntityVo> attrEntityList = oldCiEntityVo.getAttrEntityList();
+            for (AttrEntityVo attrEntityVo : attrEntityList) {
+                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityVo.getAttrType());
+                if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+                    // 删除时按实际存储位置获取待传递给属性处理器的旧值。
+                    attrInvokeHandler.afterDeleteCiEntity(attrEntityVo);// resourcepool_cabinet_device
+                    ciEntityAttrInvokeMapper.deleteAttrInvokeByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityVo.getAttrId());// cmdb_attr_invoke
+                }
+            }
+        }
+    }
+
+    private void saveExternalAttr(CiEntityTransactionVo ciEntityTransactionVo) {
+        if (CollectionUtils.isEmpty(ciEntityTransactionVo.getAttrEntityTransactionList())) {
+            return;
+        }
+        for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
+            AttrVo attrVo = attrMapper.getAttrById(attrEntityTransactionVo.getAttrId());
+            if (attrVo == null) {
+                continue;
+            }
+            IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+            if (handler == null) {
+                continue;
+            }
+            JSONArray oldValueList;
+            // 引用属性从cmdb_attr_invoke读取旧值，普通属性沿用事务快照。
+//            if (handler.isInvokeAttr()) {
+//                oldValueList = attrInvokeManager.getValueList(ciEntityTransactionVo.getCiEntityId(), attrVo);
+//            } else {
+//                oldValueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrVo.getId());
+//            }
+            JSONArray newValueList = attrEntityTransactionVo.getValueList();
+            if (newValueList == null) {
+                newValueList = new JSONArray();
+            }
+            if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+//                attrInvokeHandler.afterSaveCiEntity(attrVo, ciEntityTransactionVo.getCiEntityId(), newValueList, oldValueList);
+            }
+//            handler.afterSaveCiEntity(attrVo, ciEntityTransactionVo.getCiEntityId(), newValueList, oldValueList);
+            // 只有引用属性需要替换cmdb_attr_invoke中的索引记录。
+//            if (handler.isInvokeAttr()) {
+//                attrInvokeManager.replaceAttrInvoke(attrVo, ciEntityTransactionVo.getCiEntityId(), newValueList);
+//            }
+        }
+    }
+
+    private void deleteExternalAttr(CiEntityTransactionVo ciEntityTransactionVo) {
+        List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
+        if (CollectionUtils.isNotEmpty(attrList)) {
+            for (AttrVo attrVo : attrList) {
+                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                if (handler != null) {
+                    JSONArray valueList;
+                    // 删除时按实际存储位置获取待传递给属性处理器的旧值。
+//                    if (handler.isInvokeAttr()) {
+//                        valueList = attrInvokeManager.getValueList(ciEntityTransactionVo.getCiEntityId(), attrVo);
+//                    } else {
+//                        valueList = getSnapshotAttrValueList(ciEntityTransactionVo, attrVo.getId());
+//                    }
+                    if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+//                        attrInvokeHandler.afterDeleteCiEntity(attrVo, ciEntityTransactionVo.getCiEntityId(), valueList);// resourcepool_cabinet_device
+                    }
+//                    handler.afterDeleteCiEntity(attrVo, ciEntityTransactionVo.getCiEntityId(), valueList);// resourcepool_cabinet_device
+                }
+            }
+        }
+//        attrInvokeManager.deleteByCiEntityId(ciEntityTransactionVo.getCiEntityId());// cmdb_attr_invoke
     }
 
     /**

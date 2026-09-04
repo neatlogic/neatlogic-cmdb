@@ -18,6 +18,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrInvokeHandler;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_ACCOUNT_MODIFY;
@@ -170,7 +171,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 if (attrVo != null) {
                     IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                     // 引用表属性没有可用于ORDER BY的动态字段。
-                    if (handler != null && handler.isCanSort() && !handler.isInvokeAttr()) {
+                    if (handler != null && handler.isCanSort() && !(handler instanceof IAttrInvokeHandler)) {
                         sortConfigList.add(new SortVo(attrVo.getCiId(), attrVo.getId(), sortConfig.getString(key)));
                     }
                 }

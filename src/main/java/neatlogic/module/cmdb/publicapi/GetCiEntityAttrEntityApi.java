@@ -16,10 +16,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrInvokeHandler;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
+import neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -30,8 +33,8 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrInvokeMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import neatlogic.module.cmdb.service.cientity.AttrInvokeManager;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -55,7 +58,7 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
     private CiMapper ciMapper;
 
     @Resource
-    private AttrInvokeManager attrInvokeManager;
+    private CiEntityAttrInvokeMapper ciEntityAttrInvokeMapper;
 
     @Resource
     private AttrMapper attrMapper;
@@ -135,7 +138,7 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
         List<HashMap<String, Object>> resultList = ciEntityMapper.getCiEntityByIdLite(ciEntityVo);
         CiEntityVo returnCiEntityVo = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, attrList, null).build().getCiEntity();
         if (returnCiEntityVo != null) {
-            attrInvokeManager.hydrateCiEntity(returnCiEntityVo, attrList);
+//            attrInvokeManager.hydrateCiEntity(returnCiEntityVo, attrList);
             //拼接引用属性数据
             Long attrEntityLimit = null;
             if (CollectionUtils.isNotEmpty(attrList)) {
@@ -153,6 +156,18 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
                             }
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
+                    } else if (attrVo.isInvokeAttr()) {
+                        List<AttrInvokeVo> attrInvokeList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
+                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                        JSONArray valueList = null;
+                        if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+                            valueList = attrInvokeHandler.convertAttrInvokeListToValueList(attrVo, attrInvokeList);
+                        }
+                        if (valueList == null) {
+                            valueList = new JSONArray();
+                        }
+                        JSONArray actualValueList = handler.getActualValueList(attrVo, valueList);
+                        returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                     }
                 }
             }
