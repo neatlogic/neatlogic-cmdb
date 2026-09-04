@@ -342,6 +342,7 @@ public class AttrServiceImpl implements AttrService {
             //物理删除字段
             //由于以上事务中的dml操作包含了以下ddl操作的表，如果使用 EscapeTransactionJob会导致事务等待产生死锁，所以这里不再使用EscapeTransactionJob去保证事务一致性。即使ddl删除字段失败，以上事务也会提交
             if (!attrVo.isNeedTargetCi()
+                    && !attrVo.isInvokeAttr()
                     && ciSchemaMapper.checkColumnIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) > 0) {
                 ciSchemaMapper.deleteAttrFromCiTable(attrVo.getCiId(), attrCi.getCiTableName(), attrVo);
             }

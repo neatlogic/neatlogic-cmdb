@@ -726,14 +726,14 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Override
     @Transactional
-    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList) {//1
+    public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList) {
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
         return saveCiEntity(ciEntityTransactionList, transactionGroupVo);
     }
 
     @Override
     public Long saveCiEntityWithoutTransaction
-            (List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {//3
+            (List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
         }
@@ -780,7 +780,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     @Override
     @Transactional
     public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo
-            transactionGroupVo) {//2
+            transactionGroupVo) {
         return saveCiEntityWithoutTransaction(ciEntityTransactionList, transactionGroupVo);
     }
 
@@ -800,7 +800,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      */
     @Transactional
     @Override
-    public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {//4
+    public Long saveCiEntity(CiEntityTransactionVo ciEntityTransactionVo, TransactionGroupVo transactionGroupVo) {
         //批量更新时会生成snapshot，但有些地方还需要在这里生成snapshot
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.UPDATE.getValue()) && ciEntityTransactionVo.getOldCiEntityVo() == null) {
             CiEntityVo oldCiEntityVo = this.getCiEntityByIdLite(ciEntityTransactionVo.getCiId(), ciEntityTransactionVo.getCiEntityId(), true, false, false);
@@ -837,7 +837,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
-        boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);//5
+        boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
 
         if (hasChange) {
             //生成配置项名称
@@ -849,7 +849,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
             //提交事务
             if (ciEntityTransactionVo.isAllowCommit()) {
-                commitTransaction(transactionVo, transactionGroupVo);//6
+                commitTransaction(transactionVo, transactionGroupVo);
             }
             return transactionVo.getId();
         } else {
@@ -1014,12 +1014,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     JSONArray valueList = attrEntityData.getJSONArray("valueList");
                     //进行必要的值转换，例如密码转换成密文
                     IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-                    handler.transferValueListToSave(attrVo, ciEntityTransactionVo.getCiEntityId(), valueList);//值转化
+                    handler.transferValueListToSave(attrVo, ciEntityTransactionVo.getCiEntityId(), valueList);
                     String saveMode = attrEntityData.getString("saveMode");
                     attrEntityData.clear();
                     attrEntityData.put("saveMode", saveMode);
                     attrEntityData.put("valueList", valueList);
-                    attrEntityData.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));//值转化
+                    attrEntityData.put("actualValueList", AttrValueHandlerFactory.getHandler(attrVo.getType()).getActualValueList(attrVo, valueList));
                     attrEntityData.put("label", attrVo.getLabel());
                     attrEntityData.put("name", attrVo.getName());
                     attrEntityData.put("type", attrVo.getType());
@@ -2219,7 +2219,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             this.updateInvokedExpressionAttr(deleteCiEntityVo);
 
             this.deleteCiEntity(deleteCiEntityVo);
-            this.deleteInvokeAttr(ciEntityTransactionVo);//增加
+            this.deleteInvokeAttr(ciEntityTransactionVo);
 
             //修改事务状态
             transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
@@ -2271,13 +2271,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         updateCiEntityName(ciEntityVo);
                     }
                 } else if (attrEntityVo.isInvokeAttr()) {
-//                    if (attrEntityTransactionVo.getSaveMode().equals(SaveModeType.REPLACE.getValue())) {
-//                        ciEntityAttrInvokeMapper.deleteAttrInvokeByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
-////                        ciEntityMapper.deleteAttrEntityByFromCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
-//                    }
-//                    if (CollectionUtils.isNotEmpty(attrEntityVo.getValueList())) {
-//                        ciEntityMapper.insertAttrEntity(attrEntityVo);
-//                    }
+
                 } else {
                     //更新配置项名称
                     if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
@@ -2324,7 +2318,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 topicName = "cmdb/cientity/recover";
                 eventType = CiEntityEventType.RECOVER;
             }
-            this.saveInvokeAttr(ciEntityTransactionVo);//增加
+            this.saveInvokeAttr(ciEntityTransactionVo);
             if (CollectionUtils.isNotEmpty(metricList)) {
                 Date metricTime = new Date();
                 for (CiEntityAttrMetricVo metricVo : metricList) {
