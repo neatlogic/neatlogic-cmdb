@@ -172,7 +172,7 @@ public class CmdbDispatcher extends WorkerDispatcherBase {
                     AttrFilterVo filterVo = new AttrFilterVo();
                     filterVo.setAttrId(key);
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
-                    filterVo.setValueList(valueList);
+                    filterVo.setValueList(new JSONArray().fluentAddAll(valueList));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 }
             }

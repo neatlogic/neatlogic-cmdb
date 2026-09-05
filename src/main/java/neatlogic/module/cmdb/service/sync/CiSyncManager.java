@@ -328,7 +328,7 @@ public class CiSyncManager {
                         if (StringUtils.isNotBlank(v)) {
                             List<String> valueList = new ArrayList<>();
                             valueList.add(v);
-                            filterVo.setValueList(valueList);
+                            filterVo.setValueList(new JSONArray().fluentAdd(valueList));
                         } else {
                             throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                         }
@@ -359,19 +359,17 @@ public class CiSyncManager {
                             targetFilterVo.setAttrId(uAttrId);
                             targetFilterVo.setType(targetNameAttrVo.getType());
                             targetFilterVo.setExpression(SearchExpression.EQ.getExpression());
-                            targetFilterVo.setValueList(new ArrayList<String>() {{
-                                this.add(v);
-                            }});
+                            targetFilterVo.setValueList(new JSONArray().fluentAdd(v));
                             attrConditionVo.addAttrFilter(targetFilterVo);
                             List<CiEntityVo> attrCiCheckList = searchCiEntityWithCache(attrConditionVo);//ciEntityService.searchCiEntity(attrConditionVo);
                             if (CollectionUtils.isNotEmpty(attrCiCheckList)) {
                                 List<String> valueList = attrCiCheckList.stream().map(d -> d.getId().toString()).collect(Collectors.toList());
-                                filterVo.setValueList(valueList);
+                                filterVo.setValueList(new JSONArray().fluentAddAll(valueList));
                             } else {
                                 //如果没有找到目标值，则需要放一个不可能存在的值进去，代表当前配置项是不存在的，否则会缺了一个条件导致匹配出错误数据
                                 List<String> noStringList = new ArrayList<>();
                                 noStringList.add("0");
-                                filterVo.setValueList(noStringList);
+                                filterVo.setValueList(new JSONArray().fluentAddAll(noStringList));
                             }
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
@@ -543,7 +541,7 @@ public class CiSyncManager {
                                         filterVo.setExpression(SearchExpression.EQ.getExpression());
                                         List<String> valueList = new ArrayList<>();
                                         valueList.add(dataObj.getString(mappingVo.getField(parentKey)));
-                                        filterVo.setValueList(valueList);
+                                        filterVo.setValueList(new JSONArray().fluentAddAll(valueList));
                                         attrConditionVo.addAttrFilter(filterVo);
                                         CiEntityTransactionVo attrCiEntityTransactionVo = new CiEntityTransactionVo();
                                         attrConditionVo.setId(attrCiEntityTransactionVo.getCiEntityId());

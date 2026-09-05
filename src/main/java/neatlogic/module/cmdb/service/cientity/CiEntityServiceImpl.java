@@ -1836,7 +1836,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).toList());
+                            filterVo.setValueList(new JSONArray().fluentAddAll(attrEntityTransactionVo.getValueList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         }
                     }
@@ -2050,7 +2050,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).toList());
+                            filterVo.setValueList(new JSONArray().fluentAddAll(attrEntityTransactionVo.getValueList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             AttrEntityVo attrEntityVo = oldEntity.getAttrEntityByAttrId(attrId);
@@ -2058,7 +2058,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 AttrFilterVo filterVo = new AttrFilterVo();
                                 filterVo.setAttrId(attrId);
                                 filterVo.setExpression(SearchExpression.EQ.getExpression());
-                                filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).toList());
+                                filterVo.setValueList(new JSONArray().fluentAddAll(attrEntityVo.getValueList()));
                                 ciEntityConditionVo.addAttrFilter(filterVo);
                             }
                         }
@@ -2854,7 +2854,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     return null;
                 }
             }
-            attrFilterVo.setValueList(newValueList);
+            attrFilterVo.setValueList(new JSONArray().fluentAddAll(newValueList));
         } else {
             List<String> newValueList = new ArrayList<>();
             if (Objects.equals(expression, "notequal")) {
@@ -2866,7 +2866,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             } else {
                 newValueList.addAll(valueList);
             }
-            attrFilterVo.setValueList(new ArrayList<>(newValueList));
+            attrFilterVo.setValueList(new JSONArray().fluentAddAll(newValueList));
         }
         attrFilterVo.setExpression(expression);
         return attrFilterVo;

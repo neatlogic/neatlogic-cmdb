@@ -419,7 +419,7 @@ public class LegalValidManager {
                     AttrFilterVo filterVo = new AttrFilterVo();
                     filterVo.setAttrId(attrId);
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
-                    filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).collect(Collectors.toList()));
+                    filterVo.setValueList(new JSONArray().fluentAddAll(attrEntityVo.getValueList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 } else {
                     Optional<AttrVo> op = attrList.stream().filter(a -> a.getId().equals(attrId)).findFirst();
