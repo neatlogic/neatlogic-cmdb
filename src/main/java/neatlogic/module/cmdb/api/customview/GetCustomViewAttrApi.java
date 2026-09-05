@@ -97,7 +97,7 @@ public class GetCustomViewAttrApi extends PrivateApiComponentBase {
             } else if (isHasTargetCiId.equals(0)) {
                 // 普通属性列表仅返回能够从动态表生成视图字段的属性。
                 attrList = attrList.stream()
-                        .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().isInvokeAttr())
+                        .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().getIsInvokeAttr())
                         .collect(Collectors.toList());
             }
         }

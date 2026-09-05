@@ -261,7 +261,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
-                    } else if (attrVo.isInvokeAttr()) {
+                    } else if (attrVo.getIsInvokeAttr()) {
                         List<AttrInvokeVo> attrInvokeList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                         JSONArray valueList = null;
@@ -394,7 +394,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         if (CollectionUtils.isNotEmpty(ciEntityVo.getSortList())) {
             // 引用表属性没有动态表字段，不能参与动态字段排序。
             Set<Long> sortableAttrIdSet = attrList.stream()
-                    .filter(attrVo -> !attrVo.isInvokeAttr())
+                    .filter(attrVo -> !attrVo.getIsInvokeAttr())
                     .map(AttrVo::getId)
                     .collect(Collectors.toSet());
             ciEntityVo.setSortList(ciEntityVo.getSortList().stream()
@@ -429,7 +429,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         attrFilterVo.setCiId(attrVo.getCiId());
                         attrFilterVo.setType(attrVo.getType());
                         attrFilterVo.setNeedTargetCi(attrVo.isNeedTargetCi());
-                        attrFilterVo.setIsInvokeAttr(attrVo.isInvokeAttr());
+                        attrFilterVo.setIsInvokeAttr(attrVo.getIsInvokeAttr());
                         isExists = true;
                         break;
                     }

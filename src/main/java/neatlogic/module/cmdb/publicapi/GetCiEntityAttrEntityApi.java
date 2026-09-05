@@ -155,7 +155,7 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
                             }
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
-                    } else if (attrVo.isInvokeAttr()) {
+                    } else if (attrVo.getIsInvokeAttr()) {
                         List<AttrInvokeVo> attrInvokeList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                         JSONArray valueList = null;

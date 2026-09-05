@@ -612,7 +612,7 @@
                         `cmdb_attrentity_${attr.id}`.`to_cientity_id` AS `attr_${attr.id}`,
                     </when>
                     <!-- 引用属性通过cmdb_attr_invoke还原，不读取不存在的动态字段。 -->
-                    <when test="attr.invokeAttr == false">
+                    <when test="attr.isInvokeAttr == false">
                         ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
                     </when>
                 </choose>
@@ -1469,7 +1469,7 @@
     <sql id="ciEntityColumnSqlLite">
         <foreach collection="attrList" item="attr">
             <!-- 精简查询只投影普通动态表属性。 -->
-            <if test="attr.needTargetCi == false and attr.invokeAttr == false">
+            <if test="attr.needTargetCi == false and attr.isInvokeAttr == false">
                 ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
             </if>
         </foreach>
@@ -1824,7 +1824,7 @@
         (
         <foreach collection="attrEntityList" item="attr">
             <!-- cmdb_attr_invoke属性由事务钩子保存，不参与动态表写入。 -->
-            <if test="attr.isNeedTargetCi == false and attr.invokeAttr == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 `${attr.attrId}`,
                 `${attr.attrId}_hash`,
             </if>
@@ -1833,7 +1833,7 @@
         ) VALUES (
         <foreach collection="attrEntityList" item="attr">
             <!-- 值列表与字段列表保持相同的动态表属性过滤条件。 -->
-            <if test="attr.isNeedTargetCi == false and attr.invokeAttr == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 #{attr.value},
                 #{attr.value, typeHandler=Md5Handler},
             </if>
@@ -1842,7 +1842,7 @@
         ) ON DUPLICATE KEY UPDATE
         <foreach collection="attrEntityList" item="attr">
             <!-- 更新时同样跳过cmdb_attr_invoke属性。 -->
-            <if test="attr.isNeedTargetCi == false and attr.invokeAttr == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 `${attr.attrId}` = #{attr.value},
                 `${attr.attrId}_hash` = #{attr.value,typeHandler=Md5Handler},
             </if>
@@ -1854,7 +1854,7 @@
         INSERT ignore INTO ${ciTableName} (
         <foreach collection="attrEntityList" item="attr">
             <!-- 新增配置项时仅写入动态表属性。 -->
-            <if test="attr.isNeedTargetCi == false and attr.invokeAttr == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 `${attr.attrId}`,
                 `${attr.attrId}_hash`,
             </if>
@@ -1863,7 +1863,7 @@
         VALUES (
         <foreach collection="attrEntityList" item="attr">
             <!-- 插入值与动态字段列表使用相同过滤条件。 -->
-            <if test="attr.isNeedTargetCi == false and attr.invokeAttr == false and attr.fromCiId == ciId">
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 #{attr.value},
                 #{attr.value,typeHandler=Md5Handler},
             </if>

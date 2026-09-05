@@ -76,7 +76,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
 
         // 去掉目标模型引用属性和使用cmdb_attr_invoke存储的属性。
         customViewAttrList = customViewAttrList.stream()
-                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().isInvokeAttr())
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().getIsInvokeAttr())
                 .collect(Collectors.toList());
         Map<String, AttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
@@ -163,7 +163,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         // 去掉目标模型引用属性和使用cmdb_attr_invoke存储的属性。
         customViewAttrList = customViewAttrList.stream()
-                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().isInvokeAttr())
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().getIsInvokeAttr())
                 .collect(Collectors.toList());
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
@@ -338,7 +338,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         // 去掉目标模型引用属性和使用cmdb_attr_invoke存储的属性。
         customViewAttrList = customViewAttrList.stream()
-                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().isInvokeAttr())
+                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().getIsInvokeAttr())
                 .collect(Collectors.toList());
 
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));

@@ -205,7 +205,7 @@ public class DslSearchManager {
 
     private void validateAttrStorage(AttrVo attrVo) {
         // 当前DSL只支持动态字段和目标模型引用，不支持cmdb_attr_invoke属性。
-        if (attrVo.getTargetCiId() == null && attrVo.isInvokeAttr()) {
+        if (attrVo.getTargetCiId() == null && attrVo.getIsInvokeAttr()) {
             throw new ApiRuntimeException("属性" + attrVo.getLabel() + "使用独立存储，不支持DSL搜索");
         }
     }

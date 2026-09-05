@@ -391,7 +391,7 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                             // 仅为当前模型中不使用cmdb_attr_invoke的普通属性重建动态字段。
                             if (attrVo.getCiId().equals(ciVo.getId())
                                     && attrVo.getTargetCiId() == null
-                                    && !attrVo.isInvokeAttr()) {
+                                    && !attrVo.getIsInvokeAttr()) {
                                 ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
                                 if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
                                     if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {

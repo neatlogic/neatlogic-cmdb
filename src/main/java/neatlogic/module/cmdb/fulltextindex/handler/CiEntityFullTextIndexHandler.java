@@ -85,7 +85,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
         if (CollectionUtils.isNotEmpty(attrList)) {
             for (AttrVo attr : attrList) {
                 // 专有名词批量查询只能读取动态表字段，引用属性由详情还原链路处理。
-                if (attr.getTargetCiId() == null && !attr.isInvokeAttr()) {
+                if (attr.getTargetCiId() == null && !attr.getIsInvokeAttr()) {
                     List<String> wordList = attrEntityMapper.getAttrValueByCiId(attr);
                     FullTextIndexUtil.addWord(wordList);
                 } else if (attr.getTargetCiId() != null) {
