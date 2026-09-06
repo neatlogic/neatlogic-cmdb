@@ -1765,25 +1765,6 @@
         where cientity_id = #{value}
     </select>
 
-    <!--<select id="getCiEntityIdByCiIdAndAttrIdAndAttrValue" resultType="java.lang.Long">
-        SELECT
-            a.`cientity_id`
-        FROM
-            @{DATA_SCHEMA}.`cmdb_${ciId}` a
-        where a.`${attrId}` = #{attrValue}
-        LIMIT 1
-    </select>-->
-
-    <!--<select id="getCiEntityIdAndAttrValueByCiIdAndAttrIdAndKeyword" resultType="java.util.LinkedHashMap">
-        SELECT
-            a.`cientity_id` AS ciEntityId,
-            a.`${attrId}`
-        FROM
-            @{DATA_SCHEMA}.`cmdb_${ciId}` a
-        where a.`${attrId}` like concat('%', #{keyword}, '%')
-        ORDER BY a.`cientity_id`
-    </select>-->
-
     <update id="updateCiEntityExpiredTime" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityExpiredTimeVo">
         update cmdb_cientity_expiredtime
         set expired_time = DATE_ADD(NOW(3), INTERVAL #{expiredDay} DAY)
