@@ -2271,7 +2271,16 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         updateCiEntityName(ciEntityVo);
                     }
                 } else if (attrEntityVo.isInvokeAttr()) {
-
+                    if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
+                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityVo.getAttrType());
+                        if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+                            String nameAttrName = attrInvokeHandler.getNameAttrName(attrEntityVo);
+                            ciEntityVo.setName(nameAttrName);
+                        } else {
+                            ciEntityVo.setName("");
+                        }
+                        updateCiEntityName(ciEntityVo);
+                    }
                 } else {
                     //更新配置项名称
                     if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
