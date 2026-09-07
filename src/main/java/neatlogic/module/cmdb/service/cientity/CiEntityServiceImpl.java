@@ -980,7 +980,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      * @return true:验证成功 false:验证失败
      */
     @Override
-    public boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {//6
+    public boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciEntityTransactionVo.getCiId()));
         List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo() {{

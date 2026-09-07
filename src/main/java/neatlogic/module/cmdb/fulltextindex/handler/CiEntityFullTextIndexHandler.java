@@ -88,11 +88,15 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                 if (attr.getTargetCiId() == null && !attr.getIsInvokeAttr()) {
                     List<String> wordList = attrEntityMapper.getAttrValueByCiId(attr);
                     FullTextIndexUtil.addWord(wordList);
-                } else if (attr.getTargetCiId() != null) {
-                    if (!ciIdSet.contains(attr.getTargetCiId())) {
-                        List<String> wordList = ciEntityMapper.getCiEntityNameByCiId(attr.getTargetCiId());
-                        FullTextIndexUtil.addWord(wordList);
-                        ciIdSet.add(attr.getTargetCiId());
+                } else {
+                    if (attr.getTargetCiId() != null) {
+                        if (!ciIdSet.contains(attr.getTargetCiId())) {
+                            List<String> wordList = ciEntityMapper.getCiEntityNameByCiId(attr.getTargetCiId());
+                            FullTextIndexUtil.addWord(wordList);
+                            ciIdSet.add(attr.getTargetCiId());
+                        }
+                    } else if (attr.getIsInvokeAttr()) {
+                        // TODO
                     }
                 }
             }
