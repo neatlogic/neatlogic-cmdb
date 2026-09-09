@@ -87,7 +87,7 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         if (StringUtils.isNotBlank(passwordCipher)) {
             // 只在内存中解密传输密文并立即转换为存储密文，禁止输出密码明文或密文日志。
             String passwordPlain = CryptoHandlerFactory.getCryptoHandlerByCiphertext(passwordCipher).decrypt(passwordCipher);
-            paramAccountVo.setPasswordCipher(RC4Util.encrypt(passwordPlain));
+            paramAccountVo.setPasswordCipher(CryptoHandlerFactory.getCryptoHandlerByHandler("{RC4}").encrypt(passwordPlain));
         }
         Long id = paramObj.getLong("id");
         return resourceCenterAccountService.saveAccount(id, paramAccountVo);
