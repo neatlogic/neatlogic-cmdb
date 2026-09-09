@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.api.customview;
 
+import neatlogic.framework.restful.dto.ApiExampleVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -60,8 +61,9 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /** 通过代码组装请求示例，返回带标题和说明的场景列表。 */
     @Override
-    public JSONObject example() {
+    public java.util.List<ApiExampleVo> example() {
         String json = "{\"id\":" +
                 "588094621147136," +
                 "\"keyword\":\"\"," +
@@ -71,7 +73,7 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
                 "\"attrFilterList\":[{" +
                 "\"attrName\":\"属性唯一标识（需要在视图“显示配置”中配置，attrName提供了attrUuid可以不必提供，系统会根据attrName自动补充attrUuid）\"," +
                 "\"attrUuid\":\"546d7fb7276e40f889cd131e22bb547a\",\"valueList\":[\"192.168.0.22\"],\"expression\":\"like\",\"type\":\"attr\"}]}";
-        return JSON.parseObject(json);
+        return java.util.Collections.singletonList(new ApiExampleVo("common.example", "nf.api.example.replacevalues", JSON.parseObject(json)));
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.viewid"),
@@ -158,6 +160,5 @@ public class SearchCustomViewDataApi extends PrivateApiComponentBase {
         returnObj.put("currentPage", customViewConditionVo.getCurrentPage());
         return returnObj;
     }
-
 
 }

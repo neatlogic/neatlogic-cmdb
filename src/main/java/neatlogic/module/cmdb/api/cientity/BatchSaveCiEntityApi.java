@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+import neatlogic.framework.restful.dto.ApiExampleVo;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -92,8 +93,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
         return null;
     }
 
+    /** 通过代码组装请求示例，返回带标题和说明的场景列表。 */
     @Override
-    public JSONObject example() {
+    public java.util.List<ApiExampleVo> example() {
         JSONObject defaultJson = new JSONObject(true);
         defaultJson.put("needCommit", true);
         defaultJson.put("isSimple", false);
@@ -199,10 +201,9 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             }
         });
 
-        return new JSONObject(true) {{
-            this.put($.t("common.example") + 1, defaultJson);
-            this.put($.t("common.example") + 2, simpleJson);
-        }};
+        return java.util.Arrays.asList(
+                new ApiExampleVo("nf.api.example.standard", "nf.api.example.replacevalues", defaultJson),
+                new ApiExampleVo("nf.api.example.simple", "nf.api.example.replacevalues", simpleJson));
     }
 
     private JSONArray convertSimpleData(JSONObject jsonObj) {

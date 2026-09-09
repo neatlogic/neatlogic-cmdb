@@ -12,6 +12,8 @@
 
 package neatlogic.module.cmdb.api.cientity;
 
+
+import neatlogic.framework.restful.dto.ApiExampleVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -65,8 +67,9 @@ public class SaveCiEntityAlertBatchApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /** 通过代码组装请求示例，返回带标题和说明的场景列表。 */
     @Override
-    public JSONObject example() {
+    public java.util.List<ApiExampleVo> example() {
         JSONObject exampleObj = new JSONObject();
         exampleObj.put("alertList", new JSONArray() {{
             this.add(new JSONObject() {{
@@ -80,7 +83,7 @@ public class SaveCiEntityAlertBatchApi extends PrivateApiComponentBase {
                 this.put("alertLink", "选填，告警外部链接");
             }});
         }});
-        return exampleObj;
+        return java.util.Collections.singletonList(new ApiExampleVo("common.example", "nf.api.example.replacevalues", exampleObj));
     }
 
     @Input({@Param(name = "alertList", isRequired = true, type = ApiParamType.JSONARRAY, desc = "common.alertlist", help = "nmcac.savecientityalertbatchapi.input.param.help"),

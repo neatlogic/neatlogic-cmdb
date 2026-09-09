@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.api.globalsearch;
 
+import neatlogic.framework.restful.dto.ApiExampleVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -49,10 +50,11 @@ public class SearchAllCiEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /** 通过代码组装请求示例，返回带标题和说明的场景列表。 */
     @Override
-    public JSONObject example() {
+    public java.util.List<ApiExampleVo> example() {
         String json = "{\"keyword\":\"mysql 192.168.0.22\",\"currentPage\":1,\"pageSize\":20}";
-        return JSON.parseObject(json);
+        return java.util.Collections.singletonList(new ApiExampleVo("common.example", "nf.api.example.replacevalues", JSON.parseObject(json)));
     }
 
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, isRequired = true, desc = "搜索关键字，支持名称、IP、编号等配置项相关文本"),
