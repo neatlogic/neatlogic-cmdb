@@ -21,13 +21,13 @@ import neatlogic.framework.cmdb.enums.resourcecenter.AccountType;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNameRepeatsException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.common.util.RC4Util;
+import neatlogic.framework.crypto.core.CryptoHandlerFactory;
 import neatlogic.framework.dto.FieldValidResultVo;
 import neatlogic.framework.exception.type.ParamNotExistsException;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.IValid;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.util.PasswordRSAUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import neatlogic.module.cmdb.service.resourcecenter.account.ResourceCenterAccountService;
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +85,8 @@ public class AccountSaveApi extends PrivateApiComponentBase {
         AccountVo paramAccountVo = JSON.toJavaObject(paramObj, AccountVo.class);
         String passwordCipher = paramAccountVo.getPasswordCipher();
         if (StringUtils.isNotBlank(passwordCipher)) {
-            String passwordPlain = PasswordRSAUtil.decrypt(passwordCipher);
+            // 只在内存中解密传输密文并立即转换为存储密文，禁止输出密码明文或密文日志。
+            String passwordPlain = CryptoHandlerFactory.getCryptoHandlerByCiphertext(passwordCipher).decrypt(passwordCipher);
             paramAccountVo.setPasswordCipher(RC4Util.encrypt(passwordPlain));
         }
         Long id = paramObj.getLong("id");
