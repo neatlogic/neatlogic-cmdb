@@ -19,11 +19,11 @@ import neatlogic.framework.cmdb.dto.resourcecenter.AccountVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.exception.resourcecenter.ResourceCenterAccountNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.util.RC4Util;
+import neatlogic.framework.crypto.core.CryptoHandlerFactory;
+import neatlogic.framework.crypto.handler.RSAAESCryptoHandler;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.util.PasswordRSAUtil;
 import neatlogic.module.cmdb.dao.mapper.resourcecenter.ResourceAccountMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -70,9 +70,10 @@ public class AccountGetApi extends PrivateApiComponentBase {
             throw new ResourceCenterAccountNotFoundException(id);
         }
         if (StringUtils.isNotBlank(account.getPasswordCipher())) {
-            // 数据库存量密码仍为RC4密文，查询时转换成RSA密文供前端安全回显和回传。
-            String passwordPlain = RC4Util.decrypt(account.getPasswordCipher());
-            String passwordCipher = PasswordRSAUtil.encrypt(passwordPlain);
+            // 数据库存量密码仍通过对应处理器解密，查询时转换成当前混合协议供前端安全回显和回传。
+            String passwordPlain = CryptoHandlerFactory.getCryptoHandlerByCiphertext(account.getPasswordCipher()).decrypt(account.getPasswordCipher());
+            // 查询回显统一生成RSA.AES:协议。
+            String passwordCipher = CryptoHandlerFactory.getCryptoHandlerByHandler(RSAAESCryptoHandler.ENCRYPTED_PREFIX).encrypt(passwordPlain);
             account.setPasswordCipher(passwordCipher);
         }
         List<TagVo> tagVoList = resourceAccountMapper.getTagListByAccountId(id);
