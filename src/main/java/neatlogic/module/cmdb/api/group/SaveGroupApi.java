@@ -69,7 +69,7 @@ public class SaveGroupApi extends PrivateApiComponentBase {
             @Param(name = "ciGroupList", type = ApiParamType.JSONARRAY, desc = "模型规则列表"),
             @Param(name = "authList", type = ApiParamType.JSONARRAY, desc = "授权列表")})
     @Output({@Param(explode = CiVo.class)})
-    @Example(example = "{\n" +
+    @Example(title = "common.example", example = "{\n" +
             "  \"ciGroupList\": [\n" +
             "    {\n" +
             "      \"ciId\": 350611677437952,\n" +
