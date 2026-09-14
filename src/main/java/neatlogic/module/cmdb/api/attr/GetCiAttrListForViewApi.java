@@ -95,10 +95,6 @@ public class GetCiAttrListForViewApi extends PrivateApiComponentBase {
         for (CiVo ci : upwardCiList) {
             List<AttrVo> attrList = attrMapper.getDeclaredAttrListByCiId(ci.getId());
             for (AttrVo attr : attrList) {
-                // 自定义视图不选择缺少动态表字段的引用属性。
-                if (attr.getTargetCiId() == null && attr.getIsInvokeAttr()) {
-                    continue;
-                }
                 if (attrNameList.contains(attr.getName())) {
                     continue;
                 }
