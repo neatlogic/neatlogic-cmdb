@@ -571,8 +571,9 @@ public class CustomViewBuilder {
                     function.setParameters(expressionList);
                     plainSelect.addSelectItems(new SelectExpressionItem(function).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "_hash`")));
                 } else {
-                    // 内置id属性及其hash同样不能与引用记录主键混淆。.withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`"))
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + viewConstAttrVo.getConstName() + "`").withTable(new Table("cmdb_" + ciVo.getId()))));
+                    // 内置id属性及其hash同样不能与引用记录主键混淆。
+//                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + viewConstAttrVo.getConstName() + "`").withTable(new Table("cmdb_" + ciVo.getId()))).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
+                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + viewConstAttrVo.getConstName() + "`")).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
                     Function function = new Function();
                     function.setName("md5");
                     ExpressionList expressionList = new ExpressionList();
