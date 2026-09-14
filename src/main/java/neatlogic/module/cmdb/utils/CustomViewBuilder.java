@@ -172,8 +172,7 @@ public class CustomViewBuilder {
 
         if (CollectionUtils.isNotEmpty(customViewVo.getAttrList())) {
             for (CustomViewAttrVo attrVo : customViewVo.getAttrList()) {
-                // 物化视图只声明实际存在于动态表中的普通属性字段。
-                if (attrVo.getAttrVo().getTargetCiId() == null && !attrVo.getAttrVo().getIsInvokeAttr()) {
+                if (attrVo.getAttrVo().getTargetCiId() == null) {
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getUuid() + "_hash`")));
                 }
@@ -464,10 +463,14 @@ public class CustomViewBuilder {
 
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
-                // cmdb_attr_invoke属性没有动态列，不能加入物化视图投影。
-                if (attrVo.getTargetCiId() == null && !attrVo.getIsInvokeAttr()) {
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                // 引用属性从索引表生成字段，不访问配置项动态表中的旧属性列。
+                if (attrVo.getTargetCiId() == null) {
+                    if (attrVo.getIsInvokeAttr()) {
+                        addInvokeAttrSelect(plainSelect, viewAttrVo, "ci_base");
+                    } else {
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                    }
                 } /*else {
                     CiVo targetCiVo = ciService.getCiById(attrVo.getTargetCiId());
                     if (targetCiVo != null) {
@@ -548,7 +551,8 @@ public class CustomViewBuilder {
             Select select = SelectUtils.buildSelectFromTableAndSelectItems(mainTable);
             SelectBody selectBody = select.getSelectBody();
             PlainSelect plainSelect = (PlainSelect) selectBody;
-            plainSelect.addSelectItems(new SelectExpressionItem(new Column("id")));
+            // 引用索引表也有id，虚拟模型的主键必须限定所属表。
+            plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(new Table("cmdb_" + ciVo.getId()))));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")));
             //plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("ciName")));
             plainSelect.addSelectItems(new SelectExpressionItem(new StringValue(ciVo.getName())).withAlias(new Alias("ciName")));
@@ -568,11 +572,12 @@ public class CustomViewBuilder {
                     function.setParameters(expressionList);
                     plainSelect.addSelectItems(new SelectExpressionItem(function).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "_hash`")));
                 } else {
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + viewConstAttrVo.getConstName() + "`")).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
+                    // 内置id属性及其hash同样不能与引用记录主键混淆。
+                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + viewConstAttrVo.getConstName() + "`").withTable(new Table("cmdb_" + ciVo.getId()))).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
                     Function function = new Function();
                     function.setName("md5");
                     ExpressionList expressionList = new ExpressionList();
-                    expressionList.addExpressions(new Column("`" + viewConstAttrVo.getConstName() + "`"));
+                    expressionList.addExpressions(new Column("`" + viewConstAttrVo.getConstName() + "`").withTable(new Table("cmdb_" + ciVo.getId())));
                     function.setParameters(expressionList);
                     plainSelect.addSelectItems(new SelectExpressionItem(function).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "_hash`")));
                 }
@@ -580,10 +585,14 @@ public class CustomViewBuilder {
 
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
-                // cmdb_attr_invoke属性没有动态列，不能加入物化视图投影。
-                if (attrVo.getTargetCiId() == null && !attrVo.getIsInvokeAttr()) {
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                // 虚拟模型也通过索引生成引用属性列，普通属性仍读取原字段。
+                if (attrVo.getTargetCiId() == null) {
+                    if (attrVo.getIsInvokeAttr()) {
+                        addInvokeAttrSelect(plainSelect, viewAttrVo, "cmdb_" + ciVo.getId());
+                    } else {
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                    }
                 } /*else {
                     CiVo targetCiVo = ciService.getCiById(attrVo.getTargetCiId());
                     if (targetCiVo != null) {
@@ -609,6 +618,33 @@ public class CustomViewBuilder {
             //plainSelect.withWhere(getExpiredExpression());
             return select;
         }
+    }
+
+    /**
+     * 机房位置值取device引用记录自身的主键，hash也基于该主键；左关联保留未填写位置的配置项。
+     */
+    private void addInvokeAttrSelect(PlainSelect plainSelect, CustomViewAttrVo viewAttrVo, String ciTableName) {
+        Table invokeTable = new Table("attr_invoke_" + viewAttrVo.getUuid());
+        plainSelect.addJoins(new Join().withLeft(true)
+                .withRightItem(new Table("cmdb_attr_invoke")
+                        .withSchemaName(TenantContext.get().getDbName())
+                        .withAlias(new Alias(invokeTable.getName())))
+                .addOnExpression(new AndExpression()
+                        .withLeftExpression(new AndExpression()
+                                .withLeftExpression(new EqualsTo(new Column("cientity_id").withTable(invokeTable),
+                                        new Column("id").withTable(new Table(ciTableName))))
+                                .withRightExpression(new EqualsTo(new Column("attr_id").withTable(invokeTable),
+                                        new LongValue(viewAttrVo.getAttrId()))))
+                        .withRightExpression(new EqualsTo(new Column("type").withTable(invokeTable), new StringValue("device")))));
+        plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(invokeTable))
+                .withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
+        Function function = new Function();
+        function.setName("md5");
+        ExpressionList expressionList = new ExpressionList();
+        expressionList.addExpressions(new Column("id").withTable(invokeTable));
+        function.setParameters(expressionList);
+        plainSelect.addSelectItems(new SelectExpressionItem(function)
+                .withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
     }
 
     private Expression getExpiredExpression() {
