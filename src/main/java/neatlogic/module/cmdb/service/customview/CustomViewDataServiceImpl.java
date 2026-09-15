@@ -119,7 +119,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         }
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
         // 引用属性保留独立字段类型，展开查询的引用主键在取数后统一还原。
-        customViewConditionFieldList.addAll(customViewAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(CustomViewConditionFieldVo::new).toList());
+        customViewConditionFieldList.addAll(customViewAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr", attr.getName())).toList());
         customViewConditionFieldList.addAll(customViewConstAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr", attr.getName())).toList());
         customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr", attr.getName())).toList());
         customViewConditionVo.setFieldList(customViewConditionFieldList);
@@ -244,7 +244,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         }
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
         // 引用属性直接查询视图值列，不再借用起始模型或关联节点的配置项ID。
-        customViewConditionFieldList.addAll(customViewAttrList.stream().map(CustomViewConditionFieldVo::new).toList());
+        customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).toList());
         customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).toList());
         customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr")).toList());
         customViewConditionVo.setFieldList(customViewConditionFieldList);
