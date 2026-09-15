@@ -28,6 +28,8 @@ import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.tag.TagVo;
 import neatlogic.framework.cmdb.enums.CmdbTenantConfig;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
+import neatlogic.framework.cmdb.exception.resourcecenter.ResourceViewFieldMappingException;
+import neatlogic.framework.cmdb.utils.ResourceEntityFactory;
 import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
@@ -1271,6 +1273,73 @@ public class ResourceCenterResourceServiceImpl implements IResourceCenterResourc
             return oldResourceVo;
         }
         return null;
+    }
+
+    /**
+     * 按精确 IP 和端口批量返回所有资产候选。
+     *
+     * <p>该契约专门用于需要判断资产唯一性的调用方，因此不复用只返回第一条的历史方法。</p>
+     */
+    @Override
+    public List<ResourceVo> getResourceListByIpPortList(List<ResourceVo> endpointList, List<String> fieldNameList) {
+        if (CollectionUtils.isEmpty(endpointList)) {
+            return Collections.emptyList();
+        }
+        // 端点契约只按 IP 和端口匹配；忽略调用方携带的名称，避免动态查询与静态查询口径不同。
+        endpointList = endpointList.stream()
+                .filter(endpoint -> endpoint != null && StringUtils.isNotBlank(endpoint.getIp())
+                        && endpoint.getPort() != null && endpoint.getPort() > 0 && endpoint.getPort() <= 65535)
+                .map(endpoint -> new ResourceVo(endpoint.getIp(), endpoint.getPort(), null))
+                .collect(Collectors.toList());
+        if (endpointList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 投影由调用方决定；复制并校验统一字段声明，避免修改入参或将任意列名带入旧查询。
+        Set<String> selectedFields = new LinkedHashSet<>();
+        // 资产主键用于区分重复端点候选及新旧查询结果比较，始终保留。
+        selectedFields.add("id");
+        if (CollectionUtils.isNotEmpty(fieldNameList)) {
+            selectedFields.addAll(fieldNameList);
+        }
+        fieldNameList = new ArrayList<>(selectedFields);
+        List<String> declaredFields = ResourceEntityFactory.getFieldNameListByViewName("scence_ipobject_detail");
+        List<String> invalidFields = fieldNameList.stream()
+                .filter(field -> field == null || !field.matches("[a-zA-Z_][a-zA-Z0-9_]*")
+                        || !declaredFields.contains(field)).collect(Collectors.toList());
+        if (!invalidFields.isEmpty()) {
+            throw new ResourceViewFieldMappingException("scence_ipobject_detail", invalidFields);
+        }
+        String enable = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_DATA_COMPARISON_MODE_ENABLE);
+        String mode = ConfigManager.getConfig(CmdbTenantConfig.RESOURCECENTER_SQL_MODE);
+        List<ResourceVo> newResourceList = new ArrayList<>();
+        List<ResourceVo> oldResourceList = new ArrayList<>();
+        if (Objects.equals(mode, JSQLPARSER_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            ResourceSearchVo searchVo = new ResourceSearchVo();
+            searchVo.setInputNodeList(endpointList);
+            String idSql = resourceBuildSqlService.buildGetResourceIdListByIpAndPortAndNameSql(searchVo);
+            if (StringUtils.isNotBlank(idSql)) {
+                List<Long> idList = resourceMapper.getIdListBySql(idSql);
+                if (CollectionUtils.isNotEmpty(idList)) {
+                    // 复用资源中心统一字段声明生成查询，避免固定视图字段随配置演进后出现两套映射。
+                    String resourceSql = resourceBuildSqlService.buildGetResourceListSql(idList, fieldNameList);
+                    if (StringUtils.isNotBlank(resourceSql)) {
+                        newResourceList = resourceMapper.getResourceListBySql(resourceSql);
+                    }
+                }
+            }
+        }
+        if (Objects.equals(mode, MYBATIS_MODE) || Objects.equals(enable, COMPARISON_ENABLED)) {
+            oldResourceList = resourceMapper.getResourceListByIpPortList(endpointList, fieldNameList);
+        }
+        if (Objects.equals(enable, COMPARISON_ENABLED)) {
+            checkResourceListIsEquals(newResourceList, oldResourceList);
+        }
+        if (Objects.equals(mode, JSQLPARSER_MODE)) {
+            return newResourceList;
+        } else if (Objects.equals(mode, MYBATIS_MODE)) {
+            return oldResourceList;
+        }
+        return new ArrayList<>();
     }
 
     @Override
