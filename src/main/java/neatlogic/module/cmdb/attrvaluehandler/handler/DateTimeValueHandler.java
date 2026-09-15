@@ -36,9 +36,12 @@ public class DateTimeValueHandler implements IAttrValueHandler {
         return "datetime";
     }
 
+    /**
+     * 返回属性类型名称的国际化键，由展示层按当前请求语言翻译。
+     */
     @Override
     public String getName() {
-        return "日期时间";
+        return "common.datetime";
     }
 
     @Override

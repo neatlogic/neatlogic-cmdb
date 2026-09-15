@@ -107,6 +107,16 @@ public interface ResourceMapper extends IResourceCrossoverMapper {
 
     ResourceVo getResourceByIpAndPort(@Param("ip") String ip, @Param("port") Integer port);
 
+    /**
+     * 按精确 IP 和端口批量查询全部资产候选。
+     *
+     * @param endpointList 端点列表
+     * @param fieldNameList 服务层已按资源中心字段声明校验的返回字段
+     * @return 资产候选列表
+     */
+    List<ResourceVo> getResourceListByIpPortList(@Param("endpointList") List<ResourceVo> endpointList,
+                                             @Param("fieldNameList") List<String> fieldNameList);
+
     ResourceVo getOSByIp(String ip);
 
     List<ResourceVo> getOSByIdList(List<Long> idList);

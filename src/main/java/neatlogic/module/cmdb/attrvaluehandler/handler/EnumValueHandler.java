@@ -31,9 +31,12 @@ public class EnumValueHandler implements IAttrValueHandler {
         return "enum";
     }
 
+    /**
+     * 返回属性类型名称的国际化键，由展示层按当前请求语言翻译。
+     */
     @Override
     public String getName() {
-        return "枚举型";
+        return "cmdb.attrtype.enum";
     }
 
     @Override

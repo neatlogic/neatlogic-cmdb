@@ -1112,6 +1112,20 @@
         LIMIT 1
     </select>
 
+    <select id="getResourceListByIpPortList" resultMap="resourceCenterMap">
+        SELECT
+        <!-- 字段名仅允许由服务层按资源中心字段声明校验后传入。 -->
+        <foreach collection="fieldNameList" item="fieldName" separator=",">
+            a.`${fieldName}`
+        </foreach>
+        FROM @{DATA_SCHEMA}.`scence_ipobject_detail` a
+        WHERE (a.`ip`, a.`port`) IN
+        <foreach collection="endpointList" item="endpoint" open="(" separator="," close=")">
+            (#{endpoint.ip}, #{endpoint.port})
+        </foreach>
+        ORDER BY a.`ip`, a.`port`, a.`id`
+    </select>
+
     <select id="getOSByIp" parameterType="java.lang.String"
             resultType="neatlogic.framework.cmdb.dto.resourcecenter.ResourceVo">
         SELECT a.`id`,
