@@ -65,6 +65,7 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /** 返回视图配置列表，内置视图名称按当前请求语言显示，扩展视图保留自定义名称。 */
     @Output({
             @Param(name = "Return", explode = ResourceEntityVo[].class, desc = "common.tbodylist")
     })
@@ -80,10 +81,11 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
             if (resourceEntityVo == null) {
                 resourceEntityVo = new ResourceEntityVo();
                 resourceEntityVo.setName(sceneEntityVo.getName());
-                resourceEntityVo.setLabel(sceneEntityVo.getLabel());
                 resourceEntityVo.setDescription(sceneEntityVo.getDescription());
                 resourceEntityVo.setStatus(Status.PENDING.getValue());
             }
+            // 数据库可能保留初始化时的中文名称，内置视图应始终使用当前语言的声明文案。
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
             resourceEntityVo.setIsMultiple(sceneEntityVo.getIsMultiple());
             resourceEntityVo.setModuleId(sceneEntityVo.getModuleId());
             ModuleVo moduleVo = ModuleUtil.getModuleById(sceneEntityVo.getModuleId());
