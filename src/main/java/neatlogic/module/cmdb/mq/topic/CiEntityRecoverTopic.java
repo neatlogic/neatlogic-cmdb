@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.mq.topic;
 
+import neatlogic.framework.util.$;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -74,14 +75,16 @@ public class CiEntityRecoverTopic extends TopicBase<CiEntityTransactionVo> {
         return true;
     }
 
+    /** 按当前请求语言返回系统主题名称。 */
     @Override
     public String getLabel() {
-        return "配置项恢复";
+        return $.t("mq.topic.cientityrecovertopic.label");
     }
 
+    /** 按当前请求语言返回系统主题说明。 */
     @Override
     public String getDescription() {
-        return "配置项恢复并生效后触发此主题";
+        return $.t("mq.topic.cientityrecovertopic.description");
     }
 
     @Override

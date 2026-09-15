@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.mq.topic;
 
+import neatlogic.framework.util.$;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -52,14 +53,16 @@ public class CiEntityDeleteTopic extends TopicBase<CiEntityTransactionVo> {
     @Resource
     RelMapper relMapper;
 
+    /** 按当前请求语言返回系统主题名称。 */
     @Override
     public String getLabel() {
-        return "配置项删除";
+        return $.t("nmcnh.cmdbnotifytriggertype.cientitydelete.text");
     }
 
+    /** 按当前请求语言返回系统主题说明。 */
     @Override
     public String getDescription() {
-        return "配置项删除并生效后触发此主题";
+        return $.t("mq.topic.cientitydeletetopic.description");
     }
 
     @Override

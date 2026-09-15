@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.file;
 
+import neatlogic.framework.util.$;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.exception.ci.CiViewSqlIrregularException;
 import neatlogic.framework.common.util.FileUtil;
@@ -31,9 +32,10 @@ public class CiFileHandler extends FileTypeHandlerBase {
         return true;
     }
 
+    /** 按当前请求语言返回附件类型名称。 */
     @Override
     public String getDisplayName() {
-        return "虚拟模型配置文件";
+        return $.t("file.type.virtualci");
     }
 
     @Override

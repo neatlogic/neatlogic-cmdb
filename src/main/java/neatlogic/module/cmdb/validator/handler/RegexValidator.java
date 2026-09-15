@@ -15,6 +15,7 @@ package neatlogic.module.cmdb.validator.handler;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.validator.core.ValidatorBase;
+import neatlogic.framework.util.$;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -25,18 +26,20 @@ import java.util.stream.Collectors;
 @Component
 public class RegexValidator extends ValidatorBase {
 
+    /** 按当前请求语言返回正则校验组件名称。 */
     @Override
     public String getName() {
-        return "正则表达式校验组件";
+        return $.t("cmdb.validator.regex.name");
     }
 
+    /** 构建正则校验配置表单，并本地化字段标签。 */
     @Override
     public JSONArray getForm() {
         JSONArray itemList = new JSONArray();
         JSONObject itemObj = new JSONObject();
         itemObj.put("name", "regex");
         itemObj.put("type", "text");
-        itemObj.put("label", "正则表达式");
+        itemObj.put("label", $.t("common.regex"));
         itemObj.put("validateList", new String[]{"required"});
         itemList.add(itemObj);
         return itemList;
