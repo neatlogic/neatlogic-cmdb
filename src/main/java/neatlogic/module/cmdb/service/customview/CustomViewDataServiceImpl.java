@@ -74,10 +74,8 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
 
-        // 去掉目标模型引用属性和使用cmdb_attr_invoke存储的属性。
-        customViewAttrList = customViewAttrList.stream()
-                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().getIsInvokeAttr())
-                .collect(Collectors.toList());
+        // 目标模型引用属性由关联节点展示，外部存储属性保留并在查询后还原。
+        customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
         Map<String, AttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(customViewAttrList)) {
@@ -120,7 +118,8 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
             }
         }
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
-        customViewConditionFieldList.addAll(customViewAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr", attr.getName())).toList());
+        // 引用属性保留独立字段类型，展开查询的引用主键在取数后统一还原。
+        customViewConditionFieldList.addAll(customViewAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(CustomViewConditionFieldVo::new).toList());
         customViewConditionFieldList.addAll(customViewConstAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr", attr.getName())).toList());
         customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().filter(d -> StringUtils.isNotBlank(d.getName())).map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr", attr.getName())).toList());
         customViewConditionVo.setFieldList(customViewConditionFieldList);
@@ -161,10 +160,8 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
     @Override
     public List<Map<String, Object>> searchCustomViewData(CustomViewConditionVo customViewConditionVo) {
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
-        // 去掉目标模型引用属性和使用cmdb_attr_invoke存储的属性。
-        customViewAttrList = customViewAttrList.stream()
-                .filter(attr -> attr.getAttrVo().getTargetCiId() == null && !attr.getAttrVo().getIsInvokeAttr())
-                .collect(Collectors.toList());
+        // 外部存储属性也参与表头与数据查询，只排除目标模型引用属性。
+        customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
         List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
@@ -246,7 +243,8 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
             }
         }
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
-        customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).toList());
+        // 引用属性直接查询视图值列，不再借用起始模型或关联节点的配置项ID。
+        customViewConditionFieldList.addAll(customViewAttrList.stream().map(CustomViewConditionFieldVo::new).toList());
         customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).toList());
         customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr")).toList());
         customViewConditionVo.setFieldList(customViewConditionFieldList);

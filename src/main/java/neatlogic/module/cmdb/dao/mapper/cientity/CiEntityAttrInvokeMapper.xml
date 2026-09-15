@@ -20,6 +20,33 @@
           AND attr_id = #{attrId}
     </select>
 
+    <!-- device.id是视图中的引用记录主键，不是device.invoke_id或配置项ID；仅还原相同配置项、属性的索引。 -->
+    <select id="getAttrInvokeListByDeviceAttrInvokeIdList" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
+        SELECT DISTINCT attr_invoke.id,
+               attr_invoke.cientity_id AS ciEntityId,
+               attr_invoke.attr_id AS attrId,
+               attr_invoke.type,
+               attr_invoke.invoke_id AS invokeId
+        FROM cmdb_attr_invoke attr_invoke
+        JOIN cmdb_attr_invoke device
+          ON device.cientity_id = attr_invoke.cientity_id
+         AND device.attr_id = attr_invoke.attr_id
+         AND device.type = 'device'
+        <choose>
+            <when test="attrInvokeIdList != null and attrInvokeIdList.size() > 0 and attrIdList != null and attrIdList.size() > 0">
+                WHERE device.id IN
+                <foreach collection="attrInvokeIdList" item="attrInvokeId" open="(" close=")" separator=",">
+                    #{attrInvokeId}
+                </foreach>
+                AND device.attr_id IN
+                <foreach collection="attrIdList" item="attrId" open="(" close=")" separator=",">
+                    #{attrId}
+                </foreach>
+            </when>
+            <otherwise>WHERE 1 = 0</otherwise>
+        </choose>
+    </select>
+
     <insert id="insertAttrInvokeList">
         INSERT INTO cmdb_attr_invoke (id, cientity_id, attr_id, type, invoke_id)
         VALUES

@@ -22,6 +22,9 @@ public interface CiEntityAttrInvokeMapper extends ICiEntityAttrInvokeCrossoverMa
 
     List<AttrInvokeVo> getAttrInvokeListByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
 
+    // 视图值为device引用记录的id，按该主键批量读取所属配置项属性的完整索引。
+    List<AttrInvokeVo> getAttrInvokeListByDeviceAttrInvokeIdList(@Param("attrInvokeIdList") List<Long> attrInvokeIdList, @Param("attrIdList") List<Long> attrIdList);
+
     int insertAttrInvokeList(@Param("attrInvokeList") List<AttrInvokeVo> attrInvokeList);
 
     int deleteAttrInvokeByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
