@@ -59,6 +59,8 @@
 
     <select id="getRelByCiIdAndRelName" resultType="neatlogic.framework.cmdb.dto.ci.RelVo" useCache="true">
         SELECT a.`id`,
+               a.from_filter AS fromFilterStr,
+               a.to_filter AS toFilterStr,
                a.`type_id`                                                       AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
                a.`input_type`                                                    AS inputType,
@@ -98,6 +100,8 @@
           AND a.to_name = #{relName}
         UNION
         SELECT a.`id`,
+               a.from_filter AS fromFilterStr,
+               a.to_filter AS toFilterStr,
                a.`type_id`                                                       AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
                a.`input_type`                                                    AS inputType,
@@ -240,6 +244,8 @@
 
     <select id="getRelByIdList" resultType="neatlogic.framework.cmdb.dto.ci.RelVo" useCache="true">
         SELECT a.`id`,
+               a.from_filter AS fromFilterStr,
+               a.to_filter AS toFilterStr,
         a.`type_id` AS typeId,
         (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`) AS typeText,
         a.`input_type` AS inputType,
@@ -308,6 +314,8 @@
         <result property="toGroupName" column="toGroupName"/>
         <result property="toIsVirtual" column="toIsVirtual"/>
         <result property="allowEdit" column="allowEdit"/>
+        <result property="fromFilterStr" column="fromFilterStr"/>
+        <result property="toFilterStr" column="toFilterStr"/>
         <collection property="relativeRelList" ofType="neatlogic.framework.cmdb.dto.ci.RelativeRelVo">
             <id property="relativeRelId" column="relativeRelId"/>
             <result property="fromPath" column="relativeFromPath"/>
@@ -318,6 +326,8 @@
     <select id="getRelById" parameterType="java.lang.Long" resultMap="relDetailMap"
             useCache="true">
         SELECT a.`id`,
+               a.from_filter AS fromFilterStr,
+               a.to_filter AS toFilterStr,
                a.`type_id`                                                       AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
                a.`input_type`                                                    AS inputType,
@@ -360,6 +370,8 @@
     <select id="getRelByCiId" parameterType="java.lang.Long" resultMap="relDetailMap"
             useCache="true">
         SELECT a.`id`,
+               a.from_filter AS fromFilterStr,
+               a.to_filter AS toFilterStr,
                a.`type_id`                                                       AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
                a.`input_type`                                                    AS inputType,
@@ -406,6 +418,8 @@
           AND f.rht &gt;= (select rht from cmdb_ci where id = #{value})
         UNION
         SELECT a.`id`,
+               a.from_filter AS fromFilterStr,
+               a.to_filter AS toFilterStr,
                a.`type_id`                                                       AS typeId,
                (SELECT name FROM cmdb_reltype cr WHERE cr.id = a.`type_id`)      AS typeText,
                a.`input_type`                                                    AS inputType,
@@ -499,6 +513,8 @@
             `to_is_unique`           = #{toIsUnique},
             `to_is_required`         = #{toIsRequired},
             `to_is_cascade_delete`   = #{toIsCascadeDelete}
+        <if test="fromFilterSpecified">, `from_filter` = #{fromFilterStr,jdbcType=LONGVARCHAR}</if>
+        <if test="toFilterSpecified">, `to_filter` = #{toFilterStr,jdbcType=LONGVARCHAR}</if>
         WHERE `id` = #{id}
     </update>
 
@@ -515,7 +531,7 @@
     </insert>
 
     <insert id="insertRel" parameterType="neatlogic.framework.cmdb.dto.ci.RelVo">
-        INSERT INTO `cmdb_rel` (`id`,
+        INSERT INTO `cmdb_rel` (`from_filter`, `to_filter`, `id`,
                                 `type_id`,
                                 `input_type`,
                                 `from_ci_id`,
@@ -534,7 +550,7 @@
                                 `to_is_unique`,
                                 `to_is_required`,
                                 `to_is_cascade_delete`)
-        VALUES (#{id},
+        VALUES (#{fromFilterStr,jdbcType=LONGVARCHAR}, #{toFilterStr,jdbcType=LONGVARCHAR}, #{id},
                 #{typeId},
                 #{inputType},
                 #{fromCiId},

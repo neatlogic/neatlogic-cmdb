@@ -29,11 +29,13 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
+import neatlogic.module.cmdb.service.rel.RelFilterService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Method;
 
 /**
  * 保存关系接口，关系不能支持虚拟模型，原因：
@@ -49,6 +51,9 @@ public class SaveRelApi extends PrivateApiComponentBase {
     @Resource
     private RelMapper relMapper;
 
+    @Resource
+    private RelFilterService relFilterService;
+
     @Override
     public String getToken() {
         return "/cmdb/rel/save";
@@ -62,6 +67,20 @@ public class SaveRelApi extends PrivateApiComponentBase {
     @Override
     public String getConfig() {
         return null;
+    }
+
+    /** 关系条件以显式 null 表示清空，在框架移除可选空参数后恢复该局部契约。 */
+    @Override
+    public void validInput(Method method, JSONObject paramObj) {
+        boolean clearFromFilter = paramObj.containsKey("fromFilter") && paramObj.get("fromFilter") == null;
+        boolean clearToFilter = paramObj.containsKey("toFilter") && paramObj.get("toFilter") == null;
+        super.validInput(method, paramObj);
+        if (clearFromFilter) {
+            paramObj.put("fromFilter", null);
+        }
+        if (clearToFilter) {
+            paramObj.put("toFilter", null);
+        }
     }
 
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "id，不存在代表新增"),
@@ -85,6 +104,8 @@ public class SaveRelApi extends PrivateApiComponentBase {
             @Param(name = "toIsUnique", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否唯一"),
             @Param(name = "toIsRequired", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否必填"),
             @Param(name = "toIsCascadeDelete", type = ApiParamType.INTEGER, isRequired = true, desc = "下游端是否级联删除"),
+            @Param(name = "fromFilter", type = ApiParamType.JSONOBJECT, desc = "上游端候选配置项过滤条件"),
+            @Param(name = "toFilter", type = ApiParamType.JSONOBJECT, desc = "下游端候选配置项过滤条件"),
             @Param(name = "relativeRelList", type = ApiParamType.JSONARRAY, desc = "级联关系配置")})
     @Description(desc = "保存模型关系")
     @Override
@@ -102,6 +123,13 @@ public class SaveRelApi extends PrivateApiComponentBase {
         }
         if (!CiAuthChecker.chain().checkCiManagePrivilege(relVo.getToCiId()).check()) {
             throw new CiAuthException(relVo.getToLabel());
+        }
+        // 必须通过原始请求判断提交状态，显式 null 清空，旧请求缺省保留。
+        if (jsonObj.containsKey("fromFilter")) {
+            relVo.setFromFilter(relFilterService.validate(relVo.getFromCiId(), jsonObj.getJSONObject("fromFilter"), "fromFilter"));
+        }
+        if (jsonObj.containsKey("toFilter")) {
+            relVo.setToFilter(relFilterService.validate(relVo.getToCiId(), jsonObj.getJSONObject("toFilter"), "toFilter"));
         }
         if (id == null) {
             relMapper.insertRel(relVo);
