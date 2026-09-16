@@ -33,6 +33,11 @@
       "name": "is_showintopo",
       "type": "tinyint(1)",
       "description": "是否在topo图中展示。"
+    },
+    {
+      "name": "is_showincientityquery",
+      "type": "tinyint",
+      "description": "配置项查询中显示，默认开启：1开启，0关闭。"
     }
   ],
   "indexes": [

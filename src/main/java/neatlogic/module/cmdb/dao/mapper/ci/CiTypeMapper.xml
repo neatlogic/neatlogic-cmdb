@@ -24,6 +24,7 @@
         `sort`,
         `is_menu` AS isMenu,
         `is_showintopo` AS isShowInTopo,
+        `is_showincientityquery` AS isShowInCiEntityQuery,
         `icon`,
         (SELECT
         COUNT(1)
@@ -50,6 +51,7 @@
         `sort`,
         `is_menu` AS isMenu,
         `is_showintopo` AS isShowInTopo,
+        `is_showincientityquery` AS isShowInCiEntityQuery,
         `icon`
         FROM `cmdb_citype`
         WHERE `id` IN
@@ -65,7 +67,8 @@
                `sort`,
                `is_menu`       AS isMenu,
                `icon`,
-               `is_showintopo` AS isShowInTopo
+               `is_showintopo` AS isShowInTopo,
+               `is_showincientityquery` AS isShowInCiEntityQuery
         FROM `cmdb_citype`
         WHERE name = #{value}
     </select>
@@ -76,7 +79,8 @@
                `sort`,
                `is_menu`       AS isMenu,
                `icon`,
-               `is_showintopo` AS isShowInTopo
+               `is_showintopo` AS isShowInTopo,
+               `is_showincientityquery` AS isShowInCiEntityQuery
         FROM `cmdb_citype`
         WHERE id = #{value}
     </select>
@@ -89,6 +93,10 @@
             `is_menu`       = #{isMenu},
             `icon`          = #{icon},
             `is_showintopo` = #{isShowInTopo}
+        <!-- 旧调用未提交新字段时保留原配置。 -->
+        <if test="isShowInCiEntityQuery != null">
+            , `is_showincientityquery` = #{isShowInCiEntityQuery}
+        </if>
         WHERE `id` = #{id}
     </update>
 
@@ -98,13 +106,15 @@
                                    `sort`,
                                    `is_menu`,
                                    `icon`,
-                                   `is_showintopo`)
+                                   `is_showintopo`,
+                                   `is_showincientityquery`)
         VALUES (#{id},
                 #{name},
                 #{sort},
                 #{isMenu},
                 #{icon},
-                #{isShowInTopo})
+                #{isShowInTopo},
+                COALESCE(#{isShowInCiEntityQuery}, 1))
     </insert>
 
     <delete id="deleteCiTypeById" parameterType="java.lang.Long">

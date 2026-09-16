@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.api.citype;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
@@ -25,15 +26,16 @@ import neatlogic.framework.restful.annotation.Param;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiTypeMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveCiTypeApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiTypeMapper ciTypeMapper;
 
     @Override
@@ -51,13 +53,17 @@ public class SaveCiTypeApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /**
+     * 保存模型层级，参数规则由框架校验，未提供查询显示开关时保留原配置。
+     */
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "nmcac.savecitypeapi.input.param.desc.id"),
             @Param(name = "name", type = ApiParamType.STRING, isRequired = true, xss = true, desc = "common.name"),
-            @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "nmcac.savecitypeapi.input.param.desc.ismenu")})
+            @Param(name = "isMenu", type = ApiParamType.INTEGER, desc = "nmcac.savecitypeapi.input.param.desc.ismenu"),
+            @Param(name = "isShowInCiEntityQuery", type = ApiParamType.INTEGER, rule = "0,1", desc = "nmcac.savecitypeapi.input.param.desc.isshowincientityquery")})
     @Description(desc = "nmcac.savecitypeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        CiTypeVo ciTypeVo = JSONObject.toJavaObject(jsonObj, CiTypeVo.class);
+        CiTypeVo ciTypeVo = JSON.toJavaObject(jsonObj, CiTypeVo.class);
         Long id = jsonObj.getLong("id");
         if (ciTypeMapper.checkCiTypeNameIsExists(ciTypeVo) > 0) {
             throw new CiTypeIsExistsException(ciTypeVo.getName());
