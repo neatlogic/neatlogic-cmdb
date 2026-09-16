@@ -621,27 +621,35 @@ public class CustomViewBuilder {
     }
 
     /**
-     * 机房位置值取device引用记录自身的主键，hash也基于该主键；左关联保留未填写位置的配置项。
+     * 按配置项聚合属性的全部invoke_id，值列和hash使用同一聚合结果，左关联保留空属性。
      */
     private void addInvokeAttrSelect(PlainSelect plainSelect, CustomViewAttrVo viewAttrVo, String ciTableName) {
         Table invokeTable = new Table("attr_invoke_" + viewAttrVo.getUuid());
+        // 在子查询内聚合，避免多个引用属性互相放大行数，并满足ONLY_FULL_GROUP_BY。
+        MySQLGroupConcat groupConcat = new MySQLGroupConcat();
+        groupConcat.setExpressionList(new ExpressionList(new Column("invoke_id")));
+        groupConcat.setOrderByElements(Arrays.asList(
+                new OrderByElement().withExpression(new Column("type")),
+                new OrderByElement().withExpression(new Column("invoke_id"))));
+        PlainSelect invokeSelect = new PlainSelect()
+                .withFromItem(new Table("cmdb_attr_invoke").withSchemaName(TenantContext.get().getDbName()))
+                .addSelectItems(new SelectExpressionItem(new Column("cientity_id")),
+                        new SelectExpressionItem(groupConcat).withAlias(new Alias("`value`")))
+                .withWhere(new EqualsTo(new Column("attr_id"), new LongValue(viewAttrVo.getAttrId())));
+        GroupByElement groupBy = new GroupByElement();
+        groupBy.addGroupByExpression(new Column("cientity_id"));
+        invokeSelect.setGroupByElement(groupBy);
         plainSelect.addJoins(new Join().withLeft(true)
-                .withRightItem(new Table("cmdb_attr_invoke")
-                        .withSchemaName(TenantContext.get().getDbName())
-                        .withAlias(new Alias(invokeTable.getName())))
-                .addOnExpression(new AndExpression()
-                        .withLeftExpression(new AndExpression()
-                                .withLeftExpression(new EqualsTo(new Column("cientity_id").withTable(invokeTable),
-                                        new Column("id").withTable(new Table(ciTableName))))
-                                .withRightExpression(new EqualsTo(new Column("attr_id").withTable(invokeTable),
-                                        new LongValue(viewAttrVo.getAttrId()))))
-                        .withRightExpression(new EqualsTo(new Column("type").withTable(invokeTable), new StringValue("device")))));
-        plainSelect.addSelectItems(new SelectExpressionItem(new Column("id").withTable(invokeTable))
+                .withRightItem(new SubSelect().withSelectBody(invokeSelect).withAlias(new Alias(invokeTable.getName())))
+                .addOnExpression(new EqualsTo(new Column("cientity_id").withTable(invokeTable),
+                        new Column("id").withTable(new Table(ciTableName)))));
+        // 类型与引用ID排序固定，索引记录重建后即使主键变化，值和hash也保持稳定。
+        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`value`").withTable(invokeTable))
                 .withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
         Function function = new Function();
         function.setName("md5");
         ExpressionList expressionList = new ExpressionList();
-        expressionList.addExpressions(new Column("id").withTable(invokeTable));
+        expressionList.addExpressions(new Column("`value`").withTable(invokeTable));
         function.setParameters(expressionList);
         plainSelect.addSelectItems(new SelectExpressionItem(function)
                 .withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
