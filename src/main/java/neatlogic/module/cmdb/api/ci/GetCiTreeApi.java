@@ -20,10 +20,8 @@ import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.enums.CiAuthType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
-import neatlogic.framework.restful.annotation.Description;
-import neatlogic.framework.restful.annotation.OperationType;
-import neatlogic.framework.restful.annotation.Output;
-import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -59,11 +57,15 @@ public class GetCiTreeApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /**
+     * 查询模型树，按可选层级显示条件过滤，保留原父节点和排序信息。
+     */
+    @Input({@Param(name = "isShowInCiEntityQuery", type = ApiParamType.INTEGER, rule = "1", desc = "term.cmdb.filterbycientityqueryvisibility")})
     @Output({@Param(explode = CiVo.class)})
     @Description(desc = "nmcac.getciapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        List<CiVo> ciList = ciMapper.getCiTree();
+        List<CiVo> ciList = ciMapper.getCiTree(jsonObj.getInteger("isShowInCiEntityQuery"));
         //如果没有管理权限则需要检查每个模型的权限
         if (!AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY")) {
             Iterator<CiVo> itCi = ciList.iterator();

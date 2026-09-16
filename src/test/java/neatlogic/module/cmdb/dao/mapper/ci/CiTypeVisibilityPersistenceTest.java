@@ -70,16 +70,30 @@ public class CiTypeVisibilityPersistenceTest {
         }
     }
 
-    /** 所有层级读取入口均返回该字段，但本阶段不能把字段变成查询过滤条件。 */
+    /** 所有层级读取入口均返回该字段，未指定条件时仍返回隐藏层级。 */
     @Test
     public void readsReturnSettingWithoutFilteringHiddenLevels() {
         CiTypeVo type = new CiTypeVo();
-        type.setIsShowInCiEntityQuery(0);
+        Assert.assertNull(type.getIsShowInCiEntityQuery());
         assertProjection(sql("searchCiType", type));
         assertProjection(sql("getCiTypeById", 100L));
         assertProjection(sql("getCiTypeByName", "层级"));
         assertProjection(sql("getCiTypeListByIdList", Collections.singletonMap("list", Arrays.asList(100L, 101L))));
         Assert.assertTrue(configuration.newMetaObject(type).hasSetter(PROPERTY));
+    }
+
+    /** 层级查询只在明确传入条件时按显示配置过滤，零值也不能被忽略。 */
+    @Test
+    public void searchFiltersOnlyExplicitVisibilityValues() {
+        CiTypeVo type = new CiTypeVo();
+        Assert.assertFalse(hasVisibilityParameter(sql("searchCiType", type)));
+        for (Integer value : Arrays.asList(0, 1)) {
+            type.setIsShowInCiEntityQuery(value);
+            BoundSql filtered = sql("searchCiType", type);
+            Assert.assertTrue(filtered.getSql().contains("`" + COLUMN + "` = ?"));
+            Assert.assertTrue(hasVisibilityParameter(filtered));
+            Assert.assertEquals(value, configuration.newMetaObject(filtered.getParameterObject()).getValue(PROPERTY));
+        }
     }
 
     /** 生成真实动态 SQL，检查参数遗漏和条件分支。 */

@@ -59,12 +59,16 @@ public class SearchCiTypeCiApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /**
+     * 查询层级及模型，按可选显示条件过滤并沿用原权限检查。
+     */
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, desc = "common.keyword"),
             @Param(name = "typeId", type = ApiParamType.LONG, desc = "common.typeid"),
             @Param(name = "typeIdList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcitypeciapi.input.param.desc.typeidlist"),
             @Param(name = "ciNameList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcitypeciapi.input.param.desc.cinamelist"),
             @Param(name = "isVirtual", type = ApiParamType.INTEGER, desc = "nmcac.searchcitypeciapi.input.param.desc.isvirtual"),
-            @Param(name = "isAbstract", type = ApiParamType.INTEGER, desc = "nmcac.searchcitypeciapi.input.param.desc.isabstract")})
+            @Param(name = "isAbstract", type = ApiParamType.INTEGER, desc = "nmcac.searchcitypeciapi.input.param.desc.isabstract"),
+            @Param(name = "isShowInCiEntityQuery", type = ApiParamType.INTEGER, rule = "1", desc = "term.cmdb.filterbycientityqueryvisibility")})
     @Output({@Param(explode = CiTypeVo[].class)})
     @Description(desc = "nmcac.searchcitypeciapi.getname")
     @Override

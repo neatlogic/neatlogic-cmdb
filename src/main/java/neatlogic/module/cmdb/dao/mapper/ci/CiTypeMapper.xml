@@ -39,6 +39,9 @@
             <if test="isShowInTopo != null">
                 AND `is_showintopo` = #{isShowInTopo}
             </if>
+            <if test="isShowInCiEntityQuery != null">
+                AND `is_showincientityquery` = #{isShowInCiEntityQuery}
+            </if>
         </where>
         ORDER BY sort
     </select>
