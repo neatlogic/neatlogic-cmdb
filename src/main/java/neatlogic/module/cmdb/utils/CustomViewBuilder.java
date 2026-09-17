@@ -628,9 +628,7 @@ public class CustomViewBuilder {
         // 在子查询内聚合，避免多个引用属性互相放大行数，并满足ONLY_FULL_GROUP_BY。
         MySQLGroupConcat groupConcat = new MySQLGroupConcat();
         groupConcat.setExpressionList(new ExpressionList(new Column("invoke_id")));
-        groupConcat.setOrderByElements(Arrays.asList(
-                new OrderByElement().withExpression(new Column("type")),
-                new OrderByElement().withExpression(new Column("invoke_id"))));
+        groupConcat.setOrderByElements(Arrays.asList(new OrderByElement().withExpression(new Column("id"))));
         PlainSelect invokeSelect = new PlainSelect()
                 .withFromItem(new Table("cmdb_attr_invoke").withSchemaName(TenantContext.get().getDbName()))
                 .addSelectItems(new SelectExpressionItem(new Column("cientity_id")),
