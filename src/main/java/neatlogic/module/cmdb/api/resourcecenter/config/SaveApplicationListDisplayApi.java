@@ -14,7 +14,7 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_VIEW_MODIFY;
 import neatlogic.framework.cmdb.dto.resourcecenter.ApplicationListDisplayVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 
 @Service
-@AuthAction(action = RESOURCECENTER_MODIFY.class)
+@AuthAction(action = RESOURCECENTER_VIEW_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
 public class SaveApplicationListDisplayApi extends PrivateApiComponentBase {

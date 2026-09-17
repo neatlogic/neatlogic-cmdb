@@ -14,7 +14,7 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_VIEW_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.AssetListDisplayVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
@@ -33,7 +33,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service
-@AuthAction(action = RESOURCECENTER_MODIFY.class)
+@AuthAction(action = RESOURCECENTER_VIEW_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
 public class SaveAssertListDisplayApi extends PrivateApiComponentBase {
