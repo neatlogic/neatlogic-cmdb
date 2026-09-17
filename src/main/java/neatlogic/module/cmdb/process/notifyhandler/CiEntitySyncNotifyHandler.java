@@ -1,5 +1,6 @@
 package neatlogic.module.cmdb.process.notifyhandler;
 
+import neatlogic.framework.auth.core.AuthBase;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.process.notify.core.ProcessTaskNotifyHandlerBase;
 import neatlogic.module.cmdb.process.stephandler.CmdbProcessStepHandlerType;
@@ -14,8 +15,8 @@ public class CiEntitySyncNotifyHandler extends ProcessTaskNotifyHandlerBase {
     }
 
     @Override
-    public String getAuthName() {
-        return CIENTITY_MODIFY.class.getSimpleName();
+    public Class<? extends AuthBase> getAuthClass() {
+        return CIENTITY_MODIFY.class;
     }
 
     @Override

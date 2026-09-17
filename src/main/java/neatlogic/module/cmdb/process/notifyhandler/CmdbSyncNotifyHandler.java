@@ -13,6 +13,7 @@
 package neatlogic.module.cmdb.process.notifyhandler;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.auth.core.AuthBase;
 import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
 import neatlogic.framework.process.constvalue.ProcessTaskGroupSearch;
 import neatlogic.framework.process.constvalue.ProcessUserType;
@@ -38,8 +39,8 @@ public class CmdbSyncNotifyHandler extends ProcessTaskNotifyHandlerBase {
     }
 
     @Override
-    public String getAuthName() {
-        return CIENTITY_MODIFY.class.getSimpleName();
+    public Class<? extends AuthBase> getAuthClass() {
+        return CIENTITY_MODIFY.class;
     }
 
     @Override

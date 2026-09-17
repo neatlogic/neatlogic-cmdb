@@ -17,6 +17,7 @@ import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.auth.label.CUSTOMVIEW_MODIFY;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.cmdb.enums.customview.CustomViewType;
 import neatlogic.framework.cmdb.exception.customview.CustomViewCiNotFoundException;
@@ -65,7 +66,7 @@ public class DeleteCustomViewApi extends PrivateApiComponentBase {
             throw new CustomViewCiNotFoundException();
         }
         if (customViewVo.getType().equals(CustomViewType.PUBLIC.getValue())) {
-            if (!AuthActionChecker.check("CUSTOMVIEW_MODIFY")) {
+            if (!AuthActionChecker.check(CUSTOMVIEW_MODIFY.class)) {
                 throw new CustomViewPrivilegeDeleteException();
             }
         } else if (customViewVo.getType().equals(CustomViewType.PRIVATE.getValue())) {

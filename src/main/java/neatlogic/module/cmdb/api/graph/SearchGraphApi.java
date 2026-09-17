@@ -72,7 +72,7 @@ public class SearchGraphApi extends PrivateApiComponentBase {
         GraphVo graphVo = JSON.toJavaObject(jsonObj, GraphVo.class);
         String userUuid = UserContext.get().getUserUuid(true);
         graphVo.setFcu(userUuid);
-        if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class.getSimpleName())) {
+        if (AuthActionChecker.check(CUSTOMVIEW_MODIFY.class)) {
             graphVo.setAdmin(true);
         } else {
             AuthenticationInfoVo authenticationInfoVo = UserContext.get().getAuthenticationInfoVo();

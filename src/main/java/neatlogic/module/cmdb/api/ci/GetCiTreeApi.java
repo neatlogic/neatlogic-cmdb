@@ -17,6 +17,8 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.enums.CiAuthType;
 import neatlogic.framework.cmdb.enums.group.GroupType;
@@ -67,7 +69,7 @@ public class GetCiTreeApi extends PrivateApiComponentBase {
     public Object myDoService(JSONObject jsonObj) throws Exception {
         List<CiVo> ciList = ciMapper.getCiTree(jsonObj.getInteger("isShowInCiEntityQuery"));
         //如果没有管理权限则需要检查每个模型的权限
-        if (!AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY")) {
+        if (!AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class)) {
             Iterator<CiVo> itCi = ciList.iterator();
             while (itCi.hasNext()) {
                 CiVo ciVo = itCi.next();
