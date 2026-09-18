@@ -1,0 +1,75 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_graph",
+  "label": "Configuration Management Graph Table",
+  "description": "Configuration management graph table, belonging to the configuration management module, is a data table used for enabling state filtering and time dimension statistics in configuration management reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "Unique identifier."
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "Description."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "icon",
+      "type": "varchar(50)",
+      "description": "Set the icon field in the configuration management graph table."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Configuration."
+    },
+    {
+      "name": "type",
+      "type": "enum('private','public','scene')",
+      "description": "Type."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_assetlist_display",
+  "label": "Configuration Management resourcecenter_assetlist_display Table",
+  "description": "The resourcecenter_assetlist_display table is a data table within the configuration management module. It is used for querying, filtering, and reporting of configuration management-related data.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "root_ci_name",
+      "type": "varchar(100)",
+      "description": "Root model name. This value must be unique in the database and is suitable for exact-match queries and duplicate detection."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Configuration."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "root_ci_name"
+      ],
+      "description": "Unique index covering the root_ci_name field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

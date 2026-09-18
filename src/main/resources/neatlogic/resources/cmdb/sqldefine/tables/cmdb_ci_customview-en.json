@@ -1,0 +1,31 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci_customview",
+  "label": "Custom View Associated with the Configuration Model Table",
+  "description": "The configuration model custom view is associated with the table used for related queries in configuration management and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "Custom view ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_id",
+        "customview_id"
+      ],
+      "description": "Primary key index covering the ci_id, customview_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

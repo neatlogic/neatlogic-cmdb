@@ -1,0 +1,50 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrentity_content_offset",
+  "label": "cmdb_attrentity_content_offset",
+  "description": "The cmdb_attrentity_content_offset is used for querying, filtering, and reporting on related data for configuration management.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint unsigned",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "hash",
+      "type": "char(32)",
+      "description": "Content hash. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "start",
+      "type": "int",
+      "description": "Start."
+    },
+    {
+      "name": "end",
+      "type": "int",
+      "description": "End."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_field_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "hash"
+      ],
+      "description": "Standard index covering the hash field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_alertlevel",
+  "label": "Configuration Management Entity AlertLevel Table",
+  "description": "The configuration management entity_alertlevel table, belonging to the configuration management module, is used for querying, filtering, and presenting data related to configuration management.",
+  "fields": [
+    {
+      "name": "level",
+      "type": "int",
+      "description": "Update the 'level' field in the 'configuration_mangement_cientity_alertlevel' table. This value must be unique in the database and is suitable for exact-match queries and duplicate detection."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "Unique identifier. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "color",
+      "type": "varchar(50)",
+      "description": "Color."
+    },
+    {
+      "name": "label",
+      "type": "varchar(255)",
+      "description": "Name."
+    },
+    {
+      "name": "type",
+      "type": "enum('inspect','monitor')",
+      "description": "Type."
+    },
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name",
+        "type"
+      ],
+      "description": "Unique index covering the name, type fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    },
+    {
+      "name": "uk2",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "level"
+      ],
+      "description": "Unique index covering the level field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

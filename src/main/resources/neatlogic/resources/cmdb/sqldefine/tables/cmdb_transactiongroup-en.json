@@ -1,0 +1,41 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transactiongroup",
+  "label": "CMDB Transaction Group Table",
+  "description": "The CMDB transaction group table is used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "transaction_id",
+      "type": "bigint",
+      "description": "Transaction ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id",
+        "transaction_id"
+      ],
+      "description": "Primary key index covering the ID, transaction_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_transaction_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "transaction_id"
+      ],
+      "description": "Standard index covering the transaction_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

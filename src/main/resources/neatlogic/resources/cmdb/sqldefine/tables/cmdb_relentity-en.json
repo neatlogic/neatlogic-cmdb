@@ -1,0 +1,161 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_relentity",
+  "label": "Configuration Item Instance Association Table",
+  "description": "The table for configuring item instances for CMDB is used for related queries in configuration management and reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "rel_id",
+      "type": "bigint",
+      "description": "The attribute ID is associated. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "from_cientity_id",
+      "type": "bigint",
+      "description": "Source configuration item ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "to_cientity_id",
+      "type": "bigint",
+      "description": "Target configuration item ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "transaction_id",
+      "type": "bigint",
+      "description": "Transaction ID."
+    },
+    {
+      "name": "from_index",
+      "type": "int",
+      "description": "The data identifier is used to improve efficiency during retrieval, generating only the first N records."
+    },
+    {
+      "name": "to_index",
+      "type": "int",
+      "description": "The data identifier is used to improve efficiency during retrieval, generating only the first N records."
+    },
+    {
+      "name": "insert_time",
+      "type": "timestamp(3)",
+      "description": "Insert time."
+    },
+    {
+      "name": "renew_time",
+      "type": "timestamp(3)",
+      "description": "Update time, used to determine aging."
+    },
+    {
+      "name": "valid_day",
+      "type": "int",
+      "description": "Number of effective days, with an empty value representing a long-term effective status."
+    },
+    {
+      "name": "expired_time",
+      "type": "timestamp(3)",
+      "description": "Expiration date. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "relativerel_hash",
+      "type": "char(32)",
+      "description": "Association hash."
+    },
+    {
+      "name": "source_relentity_id",
+      "type": "bigint",
+      "description": "Source relationship ID, non-null indicates a cascading relationship. The source relationship deletion also deletes this relationship. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_expiredtime",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "expired_time"
+      ],
+      "description": "Standard index covering the expired_time field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_from_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "from_cientity_id"
+      ],
+      "description": "Standard index covering the from_cientity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_from_index",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "rel_id",
+        "from_cientity_id",
+        "from_index"
+      ],
+      "description": "Standard index covering the rel_id, from_cientity_id, from_index fields, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_from_to",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "rel_id",
+        "from_cientity_id",
+        "to_cientity_id"
+      ],
+      "description": "Unique index covering the rel_id, from_cientity_id, to_cientity_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    },
+    {
+      "name": "idx_source_relentity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "source_relentity_id"
+      ],
+      "description": "Standard index covering the source_relentity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_to_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_cientity_id"
+      ],
+      "description": "Standard index covering the to_cientity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_to_index",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "rel_id",
+        "to_cientity_id",
+        "to_index"
+      ],
+      "description": "Standard index covering the rel_id, to_cientity_id, to_index fields, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

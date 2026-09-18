@@ -1,0 +1,86 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_constattr",
+  "label": "View Attribute Configuration",
+  "description": "View attributes configuration is used for configuring related queries for configuration management and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "View ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "customview_ci_uuid",
+      "type": "char(32)",
+      "description": "The unique identifier of the model in the view. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "UUID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "const_name",
+      "type": "varchar(255)",
+      "description": "Attribute name. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "Unique identifier."
+    },
+    {
+      "name": "alias",
+      "type": "varchar(255)",
+      "description": "Alias."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sequence."
+    },
+    {
+      "name": "is_hidden",
+      "type": "tinyint",
+      "description": "Is hidden."
+    },
+    {
+      "name": "is_primary",
+      "type": "tinyint",
+      "description": "Is the primary key."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id",
+        "uuid"
+      ],
+      "description": "Primary key index covering the customview_id, UUID fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_attr_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "const_name"
+      ],
+      "description": "Standard index covering the const_name field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_customviewci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "customview_ci_uuid"
+      ],
+      "description": "Standard index covering the customview_ci_uuid field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

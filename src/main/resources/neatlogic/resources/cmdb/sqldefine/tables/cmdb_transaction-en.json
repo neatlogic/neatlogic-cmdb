@@ -1,0 +1,100 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transaction",
+  "label": "CMDB Transaction Table",
+  "description": "The CMDB transaction table is used for tracking configuration management-related statuses, time dimension statistics, and association queries, which are suitable for reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint unsigned",
+      "description": "Work order ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID."
+    },
+    {
+      "name": "status",
+      "type": "enum('commited','uncommit','recover')",
+      "description": "Is it submitted."
+    },
+    {
+      "name": "create_user",
+      "type": "char(32)",
+      "description": "Create user ID."
+    },
+    {
+      "name": "commit_user",
+      "type": "char(32)",
+      "description": "Submit user ID."
+    },
+    {
+      "name": "recover_user",
+      "type": "char(32)",
+      "description": "Restore user."
+    },
+    {
+      "name": "input_from",
+      "type": "varchar(20)",
+      "description": "Data source type."
+    },
+    {
+      "name": "source",
+      "type": "varchar(100)",
+      "description": "SOURCE."
+    },
+    {
+      "name": "expire_time",
+      "type": "timestamp(3)",
+      "description": "Snapshot timeout time, after which it will be automatically deleted if not submitted."
+    },
+    {
+      "name": "create_time",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    },
+    {
+      "name": "commit_time",
+      "type": "timestamp(3)",
+      "description": "Submission time. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "recover_time",
+      "type": "timestamp(3)",
+      "description": "Recovery time."
+    },
+    {
+      "name": "error",
+      "type": "text",
+      "description": "Last error reason."
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "Update the note."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_commit_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "commit_time"
+      ],
+      "description": "Standard index covering the commit_time field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

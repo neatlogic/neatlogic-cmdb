@@ -1,0 +1,70 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_expiredtime",
+  "label": "Configuration Management Entity Expired Time Table",
+  "description": "The configuration management entity_expiredtime table, belonging to the configuration management module, is used for related query scenarios in configuration management and for reporting purposes.",
+  "fields": [
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "Configuration item ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "expired_day",
+      "type": "int",
+      "description": "The original timeout days are used to compare and correct the expired_time."
+    },
+    {
+      "name": "expired_time",
+      "type": "timestamp(3)",
+      "description": "Expiration date. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "cientity_id"
+      ],
+      "description": "Primary key index covering the cientity_id field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "Standard index covering the ci_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_id"
+      ],
+      "description": "Standard index covering the cientity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_expired_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "expired_time"
+      ],
+      "description": "Standard index covering the expired_time field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

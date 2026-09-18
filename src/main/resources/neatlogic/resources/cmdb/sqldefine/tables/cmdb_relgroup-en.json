@@ -1,0 +1,46 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_relgroup",
+  "label": "cmdb_relgroup",
+  "description": "The cmdb_relgroup can be used for configuration management-related query scenarios such as reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Configuration item ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "name",
+      "type": "varchar(200)",
+      "description": "Name."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_group_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "ci_id",
+        "name"
+      ],
+      "description": "Unique index covering the ci_id, name fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrexpression_rel",
+  "label": "cmdb_attrexpression_rel",
+  "description": "Cmdb_attrexpression_rel is used for configuration management-related query scenarios such as association queries and report queries.",
+  "fields": [
+    {
+      "name": "expression_ci_id",
+      "type": "bigint",
+      "description": "Expression_ci_id, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "expression_attr_id",
+      "type": "bigint",
+      "description": "Expression attribute ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "value_attr_id",
+      "type": "bigint",
+      "description": "The attribute ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "value_ci_id",
+      "type": "bigint",
+      "description": "Value_ci_id, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "value_ci_id",
+        "value_attr_id",
+        "expression_attr_id",
+        "expression_ci_id"
+      ],
+      "description": "Primary key index covering the value_ci_id, value_attr_id, expression_attr_id, expression_ci_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

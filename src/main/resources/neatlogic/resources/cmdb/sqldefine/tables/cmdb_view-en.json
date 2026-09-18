@@ -1,0 +1,67 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_view",
+  "label": "CMDB View Table",
+  "description": "The CMDB view is designed for querying related association queries and reporting scenarios related to configuration management.",
+  "fields": [
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "item_id",
+      "type": "bigint",
+      "description": "Relationship_or_attribute_id, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "type",
+      "type": "enum('attr','relfrom','relto','const','global')",
+      "description": "Type, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    },
+    {
+      "name": "show_type",
+      "type": "enum('none','all','list','detail')",
+      "description": "Display mode."
+    },
+    {
+      "name": "allow_edit",
+      "type": "tinyint(1)",
+      "description": "Allow modifications."
+    },
+    {
+      "name": "alias",
+      "type": "varchar(255)",
+      "description": "Alias."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_id",
+        "item_id",
+        "type"
+      ],
+      "description": "Primary key index covering the ci_id, item_id, type fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_item_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "item_id"
+      ],
+      "description": "Standard index covering the item_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

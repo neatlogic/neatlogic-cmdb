@@ -1,0 +1,25 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_import_file",
+  "label": "cmdb_import_file",
+  "description": "The cmdb_import_file can be used for related queries in configuration management and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "File ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "file_id"
+      ],
+      "description": "Primary key index covering the file_id field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

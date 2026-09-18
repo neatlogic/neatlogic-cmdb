@@ -1,0 +1,31 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_graph_cientity",
+  "label": "Configuration Management Graph_identity Table",
+  "description": "The configuration management graph_cientity table, which belongs to the configuration management module, is used for related query scenarios such as configuration management reporting.",
+  "fields": [
+    {
+      "name": "graph_id",
+      "type": "bigint",
+      "description": "The graph association ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "The unique identifier for the entity, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "graph_id",
+        "cientity_id"
+      ],
+      "description": "Primary key index covering the graph_id, cientity_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

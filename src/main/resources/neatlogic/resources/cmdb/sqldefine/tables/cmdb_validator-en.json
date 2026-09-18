@@ -1,0 +1,55 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_validator",
+  "label": "CMDB Validator Table",
+  "description": "The CMDB validator table is used for enabling state filtering and other reporting scenarios related to configuration management.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(200)",
+      "description": "Name."
+    },
+    {
+      "name": "handler",
+      "type": "varchar(255)",
+      "description": "Processor class path."
+    },
+    {
+      "name": "config",
+      "type": "mediumtext",
+      "description": "Config."
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "Description."
+    },
+    {
+      "name": "error_template",
+      "type": "varchar(500)",
+      "description": "Error template."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "Indicates whether it is active."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_snapshot",
+  "label": "CMDB Configuration Item Snapshot Table",
+  "description": "CMDB configuration item snapshots table is used for querying, filtering, and reporting on related configuration management data.",
+  "fields": [
+    {
+      "name": "hash",
+      "type": "char(32)",
+      "description": "Hash, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "content",
+      "type": "longtext",
+      "description": "Content."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "hash"
+      ],
+      "description": "Primary key index covering the hash field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

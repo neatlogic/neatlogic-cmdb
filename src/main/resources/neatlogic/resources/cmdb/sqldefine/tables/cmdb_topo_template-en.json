@@ -1,0 +1,60 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_topo_template",
+  "label": "Configuration Management -- topo_template Table",
+  "description": "Configure the topo_template table, which belongs to the configuration management module. It can be used for enabling state filtering and related queries in configuration management reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "Template name."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Configuration."
+    },
+    {
+      "name": "is_default",
+      "type": "tinyint",
+      "description": "Is default."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_ci",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "Standard index covering the ci_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

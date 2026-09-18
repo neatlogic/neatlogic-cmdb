@@ -1,0 +1,60 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_policy",
+  "label": "CMDB Synchronization Strategy",
+  "description": "The synchronization strategy can be used for enabling state filtering and query association in reporting scenarios related to configuration management.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_collection_id",
+      "type": "bigint",
+      "description": "Model ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "condition",
+      "type": "text",
+      "description": "Mongodb filtering conditions."
+    },
+    {
+      "name": "name",
+      "type": "varchar(100)",
+      "description": "Name."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_collection_id"
+      ],
+      "description": "Standard index covering the ci_collection_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

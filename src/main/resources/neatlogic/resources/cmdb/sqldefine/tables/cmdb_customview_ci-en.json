@@ -1,0 +1,76 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_ci",
+  "label": "cmdb_customview_ci",
+  "description": "The cmdb_customview_ci is used for configuration management-related queries and reporting scenarios.",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "View ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "The UUID in the view, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    },
+    {
+      "name": "is_hidden",
+      "type": "tinyint(1)",
+      "description": "Is the topology displayed?"
+    },
+    {
+      "name": "alias",
+      "type": "varchar(50)",
+      "description": "Alias."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "Unique identifier."
+    },
+    {
+      "name": "is_start",
+      "type": "tinyint(1)",
+      "description": "Is the start model."
+    },
+    {
+      "name": "is_aggregation",
+      "type": "tinyint",
+      "description": "Does the aggregation model include all attributes."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id",
+        "uuid"
+      ],
+      "description": "Primary key index covering the customview_id, UUID fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "Standard index covering the ci_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_relativerel",
+  "label": "CMDB References Relationship",
+  "description": "CMDB references can be used for related queries in configuration management and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "rel_id",
+      "type": "bigint",
+      "description": "Relationship_id, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "from_path",
+      "type": "text",
+      "description": "Upstream path."
+    },
+    {
+      "name": "to_path",
+      "type": "text",
+      "description": "Downstream end path."
+    },
+    {
+      "name": "path_hash",
+      "type": "char(32)",
+      "description": "Full path hash, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "relative_rel_id",
+      "type": "bigint",
+      "description": "Parent relationship ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "rel_id",
+        "relative_rel_id",
+        "path_hash"
+      ],
+      "description": "Primary key index covering the rel_id, relative_rel_id, path_hash fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uk_path",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "path_hash"
+      ],
+      "description": "Unique index covering the path_hash field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

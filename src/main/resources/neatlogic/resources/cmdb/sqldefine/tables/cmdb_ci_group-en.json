@@ -1,0 +1,61 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci_group",
+  "label": "Model Group Relationship Table",
+  "description": "The model group relationship table is used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "group_id",
+      "type": "bigint",
+      "description": "Group ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "rule",
+      "type": "text",
+      "description": "Rules."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_group_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "group_id"
+      ],
+      "description": "Standard index covering the group_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk_ci_id",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "ci_id",
+        "group_id"
+      ],
+      "description": "Unique index covering the ci_id, group_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

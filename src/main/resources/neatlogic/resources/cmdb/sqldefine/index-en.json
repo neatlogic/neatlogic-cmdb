@@ -1,0 +1,420 @@
+{
+  "moduleId": "cmdb",
+  "tables": [
+    {
+      "name": "cmdb_attr",
+      "label": "CMDB Configuration Item Attribute Table",
+      "description": "The CMDB configuration item attribute table is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_attrentity",
+      "label": "CMDB Configuration Item Attribute Instance Table",
+      "description": "Configuration item attributes instance table - used for configuration management-related association queries and reporting scenarios."
+    },
+    {
+      "name": "cmdb_attrentity_content",
+      "label": "CMDB Configuration Item Attribute Instance Content Table",
+      "description": "Configuration item attribute instance content table - used for querying, filtering, and reporting on configuration management-related data."
+    },
+    {
+      "name": "cmdb_attrentity_content_offset",
+      "label": "cmdb_attrentity_content_offset",
+      "description": "The cmdb_attrentity_content_offset is used for querying, filtering, and reporting on related data for configuration management."
+    },
+    {
+      "name": "cmdb_attrexpression_rebuild_audit",
+      "label": "Configuration Management -- attrexpression_rebuild_audit Table",
+      "description": "The cmdb_attrexpression_rebuild_audit can be used for related queries in configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_attrexpression_rel",
+      "label": "cmdb_attrexpression_rel",
+      "description": "Cmdb_attrexpression_rel is used for configuration management-related query scenarios such as association queries and report queries."
+    },
+    {
+      "name": "cmdb_ci",
+      "label": "CMDB Configuration Item Table",
+      "description": "Configuration item table for configuration management and related queries."
+    },
+    {
+      "name": "cmdb_ci_auth",
+      "label": "Configuration Item Authorization Table in CMDB",
+      "description": "Configuration item authorization table used for configuration management-related association queries and reporting queries."
+    },
+    {
+      "name": "cmdb_ci_catalog",
+      "label": "Model Directory",
+      "description": "The model directory is used for related queries for configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_ci_customview",
+      "label": "Custom View Associated with the Configuration Model Table",
+      "description": "The configuration model custom view is associated with the table used for related queries in configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_ci_group",
+      "label": "Model Group Relationship Table",
+      "description": "The model group relationship table is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_ci_tree",
+      "label": "Configuration Management CI_TREE Table",
+      "description": "Configure the ci_tree table, which belongs to the configuration management module. It can be used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_ci_unique",
+      "label": "cmdb_ci_unique",
+      "description": "Cmdb_ci_unique is used for related queries and report queries related to configuration management."
+    },
+    {
+      "name": "cmdb_cientity",
+      "label": "CMDB",
+      "description": "The CMDB configuration item instance table stores instance data for configuration items (CIs) in the enterprise IT infrastructure. Each record represents a specific configuration object, such as a server, database, middleware instance, or application system. Main fields: • id: unique identifier of the configuration item instance. • ci_id: references the primary key of the configuration item definition table (cmdb_ci) to determine the configuration item type. • name: configuration item name or host name. • status: current configuration item status, such as active, inactive, or under maintenance. • is_locked: indicates whether the configuration item is locked by a transaction to control concurrent changes. • inspect_status / inspect_time: inspection task result and time. • monitor_status / monitor_time: latest monitoring task status and update time. • renew_time: most recent refresh time of the configuration item, used to determine whether the data is stale. • fcu / fcd / lcu / lcd: creator, creation time, modifier, and modification time, respectively. Typical uses: • provides the core data source for the CMDB (configuration management database). • supports reports for asset inventory, monitoring and alerts, automated inspection, and configuration audits. Key indexes: • ci_id index: supports queries by configuration item type. • name_prefix index: supports fuzzy name searches. This table supports status tracking, time-based statistics, relational queries, and other configuration management reporting scenarios."
+    },
+    {
+      "name": "cmdb_cientity_alert",
+      "label": "Configuration Management Entity Alert Table",
+      "description": "The configuration management entity_alert table, belonging to the configuration management module, is used for related query scenarios in configuration management and reporting."
+    },
+    {
+      "name": "cmdb_cientity_alertlevel",
+      "label": "Configuration Management Entity AlertLevel Table",
+      "description": "The configuration management entity_alertlevel table, belonging to the configuration management module, is used for querying, filtering, and presenting data related to configuration management."
+    },
+    {
+      "name": "cmdb_cientity_expiredtime",
+      "label": "Configuration Management Entity Expired Time Table",
+      "description": "The configuration management entity_expiredtime table, belonging to the configuration management module, is used for related query scenarios in configuration management and for reporting purposes."
+    },
+    {
+      "name": "cmdb_cientity_globalattritem",
+      "label": "Configuration Management Entity Global Attribute Item Table",
+      "description": "The configuration management entity_globalattritem table, belonging to the configuration management module, is used for related query scenarios in configuration management and reporting."
+    },
+    {
+      "name": "cmdb_cientity_group",
+      "label": "Configuration Item Group Relationship Table",
+      "description": "Configuration item group relationship table used for configuration management-related association queries and reporting scenarios."
+    },
+    {
+      "name": "cmdb_cientity_illegal",
+      "label": "Illegal Configuration Item",
+      "description": "Illegal configuration items can be used for related queries in configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_cientity_inspect",
+      "label": "Inventory Inspection Status Table",
+      "description": "The inspection status table for configuration items can be used for related queries in configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_cientity_snapshot",
+      "label": "CMDB Configuration Item Snapshot Table",
+      "description": "CMDB configuration item snapshots table is used for querying, filtering, and reporting on related configuration management data."
+    },
+    {
+      "name": "cmdb_cientity_tag",
+      "label": "Configuration Management Entity Tag Table",
+      "description": "Configuration management entity_tag table, belonging to the configuration management module, used for related query scenarios such as configuration management reporting."
+    },
+    {
+      "name": "cmdb_cientity_transaction",
+      "label": "CMDB Configuration Item Instance Transaction Table",
+      "description": "The CMDB configuration item instance transaction table is used for related queries in configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_citype",
+      "label": "CMDB Configuration Item Type Table",
+      "description": "The CMDB configuration item type table is used for querying, filtering, and reporting on related data for configuration management."
+    },
+    {
+      "name": "cmdb_customview",
+      "label": "Custom CMDB View",
+      "description": "The custom view in the CMDB can be used for reporting scenarios related to configuration management, such as filtering on enabled states and time dimension statistics."
+    },
+    {
+      "name": "cmdb_customview_attr",
+      "label": "CMDB Custom View Attribute Table",
+      "description": "The custom view attribute table in the CMDB is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_customview_auth",
+      "label": "Custom View Authorization Table",
+      "description": "The custom view authorization table is used for configuring related queries for reporting scenarios such as association queries."
+    },
+    {
+      "name": "cmdb_customview_ci",
+      "label": "cmdb_customview_ci",
+      "description": "The cmdb_customview_ci is used for configuration management-related queries and reporting scenarios."
+    },
+    {
+      "name": "cmdb_customview_constattr",
+      "label": "View Attribute Configuration",
+      "description": "View attributes configuration is used for configuring related queries for configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_customview_globalattr",
+      "label": "CMDB Custom View Attribute Table",
+      "description": "The custom view attribute table in the CMDB is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_customview_link",
+      "label": "Custom View Associated Table in CMDB",
+      "description": "The custom view in the CMDB is associated with the table for use in configuration management-related queries and report scenarios."
+    },
+    {
+      "name": "cmdb_customview_rel",
+      "label": "cmdb_customview_rel",
+      "description": "Cmdb_customview_rel is used for configuring management-related queries, such as reporting scenarios."
+    },
+    {
+      "name": "cmdb_customview_tag",
+      "label": "Custom View Tag Table in CMDB",
+      "description": "The custom view labels table in the CMDB is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_customview_template",
+      "label": "CMDB Custom View Template",
+      "description": "CMDB custom view template can be used for enabling state filtering and related query scenarios in configuration management reporting."
+    },
+    {
+      "name": "cmdb_global_attr",
+      "label": "Configuration Management -- global_attr Table",
+      "description": "Configure the global_attr table, which belongs to the configuration management module. This table is used for reporting scenarios related to enabling state filtering in configuration management."
+    },
+    {
+      "name": "cmdb_global_attritem",
+      "label": "Configuration Management -- global_attritem Table",
+      "description": "Configure the global_attritem table, which belongs to the configuration management module. This table is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_graph",
+      "label": "Configuration Management Graph Table",
+      "description": "Configuration management graph table, belonging to the configuration management module, is a data table used for enabling state filtering and time dimension statistics in configuration management reporting scenarios."
+    },
+    {
+      "name": "cmdb_graph_auth",
+      "label": "Configuration Management -- graph_auth Table",
+      "description": "Configure the graph_auth table, which belongs to the configuration management module. It can be used for related query scenarios such as configuration management reporting."
+    },
+    {
+      "name": "cmdb_graph_cientity",
+      "label": "Configuration Management Graph_identity Table",
+      "description": "The configuration management graph_cientity table, which belongs to the configuration management module, is used for related query scenarios such as configuration management reporting."
+    },
+    {
+      "name": "cmdb_graph_rel",
+      "label": "Configuration Management graph_rel Table",
+      "description": "Configure the configuration management graph_rel table, which belongs to the configuration management module. It can be used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_group",
+      "label": "Group",
+      "description": "The group can be used for status tracking related to configuration management, enabling status filtering, time dimension statistics, and query association."
+    },
+    {
+      "name": "cmdb_group_auth",
+      "label": "cmdb_group_auth",
+      "description": "Cmdb_group_auth is used for configuring related queries for configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_import_audit",
+      "label": "Batch Import Audit Table in CMDB",
+      "description": "CMDB batch import for audit tables can be used for status tracking and query related to configuration management, including reporting scenarios."
+    },
+    {
+      "name": "cmdb_import_file",
+      "label": "cmdb_import_file",
+      "description": "The cmdb_import_file can be used for related queries in configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_legalvalid",
+      "label": "Compliance Settings Table",
+      "description": "Configuration management compliance settings table used for configuration management-related on/off status filtering and query scenarios for reporting."
+    },
+    {
+      "name": "cmdb_rel",
+      "label": "CI Association Type Table",
+      "description": "The CI association type table is used for configuring management-related queries and reporting scenarios."
+    },
+    {
+      "name": "cmdb_relativerel",
+      "label": "CMDB References Relationship",
+      "description": "CMDB references can be used for related queries in configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_relentity",
+      "label": "Configuration Item Instance Association Table",
+      "description": "The table for configuring item instances for CMDB is used for related queries in configuration management and reporting scenarios."
+    },
+    {
+      "name": "cmdb_relgroup",
+      "label": "cmdb_relgroup",
+      "description": "The cmdb_relgroup can be used for configuration management-related query scenarios such as reporting."
+    },
+    {
+      "name": "cmdb_reltype",
+      "label": "cmdb_reltype",
+      "description": "Cmdb_reltype is used for querying, filtering, and reporting on related data for configuration management."
+    },
+    {
+      "name": "cmdb_resourcecenter_account",
+      "label": "CMDB Resource Center Account Table",
+      "description": "CMDB resource center account table is used for time dimension statistical queries and association queries related to configuration management."
+    },
+    {
+      "name": "cmdb_resourcecenter_account_protocol",
+      "label": "CMDB Resource Center Account Protocol Table",
+      "description": "CMDB resource center account agreement table is used for time dimension statistical queries related to configuration management."
+    },
+    {
+      "name": "cmdb_resourcecenter_account_tag",
+      "label": "Configuration Management resourcecenter_account_tag Table",
+      "description": "The cmdb_resourcecenter_account_tag can be used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_resourcecenter_applicationlist_display",
+      "label": "Configuration Management resourcecenter_applicationlist_display Table",
+      "description": "Configure the resourcecenter_applicationlist_display table, which belongs to the configuration management module. It can be used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_resourcecenter_assetlist_display",
+      "label": "Configuration Management resourcecenter_assetlist_display Table",
+      "description": "The resourcecenter_assetlist_display table is a data table within the configuration management module. It is used for querying, filtering, and reporting of configuration management-related data."
+    },
+    {
+      "name": "cmdb_resourcecenter_config",
+      "label": "Resource Center Configuration Table",
+      "description": "Resource center configuration table used for time dimensional statistical reports for configuration management and other scenarios."
+    },
+    {
+      "name": "cmdb_resourcecenter_entity",
+      "label": "cmdb_resourcecenter_entity",
+      "description": "The cmdb_resourcecenter_entity can be used for reporting scenarios such as status tracking and query associations related to configuration management."
+    },
+    {
+      "name": "cmdb_resourcecenter_resource_account",
+      "label": "Resource Center Resource and Account Association Table",
+      "description": "The resource center resource and account association table is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_resourcecenter_resource_tag",
+      "label": "Configuration Management ResourceCenter_Resource_Tag Table",
+      "description": "The cmdb_resourcecenter_resource_tag can be used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_resourcecenter_type_ci",
+      "label": "Asset List Tree Model",
+      "description": "Asset inventory tree model can be used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_schema_audit",
+      "label": "cmdb_schema_audit",
+      "description": "Cmdb_schema_audit is used for time dimension statistical queries and association queries related to configuration management, which are applicable to report scenarios."
+    },
+    {
+      "name": "cmdb_sync_audit",
+      "label": "CMDB Synchronization Record Table",
+      "description": "The CMDB synchronization log table is used for tracking configuration management states and performing related queries, including reporting scenarios."
+    },
+    {
+      "name": "cmdb_sync_ci_collection",
+      "label": "cmdb_sync_ci_collection",
+      "description": "The cmdb_sync_ci_collection is used for time dimension statistical and query scenarios related to configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_sync_data_audit",
+      "label": "Configuration Management -- sync_data_audit Table",
+      "description": "Configure the sync_data_audit table, which belongs to the configuration management module. It can be used for related queries and report queries in configuration management scenarios."
+    },
+    {
+      "name": "cmdb_sync_data_hash",
+      "label": "Configuration Management Sync_data_hash Table",
+      "description": "The sync_data_hash table is part of the configuration management module and is used for statistical reporting and query scenarios related to time dimensions in configuration management."
+    },
+    {
+      "name": "cmdb_sync_mapping",
+      "label": "cmdb_sync_mapping",
+      "description": "The cmdb_sync_mapping can be used for configuration management-related queries and reporting scenarios."
+    },
+    {
+      "name": "cmdb_sync_objtype",
+      "label": "Configuration Management -- sync_objtype Table",
+      "description": "Configure the sync_objtype table, which belongs to the configuration management module. It can be used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_sync_policy",
+      "label": "CMDB Synchronization Strategy",
+      "description": "The synchronization strategy can be used for enabling state filtering and query association in reporting scenarios related to configuration management."
+    },
+    {
+      "name": "cmdb_sync_schedule",
+      "label": "CMDB Synchronization Schedule Table",
+      "description": "The CMDB synchronization schedule is designed for use in association queries related to configuration management and other reporting scenarios."
+    },
+    {
+      "name": "cmdb_sync_unique",
+      "label": "Configuration Synchronization Unique Attribute",
+      "description": "Configuration synchronization with unique attributes can be used for related queries in configuration management and report queries."
+    },
+    {
+      "name": "cmdb_tag",
+      "label": "CMDB Tag Table",
+      "description": "The CMDB tag table is used for querying, filtering, and reporting on configuration management-related data."
+    },
+    {
+      "name": "cmdb_topo_template",
+      "label": "Configuration Management -- topo_template Table",
+      "description": "Configure the topo_template table, which belongs to the configuration management module. It can be used for enabling state filtering and related queries in configuration management reporting scenarios."
+    },
+    {
+      "name": "cmdb_transaction",
+      "label": "CMDB Transaction Table",
+      "description": "The CMDB transaction table is used for tracking configuration management-related statuses, time dimension statistics, and association queries, which are suitable for reporting scenarios."
+    },
+    {
+      "name": "cmdb_transactiongroup",
+      "label": "CMDB Transaction Group Table",
+      "description": "The CMDB transaction group table is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_transfer_ci_mapping",
+      "label": "Configuration Management Transfer CI Mapping Table",
+      "description": "Configure the transfer_ci_mapping table, which belongs to the configuration management module. It is used for tracking configuration management states, filtering enabled states, time dimension statistics, and query associations, among other reporting scenarios."
+    },
+    {
+      "name": "cmdb_transfer_ci_mapping_audit",
+      "label": "Configuration Item Synchronization Audit",
+      "description": "Synchronization of new and old configuration items for audit purposes, which can be used for reporting and query scenarios related to configuration management."
+    },
+    {
+      "name": "cmdb_transfer_ci_mapping_audit_transactiongroup",
+      "label": "Configuration Management Transfer CI Mapping Audit Transaction Group Table",
+      "description": "The transfer_ci_mapping_audit_transactiongroup table is a configuration management module data table. It is used for related query scenarios in configuration management, such as reporting."
+    },
+    {
+      "name": "cmdb_transfer_cientity_mapping",
+      "label": "Configuration Management Transfer_cientity_mapping Table",
+      "description": "The configuration management_transfer_cientity_mapping table, belonging to the configuration management module, is used for related query scenarios such as reporting."
+    },
+    {
+      "name": "cmdb_transfer_schedule",
+      "label": "Configuration Management Transfer Schedule Table",
+      "description": "The configuration management transfer_schedule table, which belongs to the configuration management module, is used for filtering enabled states and time dimension statistics in configuration management reporting scenarios."
+    },
+    {
+      "name": "cmdb_validator",
+      "label": "CMDB Validator Table",
+      "description": "The CMDB validator table is used for enabling state filtering and other reporting scenarios related to configuration management."
+    },
+    {
+      "name": "cmdb_view",
+      "label": "CMDB View Table",
+      "description": "The CMDB view is designed for querying related association queries and reporting scenarios related to configuration management."
+    },
+    {
+      "name": "cmdb_viewconst",
+      "label": "cmdb_viewconst",
+      "description": "Cmdb_viewconst is used for querying, filtering, and reporting on data related to configuration management."
+    }
+  ]
+}

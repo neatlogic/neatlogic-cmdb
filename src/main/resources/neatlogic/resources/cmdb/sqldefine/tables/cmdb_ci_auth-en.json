@@ -1,0 +1,43 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci_auth",
+  "label": "Configuration Item Authorization Table in CMDB",
+  "description": "Configuration item authorization table used for configuration management-related association queries and reporting queries.",
+  "fields": [
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Reference the ID from the ecmdb_ci, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "auth_type",
+      "type": "enum('user','role','team','common')",
+      "description": "Role name, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "action",
+      "type": "enum('cientityinsert','cientityupdate','cientitydelete','cientityrecover','cientityquery','cimanage','transactionmanage','passwordview')",
+      "description": "The corresponding action, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "auth_uuid",
+      "type": "char(32)",
+      "description": "Auth UUID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_id",
+        "auth_type",
+        "action",
+        "auth_uuid"
+      ],
+      "description": "Primary key index covering the ci_id, auth_type, action, auth_uuid fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

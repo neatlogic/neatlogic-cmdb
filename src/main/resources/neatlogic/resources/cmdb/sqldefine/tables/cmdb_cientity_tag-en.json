@@ -1,0 +1,31 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_tag",
+  "label": "Configuration Management Entity Tag Table",
+  "description": "Configuration management entity_tag table, belonging to the configuration management module, used for related query scenarios such as configuration management reporting.",
+  "fields": [
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "Configuration item ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "tag_id",
+      "type": "bigint",
+      "description": "Tag_id, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "cientity_id",
+        "tag_id"
+      ],
+      "description": "Primary key index covering the cientity_id, tag_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_template",
+  "label": "CMDB Custom View Template",
+  "description": "CMDB custom view template can be used for enabling state filtering and related query scenarios in configuration management reporting.",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "Custom template ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "Name."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Configuration."
+    },
+    {
+      "name": "template",
+      "type": "longtext",
+      "description": "Content template."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "Indicates whether it is active."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id"
+      ],
+      "description": "Primary key index covering the customview_id field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

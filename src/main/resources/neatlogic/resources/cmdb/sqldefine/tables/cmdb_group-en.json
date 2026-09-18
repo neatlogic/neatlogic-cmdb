@@ -1,0 +1,95 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_group",
+  "label": "Group",
+  "description": "The group can be used for status tracking related to configuration management, enabling status filtering, time dimension statistics, and query association.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(200)",
+      "description": "Name."
+    },
+    {
+      "name": "type",
+      "type": "enum('readonly','maintain','autoexec')",
+      "description": "Type."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "cientity_count",
+      "type": "int",
+      "description": "Number of configuration items."
+    },
+    {
+      "name": "status",
+      "type": "enum('doing','done')",
+      "description": "Status."
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "Description."
+    },
+    {
+      "name": "error",
+      "type": "text",
+      "description": "Alert."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation date."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update date."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "server_id",
+      "type": "int",
+      "description": "Server ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_server_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "server_id"
+      ],
+      "description": "Standard index covering the server_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

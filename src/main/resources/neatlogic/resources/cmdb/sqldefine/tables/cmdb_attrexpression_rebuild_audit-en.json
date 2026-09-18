@@ -1,0 +1,55 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrexpression_rebuild_audit",
+  "label": "Configuration Management -- attrexpression_rebuild_audit Table",
+  "description": "The cmdb_attrexpression_rebuild_audit can be used for related queries in configuration management and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID."
+    },
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "Configuration item ID."
+    },
+    {
+      "name": "attr_id",
+      "type": "text",
+      "description": "Which attributes were modified, separated by commas if multiple attributes are modified."
+    },
+    {
+      "name": "cientity_id_start",
+      "type": "bigint",
+      "description": "Start with the configuration item ID."
+    },
+    {
+      "name": "type",
+      "type": "varchar(20)",
+      "description": "Association rule, where the update is effective only when the 'cientityid' is not null, invoke represents updating the expression attribute of the current entity, while invoked represents updating the expression attribute of the associated configuration item."
+    },
+    {
+      "name": "server_id",
+      "type": "int",
+      "description": "Server ID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

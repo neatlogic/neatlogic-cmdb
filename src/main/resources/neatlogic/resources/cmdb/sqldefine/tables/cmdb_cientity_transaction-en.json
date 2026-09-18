@@ -1,0 +1,100 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_transaction",
+  "label": "CMDB Configuration Item Instance Transaction Table",
+  "description": "The CMDB configuration item instance transaction table is used for related queries in configuration management and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint unsigned",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_entity_uuid",
+      "type": "char(32)",
+      "description": "Configuration item instance UUID."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Reference the ID from the ecmdb_ci. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "ci_entity_id",
+      "type": "bigint",
+      "description": "Retrieve the ID from the ecmdb_ci_entity table. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "description": "Name."
+    },
+    {
+      "name": "action",
+      "type": "enum('insert','update','delete','recover')",
+      "description": "Operation type, I: insert, U: update, D: delete, S: recover."
+    },
+    {
+      "name": "edit_mode",
+      "type": "enum('global','partial')",
+      "description": "Edit mode."
+    },
+    {
+      "name": "transaction_id",
+      "type": "bigint",
+      "description": "Transaction ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "content",
+      "type": "longtext",
+      "description": "Update the content, in JSON format."
+    },
+    {
+      "name": "snapshot",
+      "type": "longtext",
+      "description": "Snapshot hash before modification."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_NewIndex1",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "transaction_id"
+      ],
+      "description": "Standard index covering the transaction_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_NewIndex2",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_entity_id"
+      ],
+      "description": "Standard index covering the ci_entity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_NewIndex3",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "Standard index covering the ci_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

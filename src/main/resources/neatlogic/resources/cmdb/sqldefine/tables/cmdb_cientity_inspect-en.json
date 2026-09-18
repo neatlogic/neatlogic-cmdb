@@ -1,0 +1,66 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_inspect",
+  "label": "Inventory Inspection Status Table",
+  "description": "The inspection status table for configuration items can be used for related queries in configuration management and other reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "job_id",
+      "type": "bigint",
+      "description": "Job ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "ci_entity_id",
+      "type": "bigint",
+      "description": "Configuration item ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "inspect_status",
+      "type": "enum('normal','warn','critical','','fatal')",
+      "description": "Inspection status."
+    },
+    {
+      "name": "inspect_time",
+      "type": "timestamp(3)",
+      "description": "Inspection time."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_entity_id"
+      ],
+      "description": "Standard index covering the ci_entity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk_job_id_cientity_id",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "job_id",
+        "ci_entity_id"
+      ],
+      "description": "Unique index covering the job_id, ci_entity_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

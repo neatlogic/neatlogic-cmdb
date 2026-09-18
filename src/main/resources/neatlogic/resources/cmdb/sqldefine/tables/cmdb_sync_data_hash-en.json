@@ -1,0 +1,51 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_data_hash",
+  "label": "Configuration Management Sync_data_hash Table",
+  "description": "The sync_data_hash table is part of the configuration management module and is used for statistical reporting and query scenarios related to time dimensions in configuration management.",
+  "fields": [
+    {
+      "name": "data_id",
+      "type": "varchar(255)",
+      "description": "The data ID value, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "data_hash",
+      "type": "char(32)",
+      "description": "Data fingerprint."
+    },
+    {
+      "name": "update_time",
+      "type": "datetime",
+      "description": "Update time. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "collection_name",
+      "type": "varchar(255)",
+      "description": "Collection name, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "data_id",
+        "collection_name"
+      ],
+      "description": "Primary key index covering the data_id, collection_name fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_updatetime",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "update_time"
+      ],
+      "description": "Standard index covering the update_time field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

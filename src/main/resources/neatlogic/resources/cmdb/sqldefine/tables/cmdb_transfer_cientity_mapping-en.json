@@ -1,0 +1,92 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transfer_cientity_mapping",
+  "label": "Configuration Management Transfer_cientity_mapping Table",
+  "description": "The configuration management_transfer_cientity_mapping table, belonging to the configuration management module, is used for related query scenarios such as reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "old_cientity_id",
+      "type": "bigint",
+      "description": "Old configuration item ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "old_cientity_name",
+      "type": "varchar(255)",
+      "description": "Old configuration item name."
+    },
+    {
+      "name": "old_ci_id",
+      "type": "bigint",
+      "description": "Old model ID."
+    },
+    {
+      "name": "old_ci_name",
+      "type": "varchar(255)",
+      "description": "Old model name."
+    },
+    {
+      "name": "new_cientity_id",
+      "type": "bigint",
+      "description": "New configuration item ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "new_cientity_name",
+      "type": "varchar(255)",
+      "description": "New configuration item name."
+    },
+    {
+      "name": "new_ci_id",
+      "type": "bigint",
+      "description": "New model ID."
+    },
+    {
+      "name": "new_ci_name",
+      "type": "varchar(255)",
+      "description": "New model name."
+    },
+    {
+      "name": "is_exists",
+      "type": "tinyint",
+      "description": "Does the configuration item exist?"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_new_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "new_cientity_id"
+      ],
+      "description": "Standard index covering the new_cientity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_oldcientityid_newciid_oldciid",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "old_cientity_id",
+        "new_ci_id",
+        "old_ci_id"
+      ],
+      "description": "Unique index covering the old_cientity_id, new_ci_id, old_ci_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}
