@@ -1,0 +1,41 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci_unique",
+  "label": "cmdb_ci_unique",
+  "description": "Cmdb_ci_unique is used for related queries and report queries related to configuration management.",
+  "fields": [
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "CI ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "The attribute ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_id",
+        "attr_id"
+      ],
+      "description": "Primary key index covering the ci_id, attr_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_attr_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id"
+      ],
+      "description": "Standard index covering the attr_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_global_attr",
+  "label": "Configuration Management -- global_attr Table",
+  "description": "Configure the global_attr table, which belongs to the configuration management module. This table is used for reporting scenarios related to enabling state filtering in configuration management.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "Unique identifier. This value must be unique in the database and is suitable for exact-match queries and duplicate detection."
+    },
+    {
+      "name": "label",
+      "type": "varchar(255)",
+      "description": "Display documentation."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "is_multiple",
+      "type": "tinyint",
+      "description": "Allow multiple selections."
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "description": "Description."
+    },
+    {
+      "name": "is_private",
+      "type": "tinyint",
+      "description": "Private attributes cannot be edited or deleted."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "Unique index covering the name field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

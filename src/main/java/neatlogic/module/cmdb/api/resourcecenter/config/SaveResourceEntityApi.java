@@ -14,7 +14,7 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_VIEW_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
@@ -45,7 +45,7 @@ import javax.annotation.Resource;
  * @since 2021/11/9 11:26
  **/
 @Service
-@AuthAction(action = RESOURCECENTER_MODIFY.class)
+@AuthAction(action = RESOURCECENTER_VIEW_MODIFY.class)
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
 public class SaveResourceEntityApi extends PrivateApiComponentBase {

@@ -60,6 +60,14 @@
         FROM cmdb_ci a
                  LEFT JOIN cmdb_ci_tree b ON a.id = b.ci_id
                  LEFT JOIN cmdb_ci_auth c ON a.id = c.ci_id
+        <!-- 仅配置项查询入口显式启用，不修改树的父子关系和排序。 -->
+        <if test="isShowInCiEntityQuery != null">
+            WHERE EXISTS (
+                SELECT 1 FROM cmdb_citype citype
+                WHERE citype.id = a.type_id
+                  AND citype.is_showincientityquery = #{isShowInCiEntityQuery}
+            )
+        </if>
         order by sort, a.name
     </select>
 
@@ -465,6 +473,9 @@
         <where>
             <if test="isTypeShowInTopo != null">
                 AND a.is_showintopo = #{isTypeShowInTopo}
+            </if>
+            <if test="isShowInCiEntityQuery != null">
+                AND a.is_showincientityquery = #{isShowInCiEntityQuery}
             </if>
             <if test="keyword != null and keyword !=''">
                 AND (b.name LIKE CONCAT('%', #{keyword}, '%') OR b.label LIKE CONCAT('%', #{keyword}, '%'))

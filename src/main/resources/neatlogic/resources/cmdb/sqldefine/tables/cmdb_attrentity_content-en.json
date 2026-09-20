@@ -1,0 +1,45 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrentity_content",
+  "label": "CMDB Configuration Item Attribute Instance Content Table",
+  "description": "Configuration item attribute instance content table - used for querying, filtering, and reporting on configuration management-related data.",
+  "fields": [
+    {
+      "name": "hash",
+      "type": "char(32)",
+      "description": "Hash, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "value_hash",
+      "type": "char(32)",
+      "description": "The hash value of the `value` field is used for precise matching. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "content",
+      "type": "longtext",
+      "description": "Content."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "hash"
+      ],
+      "description": "Primary key index covering the hash field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_value_hash",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "value_hash"
+      ],
+      "description": "Standard index covering the value_hash field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

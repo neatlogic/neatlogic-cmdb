@@ -1,0 +1,95 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_import_audit",
+  "label": "Batch Import Audit Table in CMDB",
+  "description": "CMDB batch import for audit tables can be used for status tracking and query related to configuration management, including reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "import_user",
+      "type": "char(32)",
+      "description": "Import users."
+    },
+    {
+      "name": "import_date",
+      "type": "timestamp(3)",
+      "description": "Import time. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "finish_date",
+      "type": "timestamp(3)",
+      "description": "Completion time."
+    },
+    {
+      "name": "action",
+      "type": "enum('append','update','all')",
+      "description": "Append: incremental import; update: bulk import; all: full import."
+    },
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "Import the ID of the attached file."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Retrieve the ID from the cmdb_ci table."
+    },
+    {
+      "name": "success_count",
+      "type": "int",
+      "description": "Import quantity."
+    },
+    {
+      "name": "failed_count",
+      "type": "int",
+      "description": "Failure count."
+    },
+    {
+      "name": "status",
+      "type": "enum('running','success','failed')",
+      "description": "Status."
+    },
+    {
+      "name": "error",
+      "type": "longtext",
+      "description": "Error message."
+    },
+    {
+      "name": "total_count",
+      "type": "int",
+      "description": "Total."
+    },
+    {
+      "name": "server_id",
+      "type": "int",
+      "description": "Application ID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_import_date",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "import_date"
+      ],
+      "description": "Standard index covering the import_date field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

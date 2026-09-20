@@ -1,0 +1,122 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attrentity",
+  "label": "CMDB Configuration Item Attribute Instance Table",
+  "description": "Configuration item attributes instance table - used for configuration management-related association queries and reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "from_cientity_id",
+      "type": "bigint",
+      "description": "Unique identifier of the configuration item. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "to_cientity_id",
+      "type": "bigint",
+      "description": "Retrieve the configuration item ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "The attribute ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "from_ci_id",
+      "type": "bigint",
+      "description": "Unique identifier of the configuration item model. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "to_ci_id",
+      "type": "bigint",
+      "description": "Retrieve the configuration item model ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "transaction_id",
+      "type": "bigint",
+      "description": "Transaction ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "from_index",
+      "type": "int",
+      "description": "The data identifier is used to improve efficiency during retrieval, generating only the first N records."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_attr_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id"
+      ],
+      "description": "Standard index covering the attr_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_from_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "from_ci_id"
+      ],
+      "description": "Standard index covering the from_ci_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_to_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_ci_id"
+      ],
+      "description": "Standard index covering the to_ci_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_to_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_cientity_id"
+      ],
+      "description": "Standard index covering the to_cientity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_transaction_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "transaction_id"
+      ],
+      "description": "Standard index covering the transaction_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk_from_cientity_id",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "from_cientity_id",
+        "attr_id",
+        "to_cientity_id"
+      ],
+      "description": "Unique index covering the from_cientity_id, attr_id, to_cientity_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

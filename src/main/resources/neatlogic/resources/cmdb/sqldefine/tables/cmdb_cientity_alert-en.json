@@ -1,0 +1,90 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_alert",
+  "label": "Configuration Management Entity Alert Table",
+  "description": "The configuration management entity_alert table, belonging to the configuration management module, is used for related query scenarios in configuration management and reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "The unique identifier for the entity. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "cientity_uuid",
+      "type": "char(32)",
+      "description": "The UUID of the entity is associated. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "ip",
+      "type": "varchar(50)",
+      "description": "Create a new table named `config_management_alert` in the `config_management` schema to store information about IP addresses."
+    },
+    {
+      "name": "level",
+      "type": "int",
+      "description": "Configure the `level` field in the `configuration_management.iti_alert` table."
+    },
+    {
+      "name": "alert_time",
+      "type": "timestamp(3)",
+      "description": "Time field."
+    },
+    {
+      "name": "metric_name",
+      "type": "varchar(255)",
+      "description": "Configure the `metric_name` field in the `configuration_mangement_cientity_alert` table."
+    },
+    {
+      "name": "metric_value",
+      "type": "varchar(255)",
+      "description": "Configure the `metric_value` field in the `configuration_management.iti_alert` table."
+    },
+    {
+      "name": "alert_message",
+      "type": "varchar(500)",
+      "description": "Configure the alert_message field in the configuration_management.ity_alert table."
+    },
+    {
+      "name": "alert_link",
+      "type": "varchar(255)",
+      "description": "Create a new table named `configuration_mangement_identity_alert` with the `alert_link` field."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_id"
+      ],
+      "description": "Standard index covering the cientity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_cientity_uuid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_uuid"
+      ],
+      "description": "Standard index covering the cientity_uuid field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

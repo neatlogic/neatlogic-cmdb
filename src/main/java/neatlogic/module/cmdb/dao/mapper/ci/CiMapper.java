@@ -36,7 +36,10 @@ public interface CiMapper extends ICiCrossoverMapper {
 
     CiTypeVo getCiTypeByName(String name);
 
-    List<CiVo> getCiTree();
+    /**
+     * 查询模型树；未指定层级显示条件时保留完整查询结果。
+     */
+    List<CiVo> getCiTree(@Param("isShowInCiEntityQuery") Integer isShowInCiEntityQuery);
 
     Long getCiLock(Long ciId);
 

@@ -1,0 +1,80 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transfer_ci_mapping",
+  "label": "Configuration Management Transfer CI Mapping Table",
+  "description": "Configure the transfer_ci_mapping table, which belongs to the configuration management module. It is used for tracking configuration management states, filtering enabled states, time dimension statistics, and query associations, among other reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "new_ci_id",
+      "type": "bigint",
+      "description": "New model ID."
+    },
+    {
+      "name": "new_ci_name",
+      "type": "varchar(200)",
+      "description": "New model name."
+    },
+    {
+      "name": "old_ci_id",
+      "type": "bigint",
+      "description": "Old model ID."
+    },
+    {
+      "name": "old_ci_name",
+      "type": "varchar(200)",
+      "description": "Old model name."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "status",
+      "type": "enum('doing','done','failed')",
+      "description": "Status."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Configuration."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp",
+      "description": "Creation time."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp",
+      "description": "Update the timestamp."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

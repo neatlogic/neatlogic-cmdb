@@ -33,9 +33,12 @@ public class SetValueHandler implements IAttrValueHandler {
         return "set";
     }
 
+    /**
+     * 返回属性类型名称的国际化键，由展示层按当前请求语言翻译。
+     */
     @Override
     public String getName() {
-        return "多选集合";
+        return "cmdb.attrtype.set";
     }
 
     @Override

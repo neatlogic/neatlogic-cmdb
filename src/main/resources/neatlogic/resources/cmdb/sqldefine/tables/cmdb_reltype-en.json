@@ -1,0 +1,70 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_reltype",
+  "label": "cmdb_reltype",
+  "description": "Cmdb_reltype is used for querying, filtering, and reporting on related data for configuration management.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(100)",
+      "description": "Name. This value must be unique in the database and is suitable for exact-match queries and duplicate detection."
+    },
+    {
+      "name": "is_showintopo",
+      "type": "tinyint(1)",
+      "description": "Does the topology diagram display."
+    },
+    {
+      "name": "from_cnname",
+      "type": "varchar(100)",
+      "description": "Call name."
+    },
+    {
+      "name": "to_cnname",
+      "type": "varchar(100)",
+      "description": "Target name."
+    },
+    {
+      "name": "from_enname",
+      "type": "varchar(100)",
+      "description": "Call name in english."
+    },
+    {
+      "name": "to_enname",
+      "type": "varchar(100)",
+      "description": "Target name in english."
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "Notes."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uk_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "Unique index covering the name field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

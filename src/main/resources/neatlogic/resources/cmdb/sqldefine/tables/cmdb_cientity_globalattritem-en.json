@@ -1,0 +1,68 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_globalattritem",
+  "label": "Configuration Management Entity Global Attribute Item Table",
+  "description": "The configuration management entity_globalattritem table, belonging to the configuration management module, is used for related query scenarios in configuration management and reporting.",
+  "fields": [
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "The unique identifier for the entity, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "item_id",
+      "type": "bigint",
+      "description": "Unique identifier for the item association, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "The attribute association ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "cientity_id",
+        "attr_id",
+        "item_id"
+      ],
+      "description": "Primary key index covering the cientity_id, attr_id, item_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_attr_item_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id",
+        "item_id"
+      ],
+      "description": "Standard index covering the attr_id, item_id fields, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_cientity_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_id"
+      ],
+      "description": "Standard index covering the cientity_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_item_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "item_id"
+      ],
+      "description": "Standard index covering the item_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

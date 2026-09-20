@@ -14,7 +14,7 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_VIEW_MODIFY;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityConfigVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  * @since 2021/11/9 11:28
  **/
 @Service
-@AuthAction(action = RESOURCECENTER_MODIFY.class)
+@AuthAction(action = RESOURCECENTER_VIEW_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListResourceEntityApi extends PrivateApiComponentBase {
 
@@ -65,6 +65,7 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /** 返回视图配置列表，内置视图名称按当前请求语言显示，扩展视图保留自定义名称。 */
     @Output({
             @Param(name = "Return", explode = ResourceEntityVo[].class, desc = "common.tbodylist")
     })
@@ -80,10 +81,11 @@ public class ListResourceEntityApi extends PrivateApiComponentBase {
             if (resourceEntityVo == null) {
                 resourceEntityVo = new ResourceEntityVo();
                 resourceEntityVo.setName(sceneEntityVo.getName());
-                resourceEntityVo.setLabel(sceneEntityVo.getLabel());
                 resourceEntityVo.setDescription(sceneEntityVo.getDescription());
                 resourceEntityVo.setStatus(Status.PENDING.getValue());
             }
+            // 数据库可能保留初始化时的中文名称，内置视图应始终使用当前语言的声明文案。
+            resourceEntityVo.setLabel(sceneEntityVo.getLabel());
             resourceEntityVo.setIsMultiple(sceneEntityVo.getIsMultiple());
             resourceEntityVo.setModuleId(sceneEntityVo.getModuleId());
             ModuleVo moduleVo = ModuleUtil.getModuleById(sceneEntityVo.getModuleId());

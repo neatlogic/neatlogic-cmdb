@@ -1,0 +1,70 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_entity",
+  "label": "cmdb_resourcecenter_entity",
+  "description": "The cmdb_resourcecenter_entity can be used for reporting scenarios such as status tracking and query associations related to configuration management.",
+  "fields": [
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "Name, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "label",
+      "type": "varchar(255)",
+      "description": "ID."
+    },
+    {
+      "name": "type",
+      "type": "enum('resource','scene')",
+      "description": "Type."
+    },
+    {
+      "name": "status",
+      "type": "enum('ready','pending','error','')",
+      "description": "Status."
+    },
+    {
+      "name": "error",
+      "type": "longtext",
+      "description": "Error."
+    },
+    {
+      "name": "xml",
+      "type": "mediumtext",
+      "description": "Configuration information."
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "description": "Description."
+    },
+    {
+      "name": "init_time",
+      "type": "timestamp(3)",
+      "description": "Init time."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID."
+    },
+    {
+      "name": "config",
+      "type": "mediumtext",
+      "description": "Configuration information."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "name"
+      ],
+      "description": "Primary key index covering the name field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

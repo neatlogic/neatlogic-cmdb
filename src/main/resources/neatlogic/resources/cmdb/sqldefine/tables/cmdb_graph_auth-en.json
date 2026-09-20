@@ -1,0 +1,37 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_graph_auth",
+  "label": "Configuration Management -- graph_auth Table",
+  "description": "Configure the graph_auth table, which belongs to the configuration management module. It can be used for related query scenarios such as configuration management reporting.",
+  "fields": [
+    {
+      "name": "graph_id",
+      "type": "bigint",
+      "description": "The graph association ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "auth_type",
+      "type": "enum('user','team','role','common')",
+      "description": "Configure the auth_type field in the graph_auth table in the CMDB, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "auth_uuid",
+      "type": "char(32)",
+      "description": "Auth association UUID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "graph_id",
+        "auth_type",
+        "auth_uuid"
+      ],
+      "description": "Primary key index covering the graph_id, auth_type, auth_uuid fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

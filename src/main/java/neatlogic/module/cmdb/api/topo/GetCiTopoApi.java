@@ -17,6 +17,8 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.auth.core.AuthActionChecker;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
+import neatlogic.framework.cmdb.auth.label.CIENTITY_MODIFY;
+import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
@@ -128,7 +130,7 @@ public class GetCiTopoApi extends PrivateApiComponentBase {
         List<CiTypeVo> ciTypeList = ciMapper.searchCiTypeCi(ci);
 
         //根据权限去掉没权限查看的模型
-        if (!AuthActionChecker.check("CI_MODIFY", "CIENTITY_MODIFY")) {
+        if (!AuthActionChecker.check(CI_MODIFY.class, CIENTITY_MODIFY.class)) {
             for (CiTypeVo ciType : ciTypeList) {
                 Iterator<CiVo> itCi = ciType.getCiList().iterator();
                 while (itCi.hasNext()) {

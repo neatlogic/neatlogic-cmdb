@@ -34,9 +34,12 @@ public class DateTimeRangeValueHandler implements IAttrValueHandler {
         return "datetimerange";
     }
 
+    /**
+     * 返回属性类型名称的国际化键，由展示层按当前请求语言翻译。
+     */
     @Override
     public String getName() {
-        return "时间范围";
+        return "common.timerange";
     }
 
     @Override

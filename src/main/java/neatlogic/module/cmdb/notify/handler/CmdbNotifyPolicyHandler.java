@@ -13,6 +13,7 @@
 package neatlogic.module.cmdb.notify.handler;
 
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.auth.core.AuthBase;
 import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
@@ -38,8 +39,8 @@ public class CmdbNotifyPolicyHandler extends NotifyPolicyHandlerBase {
      * 绑定权限，每种handler对应不同的权限
      */
     @Override
-    public String getAuthName() {
-        return CI_MODIFY.class.getSimpleName();
+    public Class<? extends AuthBase> getAuthClass() {
+        return CI_MODIFY.class;
     }
 
 //    @Override

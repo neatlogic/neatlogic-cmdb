@@ -1,0 +1,61 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_rel",
+  "label": "cmdb_customview_rel",
+  "description": "Cmdb_customview_rel is used for configuring management-related queries, such as reporting scenarios.",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "View ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "customview_ci_uuid",
+      "type": "char(32)",
+      "description": "Customview_ci_uuid. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "UUID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "rel_id",
+      "type": "bigint",
+      "description": "Rel_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id",
+        "uuid"
+      ],
+      "description": "Primary key index covering the customview_id, UUID fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_customci_uuid",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "customview_ci_uuid"
+      ],
+      "description": "Standard index covering the customview_ci_uuid field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_rel_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "rel_id"
+      ],
+      "description": "Standard index covering the rel_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

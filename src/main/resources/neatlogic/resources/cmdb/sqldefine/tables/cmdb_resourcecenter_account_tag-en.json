@@ -1,0 +1,41 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_account_tag",
+  "label": "Configuration Management resourcecenter_account_tag Table",
+  "description": "The cmdb_resourcecenter_account_tag can be used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "account_id",
+      "type": "bigint",
+      "description": "Account ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "tag_id",
+      "type": "bigint",
+      "description": "Tag_id, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "account_id",
+        "tag_id"
+      ],
+      "description": "Primary key index covering the account_id, tag_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_tag_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "tag_id"
+      ],
+      "description": "Standard index covering the tag_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

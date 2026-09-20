@@ -14,7 +14,7 @@ package neatlogic.module.cmdb.api.resourcecenter.config;
 
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
-import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_MODIFY;
+import neatlogic.framework.cmdb.auth.label.RESOURCECENTER_VIEW_MODIFY;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.ResourceEntityVo;
 import neatlogic.framework.cmdb.dto.resourcecenter.config.SceneEntityVo;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@AuthAction(action = RESOURCECENTER_MODIFY.class)
+@AuthAction(action = RESOURCECENTER_VIEW_MODIFY.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListSupportMultipleViewSceneTemplate extends PrivateApiComponentBase {
     @Override

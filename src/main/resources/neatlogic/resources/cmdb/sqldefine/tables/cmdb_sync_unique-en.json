@@ -1,0 +1,31 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_unique",
+  "label": "Configuration Synchronization Unique Attribute",
+  "description": "Configuration synchronization with unique attributes can be used for related queries in configuration management and report queries.",
+  "fields": [
+    {
+      "name": "ci_collection_id",
+      "type": "bigint",
+      "description": "Configuration set ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "Configuration item ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_collection_id",
+        "attr_id"
+      ],
+      "description": "Primary key index covering the ci_collection_id, attr_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

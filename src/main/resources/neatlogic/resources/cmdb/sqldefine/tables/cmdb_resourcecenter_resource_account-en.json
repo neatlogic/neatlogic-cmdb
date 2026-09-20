@@ -1,0 +1,41 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_resource_account",
+  "label": "Resource Center Resource and Account Association Table",
+  "description": "The resource center resource and account association table is used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "resource_id",
+      "type": "bigint",
+      "description": "Resource ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "account_id",
+      "type": "bigint",
+      "description": "Account ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "resource_id",
+        "account_id"
+      ],
+      "description": "Primary key index covering the resource_id, account_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_account_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "account_id"
+      ],
+      "description": "Standard index covering the account_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

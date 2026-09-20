@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.file;
 
+import neatlogic.framework.util.$;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.file.core.FileTypeHandlerBase;
 import neatlogic.framework.file.dto.FileVo;
@@ -35,9 +36,10 @@ public class CiEntityImportFileHandler extends FileTypeHandlerBase {
         return isValid;
     }
 
+    /** 按当前请求语言返回附件类型名称。 */
     @Override
     public String getDisplayName() {
-        return "配置项上传附件";
+        return $.t("file.type.cientityimport");
     }
 
     @Override

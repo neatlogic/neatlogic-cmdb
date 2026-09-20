@@ -1,0 +1,65 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_legalvalid",
+  "label": "Compliance Settings Table",
+  "description": "Configuration management compliance settings table used for configuration management-related on/off status filtering and query scenarios for reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "Name."
+    },
+    {
+      "name": "type",
+      "type": "enum('ci','custom')",
+      "description": "Validation type."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "rule",
+      "type": "text",
+      "description": "Rules."
+    },
+    {
+      "name": "cron",
+      "type": "varchar(500)",
+      "description": "Scheduled expression."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "Indicates whether it is active."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "Standard index covering the ci_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

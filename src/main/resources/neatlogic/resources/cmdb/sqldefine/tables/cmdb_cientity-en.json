@@ -1,0 +1,115 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity",
+  "label": "CMDB",
+  "description": "The CMDB configuration item instance table stores instance data for configuration items (CIs) in the enterprise IT infrastructure. Each record represents a specific configuration object, such as a server, database, middleware instance, or application system. Main fields: • id: unique identifier of the configuration item instance. • ci_id: references the primary key of the configuration item definition table (cmdb_ci) to determine the configuration item type. • name: configuration item name or host name. • status: current configuration item status, such as active, inactive, or under maintenance. • is_locked: indicates whether the configuration item is locked by a transaction to control concurrent changes. • inspect_status / inspect_time: inspection task result and time. • monitor_status / monitor_time: latest monitoring task status and update time. • renew_time: most recent refresh time of the configuration item, used to determine whether the data is stale. • fcu / fcd / lcu / lcd: creator, creation time, modifier, and modification time, respectively. Typical uses: • provides the core data source for the CMDB (configuration management database). • supports reports for asset inventory, monitoring and alerts, automated inspection, and configuration audits. Key indexes: • ci_id index: supports queries by configuration item type. • name_prefix index: supports fuzzy name searches. This table supports status tracking, time-based statistics, relational queries, and other configuration management reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "UUID."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Reference the ID from the ecmdb_ci. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "name",
+      "type": "varchar(1024)",
+      "description": "Configuration item name. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "status",
+      "type": "varchar(30)",
+      "description": "Status."
+    },
+    {
+      "name": "is_locked",
+      "type": "tinyint(1)",
+      "description": "If there are uncommitted transactions that are locked."
+    },
+    {
+      "name": "fcu",
+      "type": "varchar(50)",
+      "description": "Creator."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    },
+    {
+      "name": "lcu",
+      "type": "varchar(50)",
+      "description": "Update user."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    },
+    {
+      "name": "inspect_status",
+      "type": "enum('normal','warn','critical','','fatal')",
+      "description": "Inspection status."
+    },
+    {
+      "name": "inspect_time",
+      "type": "timestamp(3)",
+      "description": "Inspection time."
+    },
+    {
+      "name": "monitor_status",
+      "type": "enum('normal','warn','critical','','fatal')",
+      "description": "Monitor the status."
+    },
+    {
+      "name": "monitor_time",
+      "type": "timestamp(3)",
+      "description": "Monitor the time."
+    },
+    {
+      "name": "renew_time",
+      "type": "timestamp(3)",
+      "description": "Refresh time to determine aging."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "Standard index covering the ci_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_name_prefix",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "Standard index covering the name field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

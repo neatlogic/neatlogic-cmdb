@@ -1,0 +1,25 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_type_ci",
+  "label": "Asset List Tree Model",
+  "description": "Asset inventory tree model can be used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Model ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "Primary key index covering the ci_id field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

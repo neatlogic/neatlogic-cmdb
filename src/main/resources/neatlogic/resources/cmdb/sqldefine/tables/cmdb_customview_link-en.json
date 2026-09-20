@@ -1,0 +1,101 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview_link",
+  "label": "Custom View Associated Table in CMDB",
+  "description": "The custom view in the CMDB is associated with the table for use in configuration management-related queries and report scenarios.",
+  "fields": [
+    {
+      "name": "customview_id",
+      "type": "bigint",
+      "description": "View ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "Alias."
+    },
+    {
+      "name": "uuid",
+      "type": "char(32)",
+      "description": "UUID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "from_uuid",
+      "type": "char(32)",
+      "description": "The source view UUID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "to_uuid",
+      "type": "char(32)",
+      "description": "The target view UUID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "from_type",
+      "type": "enum('attr','rel','ci','constattr')",
+      "description": "Source type. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "to_type",
+      "type": "enum('attr','rel','ci','constattr')",
+      "description": "Target type."
+    },
+    {
+      "name": "join_type",
+      "type": "enum('join','leftjoin','rightjoin','outerjoin')",
+      "description": "Connection method."
+    },
+    {
+      "name": "from_ci_uuid",
+      "type": "char(32)",
+      "description": "Source configuration item UUID."
+    },
+    {
+      "name": "to_ci_uuid",
+      "type": "char(32)",
+      "description": "Target configuration item UUID."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "customview_id",
+        "uuid"
+      ],
+      "description": "Primary key index covering the customview_id, UUID fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_fromcustomviewci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_uuid"
+      ],
+      "description": "Standard index covering the to_uuid field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_to_attr_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "from_type"
+      ],
+      "description": "Standard index covering the from_type field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_view_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "from_uuid"
+      ],
+      "description": "Standard index covering the from_uuid field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

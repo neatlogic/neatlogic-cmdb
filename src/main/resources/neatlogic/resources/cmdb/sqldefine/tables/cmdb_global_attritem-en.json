@@ -1,0 +1,61 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_global_attritem",
+  "label": "Configuration Management -- global_attritem Table",
+  "description": "Configure the global_attritem table, which belongs to the configuration management module. This table is used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "The attribute association ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "value",
+      "type": "varchar(255)",
+      "description": "Configure the value field of the global_attritem table in the CMDB."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_attr_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id"
+      ],
+      "description": "Standard index covering the attr_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "attr_id",
+        "value"
+      ],
+      "description": "Unique index covering the attr_id, value fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

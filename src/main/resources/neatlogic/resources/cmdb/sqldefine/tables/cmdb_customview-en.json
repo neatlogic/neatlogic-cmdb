@@ -1,0 +1,90 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_customview",
+  "label": "Custom CMDB View",
+  "description": "The custom view in the CMDB can be used for reporting scenarios related to configuration management, such as filtering on enabled states and time dimension statistics.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(255)",
+      "description": "Name. This value must be unique in the database and is suitable for exact-match queries and duplicate detection."
+    },
+    {
+      "name": "is_active",
+      "type": "tinyint(1)",
+      "description": "Indicates whether it is active."
+    },
+    {
+      "name": "is_private",
+      "type": "tinyint(1)",
+      "description": "Is the private view."
+    },
+    {
+      "name": "type",
+      "type": "enum('private','public','scene')",
+      "description": "Type."
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "Explanation."
+    },
+    {
+      "name": "icon",
+      "type": "varchar(32)",
+      "description": "Icons."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "All UUIDs."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp",
+      "description": "Creation time."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp",
+      "description": "Update the timestamp."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Configuration."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "Unique index covering the name field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

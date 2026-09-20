@@ -1,0 +1,80 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_transfer_ci_mapping_audit",
+  "label": "Configuration Item Synchronization Audit",
+  "description": "Synchronization of new and old configuration items for audit purposes, which can be used for reporting and query scenarios related to configuration management.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "Primary key ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_mapping_id",
+      "type": "bigint",
+      "description": "Model_mapping_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "start_time",
+      "type": "datetime(3)",
+      "description": "Start time."
+    },
+    {
+      "name": "end_time",
+      "type": "datetime(3)",
+      "description": "End time. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "total_count",
+      "type": "int",
+      "description": "Total."
+    },
+    {
+      "name": "change_count",
+      "type": "int",
+      "description": "Change number."
+    },
+    {
+      "name": "fail_count",
+      "type": "int",
+      "description": "Number of failures."
+    },
+    {
+      "name": "error",
+      "type": "text",
+      "description": "Alert."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_ci_mapping_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_mapping_id"
+      ],
+      "description": "Standard index covering the ci_mapping_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_end_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "end_time"
+      ],
+      "description": "Standard index covering the end_time field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

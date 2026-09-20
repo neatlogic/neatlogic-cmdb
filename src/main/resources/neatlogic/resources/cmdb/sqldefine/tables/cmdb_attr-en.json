@@ -1,0 +1,151 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_attr",
+  "label": "CMDB Configuration Item Attribute Table",
+  "description": "The CMDB configuration item attribute table is used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Reference the ID from the ecmdb_ci. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "type",
+      "type": "varchar(50)",
+      "description": "Data type."
+    },
+    {
+      "name": "prop_id",
+      "type": "bigint",
+      "description": "The attribute ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "target_ci_id",
+      "type": "bigint",
+      "description": "Target_model_id. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "expression",
+      "type": "varchar(255)",
+      "description": "Expression."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "English name. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "label",
+      "type": "varchar(200)",
+      "description": "Label name during entry."
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "Description."
+    },
+    {
+      "name": "validator_id",
+      "type": "bigint",
+      "description": "The component ID for the validator needs to be implemented in the code."
+    },
+    {
+      "name": "is_required",
+      "type": "tinyint",
+      "description": "Is mandatory."
+    },
+    {
+      "name": "is_searchable",
+      "type": "tinyint",
+      "description": "Is searching allowed."
+    },
+    {
+      "name": "is_term",
+      "type": "tinyint",
+      "description": "Is an acronym."
+    },
+    {
+      "name": "is_unique",
+      "type": "tinyint(1)",
+      "description": "0 Is unique, 1 is similar unique, 2 is global unique."
+    },
+    {
+      "name": "input_type",
+      "type": "enum('at','mt')",
+      "description": "Attribute entry method."
+    },
+    {
+      "name": "group_name",
+      "type": "varchar(50)",
+      "description": "Attribute group."
+    },
+    {
+      "name": "is_private",
+      "type": "tinyint(1)",
+      "description": "Private attribute."
+    },
+    {
+      "name": "config",
+      "type": "text",
+      "description": "Attribute settings."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_name",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "Standard index covering the name field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_prop_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "prop_id"
+      ],
+      "description": "Standard index covering the prop_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_target_ci_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "target_ci_id"
+      ],
+      "description": "Standard index covering the target_ci_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk_name",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "ci_id",
+        "name"
+      ],
+      "description": "Unique index covering the ci_id, name fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

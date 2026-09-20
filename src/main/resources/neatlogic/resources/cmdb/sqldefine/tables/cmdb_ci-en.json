@@ -1,0 +1,140 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci",
+  "label": "CMDB Configuration Item Table",
+  "description": "Configuration item table for configuration management and related queries.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(50)",
+      "description": "English name. This value must be unique in the database and is suitable for exact-match queries and duplicate detection."
+    },
+    {
+      "name": "label",
+      "type": "varchar(255)",
+      "description": "Name."
+    },
+    {
+      "name": "description",
+      "type": "varchar(1024)",
+      "description": "Description."
+    },
+    {
+      "name": "icon",
+      "type": "varchar(255)",
+      "description": "Icons."
+    },
+    {
+      "name": "type_id",
+      "type": "bigint",
+      "description": "ECMDB CI type ID."
+    },
+    {
+      "name": "catalog_id",
+      "type": "bigint",
+      "description": "Model_directory_id."
+    },
+    {
+      "name": "parent_ci_id",
+      "type": "bigint",
+      "description": "Parent model ID."
+    },
+    {
+      "name": "name_attr_id",
+      "type": "bigint",
+      "description": "Name attribute."
+    },
+    {
+      "name": "lft",
+      "type": "int",
+      "description": "Left encoding. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "rht",
+      "type": "int",
+      "description": "Right encoding. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "is_private",
+      "type": "tinyint(1)",
+      "description": "Is private model, private models are not allowed to be modified or deleted."
+    },
+    {
+      "name": "is_menu",
+      "type": "tinyint(1)",
+      "description": "Does the menu display."
+    },
+    {
+      "name": "is_abstract",
+      "type": "tinyint(1)",
+      "description": "Is the abstract model."
+    },
+    {
+      "name": "is_virtual",
+      "type": "tinyint(1)",
+      "description": "Is the virtual model, the virtual model is actually a view, not a physical table."
+    },
+    {
+      "name": "file_id",
+      "type": "bigint",
+      "description": "Virtual model configuration file ID."
+    },
+    {
+      "name": "xml",
+      "type": "longtext",
+      "description": "Virtual model configuration content."
+    },
+    {
+      "name": "expired_day",
+      "type": "int",
+      "description": "Number of effective days, 0 represents no overdue."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_enname",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "name"
+      ],
+      "description": "Unique index covering the name field, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    },
+    {
+      "name": "idx_lft",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "lft"
+      ],
+      "description": "Standard index covering the lft field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_rht",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "rht"
+      ],
+      "description": "Standard index covering the rht field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

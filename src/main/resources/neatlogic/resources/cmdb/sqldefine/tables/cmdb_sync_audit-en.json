@@ -1,0 +1,110 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_audit",
+  "label": "CMDB Synchronization Record Table",
+  "description": "The CMDB synchronization log table is used for tracking configuration management states and performing related queries, including reporting scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_collection_id",
+      "type": "bigint",
+      "description": "Synchronize configuration ID. A standard index has been defined on this field, making it suitable for filtering, joining, and sorting queries."
+    },
+    {
+      "name": "start_time",
+      "type": "timestamp(3)",
+      "description": "Start time. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "end_time",
+      "type": "timestamp(3)",
+      "description": "End time. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "data_count",
+      "type": "int",
+      "description": "Data volume to be handled."
+    },
+    {
+      "name": "input_from",
+      "type": "varchar(20)",
+      "description": "Trigger."
+    },
+    {
+      "name": "status",
+      "type": "enum('doing','done','pausing','paused')",
+      "description": "Status."
+    },
+    {
+      "name": "transaction_group_id",
+      "type": "bigint",
+      "description": "Transaction group ID."
+    },
+    {
+      "name": "server_id",
+      "type": "int",
+      "description": "Server ID."
+    },
+    {
+      "name": "error",
+      "type": "longtext",
+      "description": "Alert."
+    },
+    {
+      "name": "current_data_id",
+      "type": "varchar(255)",
+      "description": "The current data ID is used for restoring execution."
+    },
+    {
+      "name": "config",
+      "type": "text",
+      "description": "Additional configuration."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_ci_collection_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "ci_collection_id"
+      ],
+      "description": "Standard index covering the ci_collection_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_end_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "end_time"
+      ],
+      "description": "Standard index covering the end_time field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_start_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "start_time"
+      ],
+      "description": "Standard index covering the start_time field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

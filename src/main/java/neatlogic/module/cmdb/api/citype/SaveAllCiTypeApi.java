@@ -28,15 +28,16 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiTypeMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CI_MODIFY.class)
 @OperationType(type = OperationTypeEnum.UPDATE)
 public class SaveAllCiTypeApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiTypeMapper ciTypeMapper;
 
     @Override
@@ -54,6 +55,9 @@ public class SaveAllCiTypeApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /**
+     * 批量保存层级及排序，未提供查询显示开关时保留原配置。
+     */
     @Input({@Param(name = "ciTypeList", isRequired = true, explode = CiTypeVo[].class, type = ApiParamType.JSONARRAY,
             desc = "nmcac.saveallcitypeapi.input.param.desc.citypelist")})
     @Description(desc = "nmcac.saveallcitypeapi.getname")

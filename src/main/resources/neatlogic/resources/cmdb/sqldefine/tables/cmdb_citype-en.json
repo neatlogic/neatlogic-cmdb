@@ -1,0 +1,55 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_citype",
+  "label": "CMDB Configuration Item Type Table",
+  "description": "The CMDB configuration item type table is used for querying, filtering, and reporting on related data for configuration management.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(100)",
+      "description": "Type name."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    },
+    {
+      "name": "is_menu",
+      "type": "tinyint(1)",
+      "description": "Does the menu display."
+    },
+    {
+      "name": "icon",
+      "type": "varchar(50)",
+      "description": "Icons."
+    },
+    {
+      "name": "is_showintopo",
+      "type": "tinyint(1)",
+      "description": "Does the topology diagram display."
+    },
+    {
+      "name": "is_showincientityquery",
+      "type": "tinyint",
+      "description": "Querying configuration items display by default: 1 for enabled, 0 for disabled."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

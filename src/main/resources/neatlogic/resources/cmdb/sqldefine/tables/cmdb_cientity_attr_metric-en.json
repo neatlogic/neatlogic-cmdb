@@ -1,0 +1,68 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_cientity_attr_metric",
+  "label": "CMDB Configuration Item Attribute Performance Data Table",
+  "description": "Configuration item attribute performance data table - records numeric attribute performance data submitted by configuration item transactions.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "cientity_id",
+      "type": "bigint",
+      "description": "Configuration item ID."
+    },
+    {
+      "name": "attr_id",
+      "type": "bigint",
+      "description": "The attribute ID."
+    },
+    {
+      "name": "metric_time",
+      "type": "timestamp(3)",
+      "description": "Performance data time."
+    },
+    {
+      "name": "value",
+      "type": "decimal(30,10)",
+      "description": "Performance data values."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records."
+    },
+    {
+      "name": "idx_cientity_attr_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "cientity_id",
+        "attr_id",
+        "metric_time"
+      ],
+      "description": "An ordinary index covering the fields `client_id`, `attr_id`, and `metric_time` is suitable for querying time series data of a single configuration item attribute."
+    },
+    {
+      "name": "idx_attr_time",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "attr_id",
+        "metric_time"
+      ],
+      "description": "An ordinary index covering the `attr_id` and `metric_time` fields is suitable for querying performance data by attribute and time."
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_ci_collection",
+  "label": "cmdb_sync_ci_collection",
+  "description": "The cmdb_sync_ci_collection is used for time dimension statistical and query scenarios related to configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "Configuration item ID. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "collection_name",
+      "type": "varchar(100)",
+      "description": "Collection name."
+    },
+    {
+      "name": "parent_key",
+      "type": "varchar(100)",
+      "description": "Parent attribute, can be null."
+    },
+    {
+      "name": "collect_mode",
+      "type": "enum('initiative','passive')",
+      "description": "Collect mode."
+    },
+    {
+      "name": "is_auto_commit",
+      "type": "tinyint",
+      "description": "Is automatic commit enabled."
+    },
+    {
+      "name": "is_allow_multiple",
+      "type": "tinyint",
+      "description": "Is it allowed to update multiple records."
+    },
+    {
+      "name": "match_mode",
+      "type": "enum('key','level')",
+      "description": "Match pattern."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Creator."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Updated by."
+    },
+    {
+      "name": "last_sync_date",
+      "type": "timestamp(3)",
+      "description": "Last successful synchronization time."
+    },
+    {
+      "name": "description",
+      "type": "varchar(500)",
+      "description": "Explanation."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "ci_id",
+        "collection_name",
+        "parent_key"
+      ],
+      "description": "Unique index covering the ci_id, collection_name, parent_key fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

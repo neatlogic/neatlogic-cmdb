@@ -1,0 +1,81 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_sync_data_audit",
+  "label": "Configuration Management -- sync_data_audit Table",
+  "description": "Configure the sync_data_audit table, which belongs to the configuration management module. It can be used for related queries and report queries in configuration management scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "audit_id",
+      "type": "bigint",
+      "description": "Audit ID, each audit ID is recorded once and only once. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "ci_collection_id",
+      "type": "bigint",
+      "description": "Collector ID."
+    },
+    {
+      "name": "collection_name",
+      "type": "varchar(255)",
+      "description": "Collection name. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "data_id",
+      "type": "varchar(500)",
+      "description": "The unique identifier for MongoDB data. A standard index is defined on this field, making it suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "error",
+      "type": "longtext",
+      "description": "Alert."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_audit_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "audit_id"
+      ],
+      "description": "Standard index covering the audit_id field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "idx_collection",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "collection_name"
+      ],
+      "description": "Standard index covering the collection_name field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "data_id",
+        "ci_collection_id"
+      ],
+      "description": "Unique index covering the data_id, ci_collection_id fields, suitable for exact-match retrieval, uniqueness checks, and duplicate detection."
+    }
+  ]
+}

@@ -16,22 +16,21 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.CiTypeVo;
-import neatlogic.framework.restful.annotation.Description;
-import neatlogic.framework.restful.annotation.OperationType;
-import neatlogic.framework.restful.annotation.Output;
-import neatlogic.framework.restful.annotation.Param;
+import neatlogic.framework.common.constvalue.ApiParamType;
+import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.CiTypeMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class ListCiTypeApi extends PrivateApiComponentBase {
 
-    @Autowired
+    @Resource
     private CiTypeMapper ciTypeMapper;
 
     @Override
@@ -49,10 +48,16 @@ public class ListCiTypeApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /**
+     * 查询层级，仅在调用方明确传入显示条件时过滤。
+     */
+    @Input({@Param(name = "isShowInCiEntityQuery", type = ApiParamType.INTEGER, rule = "1", desc = "term.cmdb.filterbycientityqueryvisibility")})
     @Output({@Param(explode = CiTypeVo[].class)})
     @Description(desc = "nmcac.listcitypeapi.getname")
     @Override
     public Object myDoService(JSONObject jsonObj) throws Exception {
-        return ciTypeMapper.searchCiType(new CiTypeVo());
+        CiTypeVo ciTypeVo = new CiTypeVo();
+        ciTypeVo.setIsShowInCiEntityQuery(jsonObj.getInteger("isShowInCiEntityQuery"));
+        return ciTypeMapper.searchCiType(ciTypeVo);
     }
 }

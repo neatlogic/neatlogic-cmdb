@@ -1,0 +1,35 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_tag",
+  "label": "CMDB Tag Table",
+  "description": "The CMDB tag table is used for querying, filtering, and reporting on configuration management-related data.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "name",
+      "type": "varchar(200)",
+      "description": "Name."
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "description": "Description."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

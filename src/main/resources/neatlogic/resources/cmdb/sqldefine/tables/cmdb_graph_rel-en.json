@@ -1,0 +1,41 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_graph_rel",
+  "label": "Configuration Management graph_rel Table",
+  "description": "Configure the configuration management graph_rel table, which belongs to the configuration management module. It can be used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "from_graph_id",
+      "type": "bigint",
+      "description": "From_graph association ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "to_graph_id",
+      "type": "bigint",
+      "description": "to_graph association ID, used as the primary key or unique identifier for records in this table."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "from_graph_id",
+        "to_graph_id"
+      ],
+      "description": "Primary key index covering the from_graph_id, to_graph_id fields, suitable for uniquely identifying records and queries that join the primary table."
+    },
+    {
+      "name": "idx_to_graph_id",
+      "type": "BTREE",
+      "unique": false,
+      "primary": false,
+      "columns": [
+        "to_graph_id"
+      ],
+      "description": "Standard index covering the to_graph_id field, suitable for filtering, join, and sort queries."
+    }
+  ]
+}

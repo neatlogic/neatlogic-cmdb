@@ -70,7 +70,7 @@ public class TagSearchApi extends PrivateApiComponentBase {
         List<TagVo> tagList = resourceTagMapper.searchTag(tagVo);
         resultObj.put("tbodyList", tagList);
         /*if (CollectionUtils.isNotEmpty(tagList)) {
-            Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_TAG_MODIFY.class.getSimpleName());
+            Boolean hasAuth = AuthActionChecker.check(RESOURCECENTER_TAG_MODIFY.class);
             tagList.stream().forEach(o -> {
                 OperateVo delete = new OperateVo("delete", "删除");
                 o.getOperateList().add(delete);

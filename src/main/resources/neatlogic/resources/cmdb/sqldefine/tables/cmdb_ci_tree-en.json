@@ -1,0 +1,35 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_ci_tree",
+  "label": "Configuration Management CI_TREE Table",
+  "description": "Configure the ci_tree table, which belongs to the configuration management module. It can be used for related query scenarios in configuration management, such as reporting.",
+  "fields": [
+    {
+      "name": "ci_id",
+      "type": "bigint",
+      "description": "The CI association ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "parent_ci_id",
+      "type": "bigint",
+      "description": "Parent_ci association ID."
+    },
+    {
+      "name": "sort",
+      "type": "int",
+      "description": "Sort."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "ci_id"
+      ],
+      "description": "Primary key index covering the ci_id field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}

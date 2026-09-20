@@ -12,6 +12,7 @@
 
 package neatlogic.module.cmdb.mq.topic;
 
+import neatlogic.framework.util.$;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -75,14 +76,16 @@ public class CiEntityInsertTopic extends TopicBase<CiEntityTransactionVo> {
         return "cmdb/cientity/insert";
     }
 
+    /** 按当前请求语言返回系统主题名称。 */
     @Override
     public String getLabel() {
-        return "配置项添加";
+        return $.t("nmcnh.cmdbnotifytriggertype.cientityinsert.text");
     }
 
+    /** 按当前请求语言返回系统主题说明。 */
     @Override
     public String getDescription() {
-        return "配置项添加并生效后触发此主题";
+        return $.t("mq.topic.cientityinserttopic.description");
     }
 
     @Override

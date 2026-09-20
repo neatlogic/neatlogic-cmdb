@@ -1,0 +1,50 @@
+{
+  "moduleId": "cmdb",
+  "name": "cmdb_resourcecenter_config",
+  "label": "Resource Center Configuration Table",
+  "description": "Resource center configuration table used for time dimensional statistical reports for configuration management and other scenarios.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "int",
+      "description": "ID, used as the primary key or unique identifier for records in this table."
+    },
+    {
+      "name": "config",
+      "type": "longtext",
+      "description": "Config."
+    },
+    {
+      "name": "fcu",
+      "type": "char(32)",
+      "description": "Create user."
+    },
+    {
+      "name": "fcd",
+      "type": "timestamp(3)",
+      "description": "Creation time."
+    },
+    {
+      "name": "lcu",
+      "type": "char(32)",
+      "description": "Update user."
+    },
+    {
+      "name": "lcd",
+      "type": "timestamp(3)",
+      "description": "Update the timestamp."
+    }
+  ],
+  "indexes": [
+    {
+      "name": "PRIMARY",
+      "type": "BTREE",
+      "unique": true,
+      "primary": true,
+      "columns": [
+        "id"
+      ],
+      "description": "Primary key index covering the ID field, suitable for uniquely identifying records and queries that join the primary table."
+    }
+  ]
+}
