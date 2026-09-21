@@ -22,6 +22,8 @@ public interface CiEntityAttrInvokeMapper extends ICiEntityAttrInvokeCrossoverMa
 
     List<AttrInvokeVo> getAttrInvokeListByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
 
+    List<AttrInvokeVo> getAttrInvokeListByAttrId(Long attrId);
+
     // 视图值为聚合的invoke_id，读取匹配索引后按配置项、属性分别还原。
     List<AttrInvokeVo> getAttrInvokeListByInvokeIdList(@Param("invokeIdList") List<Long> invokeIdList, @Param("attrIdList") List<Long> attrIdList);
 

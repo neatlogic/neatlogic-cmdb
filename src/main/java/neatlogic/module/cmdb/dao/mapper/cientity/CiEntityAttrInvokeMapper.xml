@@ -20,6 +20,16 @@
           AND attr_id = #{attrId}
     </select>
 
+    <select id="getAttrInvokeListByAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
+        SELECT id,
+               cientity_id AS ciEntityId,
+               attr_id AS attrId,
+               type,
+               invoke_id AS invokeId
+        FROM `cmdb_attr_invoke`
+        WHERE attr_id = #{attrId}
+    </select>
+
     <!-- 按实际引用值匹配索引，不再使用索引记录主键；属性ID限制避免不同属性之间串值。 -->
     <select id="getAttrInvokeListByInvokeIdList" resultType="neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo">
         SELECT DISTINCT attr_invoke.id,

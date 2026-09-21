@@ -594,8 +594,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 //        List<HashMap<String, Object>> resultList = ciEntityMapper.searchCiEntity(ciEntityVo);
 
 //        ciEntityVo.setIdList(null);//清除id列表，避免ciEntityVo重用时数据没法更新
-        List<CiEntityVo> ciEntityList = new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, ciEntityVo.getAttrList(), ciEntityVo.getRelList()).build().getCiEntityList();
-        return ciEntityList;
+        return new CiEntityBuilder.Builder(ciEntityVo, resultList, ciVo, ciEntityVo.getAttrList(), ciEntityVo.getRelList()).build().getCiEntityList();
     }
 
     @Override
@@ -1493,17 +1492,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         }
                     }
                     filterVo.setValueList(valueArray);
-//                    filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
-//                        if (d != null) {
-//                            if (StringUtils.isBlank(d.toString())) {
-//                                throw new CiUniqueAttrNotFoundException(op.get());
-//                            }
-//                            return d.toString();
-//                        } else {
-//                            throw new CiUniqueAttrNotFoundException(op.get());
-//                        }
-//                    }).toList());
-                    // 唯一属性仍按字符串值参与重复校验。
                     valueList.add(String.join(",", filterVo.getValueList().stream().map(Object::toString).toList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 } else {
@@ -1525,17 +1513,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 }
                             }
                             filterVo.setValueList(valueArray);
-//                            filterVo.setValueList(attrEntityVo.getValueList().stream().map(d -> {
-//                                if (d != null) {
-//                                    if (StringUtils.isBlank(d.toString())) {
-//                                        throw new CiUniqueAttrNotFoundException(op.get());
-//                                    }
-//                                    return d.toString();
-//                                } else {
-//                                    throw new CiUniqueAttrNotFoundException(op.get());
-//                                }
-//                            }).toList());
-                            // 唯一属性仍按字符串值参与重复校验。
                             valueList.add(String.join(",", filterVo.getValueList().stream().map(Object::toString).toList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
@@ -2322,7 +2299,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 for (CiEntityAttrMetricVo metricVo : metricList) {
                     metricVo.setMetricTime(metricTime);
                 }
-                ciEntityAttrMetricMapper.insertCiEntityAttrMetricList(metricList);// cmdb_cientity_attr_metric
+                ciEntityAttrMetricMapper.insertCiEntityAttrMetricList(metricList);
             }
             /*
             写入关系信息
@@ -2586,19 +2563,15 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         Long ciId = ciEntityVo.getCiId();
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-        // cmdb_cientity
         ciEntityMapper.insertCiEntityBaseInfo(ciEntityVo);
 
         if (ciEntityVo.getExpiredDay() != null && ciEntityVo.getExpiredDay() > 0) {
-            // cmdb_cientity_expiredtime
             ciEntityMapper.insertCiEntityExpiredTime(ciEntityVo);
         } else {
-            // cmdb_cientity_expiredtime
             ciEntityMapper.deleteCiEntityExpiredTimeByCiEntityId(ciEntityVo.getId());
         }
         for (CiVo ci : ciList) {
             ciEntityVo.setCiId(ci.getId());
-            // cmdb_xxx
             ciEntityMapper.insertCiEntity(ciEntityVo);
         }
         ciEntityVo.setCiId(ciId);
@@ -2638,25 +2611,13 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     private void deleteCiEntity(CiEntityVo ciEntityVo) {
         CiVo ciVo = ciMapper.getCiById(ciEntityVo.getCiId());
         List<CiVo> ciList = ciMapper.getUpwardCiListByLR(ciVo.getLft(), ciVo.getRht());
-        // cmdb_cientity
-        // cmdb_attrentity
-        // cmdb_relentity
-        // cmdb_cientity_group
-        // cmdb_cientity_expiredtime
-        // cmdb_cientity_illegal
-        // cmdb_cientity_inspect
-        // cmdb_cientity_alert
-        // cmdb_cientity_globalattritem
         ciEntityMapper.deleteCiEntityBaseInfo(ciEntityVo);
         // 性能时间序列不参与主查询，删除配置项时需要显式清理。
-        // cmdb_cientity_attr_metric
         ciEntityAttrMetricMapper.deleteCiEntityAttrMetricByCiEntityId(ciEntityVo.getId());
         //删除全局属性
-        // cmdb_cientity_globalattritem
         globalAttrMapper.deleteGlobalAttrEntityByCiEntityId(ciEntityVo.getId());
         for (CiVo ci : ciList) {
             ciEntityVo.setCiId(ci.getId());
-            // 删除动态表cmdb_xxxx数据
             ciEntityMapper.deleteCiEntity(ciEntityVo);
         }
     }

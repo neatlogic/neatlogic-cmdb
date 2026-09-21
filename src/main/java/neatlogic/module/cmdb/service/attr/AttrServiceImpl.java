@@ -92,7 +92,6 @@ public class AttrServiceImpl implements AttrService {
         attrVo.setCiVo(ciVo);
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
         handler.afterInsert(attrVo);
-        // 非引用模型且不使用cmdb_attr_invoke的属性才需要创建动态表字段。
         if (!handler.isNeedTargetCi() && !(handler instanceof IAttrInvokeHandler)) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
             CountDownLatch latch = new CountDownLatch(1);
@@ -170,8 +169,7 @@ public class AttrServiceImpl implements AttrService {
         attrVo.setCiVo(ciVo);
 
         handler.afterUpdate(attrVo);
-        // 引用表属性没有动态字段，不执行字段索引和类型维护。
-        if (!handler.isNeedTargetCi() && !(handler instanceof IAttrInvokeHandler)) {
+        if (!handler.isNeedTargetCi()) {
             //补充字典到全文检索
             if (Objects.equals(attrVo.getIsTerm(), 1)) {
                 IFullTextIndexHandler fullTextHandler = FullTextIndexHandlerFactory.getHandler(CmdbFullTextIndexType.CIENTITY.getType());
@@ -341,9 +339,7 @@ public class AttrServiceImpl implements AttrService {
             TransactionUtil.commitTx(tx);
             //物理删除字段
             //由于以上事务中的dml操作包含了以下ddl操作的表，如果使用 EscapeTransactionJob会导致事务等待产生死锁，所以这里不再使用EscapeTransactionJob去保证事务一致性。即使ddl删除字段失败，以上事务也会提交
-            if (!attrVo.isNeedTargetCi()
-                    && !attrVo.getIsInvokeAttr()
-                    && ciSchemaMapper.checkColumnIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) > 0) {
+            if (!attrVo.isNeedTargetCi() && !attrVo.getIsInvokeAttr()) {
                 ciSchemaMapper.deleteAttrFromCiTable(attrVo.getCiId(), attrCi.getCiTableName(), attrVo);
             }
         } catch (Exception ex) {

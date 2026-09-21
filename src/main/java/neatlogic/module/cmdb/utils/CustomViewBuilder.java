@@ -550,7 +550,6 @@ public class CustomViewBuilder {
             Select select = SelectUtils.buildSelectFromTableAndSelectItems(mainTable);
             SelectBody selectBody = select.getSelectBody();
             PlainSelect plainSelect = (PlainSelect) selectBody;
-            // 引用索引表也有id，虚拟模型的主键必须限定所属表。.withTable(new Table("cmdb_" + ciVo.getId()))
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("id")));
             plainSelect.addSelectItems(new SelectExpressionItem(new Column("name")));
             //plainSelect.addSelectItems(new SelectExpressionItem(new Column("label").withTable(new Table("ci_info"))).withAlias(new Alias("ciName")));
@@ -571,13 +570,10 @@ public class CustomViewBuilder {
                     function.setParameters(expressionList);
                     plainSelect.addSelectItems(new SelectExpressionItem(function).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "_hash`")));
                 } else {
-                    // 内置id属性及其hash同样不能与引用记录主键混淆。
-//                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + viewConstAttrVo.getConstName() + "`").withTable(new Table("cmdb_" + ciVo.getId()))).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
                     plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + viewConstAttrVo.getConstName() + "`")).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "`")));
                     Function function = new Function();
                     function.setName("md5");
                     ExpressionList expressionList = new ExpressionList();
-                    // .withTable(new Table("cmdb_" + ciVo.getId()))
                     expressionList.addExpressions(new Column("`" + viewConstAttrVo.getConstName() + "`"));
                     function.setParameters(expressionList);
                     plainSelect.addSelectItems(new SelectExpressionItem(function).withAlias(new Alias("`" + viewConstAttrVo.getUuid() + "_hash`")));
