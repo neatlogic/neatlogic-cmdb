@@ -160,7 +160,7 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                         JSONArray valueList = null;
                         if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
-                            valueList = attrInvokeHandler.convertAttrInvokeListToValueList(attrVo, invokeEntityList);
+                            valueList = attrInvokeHandler.convertInvokeEntityListToValueList(attrVo, invokeEntityList);
                         }
                         if (valueList == null) {
                             valueList = new JSONArray();

@@ -112,7 +112,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                             map.computeIfAbsent(invokeEntityVo.getCiEntityId(), key -> new ArrayList<>()).add(invokeEntityVo);
                         }
                         for (Map.Entry<Long, List<InvokeEntityVo>> entry : map.entrySet()) {
-                            JSONArray valueList = attrInvokeHandler.convertAttrInvokeListToValueList(attr, entry.getValue());
+                            JSONArray valueList = attrInvokeHandler.convertInvokeEntityListToValueList(attr, entry.getValue());
                             JSONArray actualValueList = handler.getActualValueList(attr, valueList);
                             if (CollectionUtils.isNotEmpty(actualValueList)) {
                                 wordList.add(actualValueList.get(0).toString());

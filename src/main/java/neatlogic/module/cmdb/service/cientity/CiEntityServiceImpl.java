@@ -266,7 +266,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                         JSONArray valueList = null;
                         if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
-                            valueList = attrInvokeHandler.convertAttrInvokeListToValueList(attrVo, invokeEntityList);
+                            valueList = attrInvokeHandler.convertInvokeEntityListToValueList(attrVo, invokeEntityList);
                         }
                         if (valueList == null) {
                             valueList = new JSONArray();
@@ -2637,7 +2637,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 attrInvokeHandler.afterSaveCiEntity(attrEntityVo, oldValueList);
                 // 只有引用属性需要替换cmdb_invokeentity中的索引记录。
                 invokeEntityMapper.deleteInvokeEntityByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
-                List<InvokeEntityVo> invokeEntityList = attrInvokeHandler.convertValueListToAttrInvokeList(attrEntityVo);
+                List<InvokeEntityVo> invokeEntityList = attrInvokeHandler.convertValueListToInvokeEntityList(attrEntityVo);
                 if (CollectionUtils.isNotEmpty(invokeEntityList)) {
                     invokeEntityMapper.insertInvokeEntityList(invokeEntityList);
                 }
