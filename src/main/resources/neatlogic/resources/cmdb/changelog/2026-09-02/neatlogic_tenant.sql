@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `cmdb_attr_invoke` (
+CREATE TABLE IF NOT EXISTS `cmdb_invokeentity` (
     `id` bigint NOT NULL COMMENT '主键ID',
     `cientity_id` bigint NOT NULL COMMENT '配置项ID',
     `attr_id` bigint NOT NULL COMMENT '属性ID',

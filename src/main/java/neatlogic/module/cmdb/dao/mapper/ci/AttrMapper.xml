@@ -68,6 +68,7 @@
             resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
         SELECT a.`id`,
         a.`ci_id` AS ciId,
+        a.`type`,
         a.`name`,
         a.`label`,
         a.`description`,

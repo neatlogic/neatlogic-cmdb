@@ -22,7 +22,7 @@ import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
-import neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo;
+import neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -156,11 +156,11 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
                     } else if (attrVo.getIsInvokeAttr()) {
-                        List<AttrInvokeVo> attrInvokeList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
+                        List<InvokeEntityVo> invokeEntityList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                         JSONArray valueList = null;
                         if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
-                            valueList = attrInvokeHandler.convertAttrInvokeListToValueList(attrVo, attrInvokeList);
+                            valueList = attrInvokeHandler.convertAttrInvokeListToValueList(attrVo, invokeEntityList);
                         }
                         if (valueList == null) {
                             valueList = new JSONArray();

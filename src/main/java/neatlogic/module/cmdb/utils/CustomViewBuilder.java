@@ -620,13 +620,13 @@ public class CustomViewBuilder {
      * 按配置项聚合属性的全部invoke_id，值列和hash使用同一聚合结果，左关联保留空属性。
      */
     private void addInvokeAttrSelect(PlainSelect plainSelect, CustomViewAttrVo viewAttrVo, String ciTableName) {
-        Table invokeTable = new Table("attr_invoke_" + viewAttrVo.getUuid());
+        Table invokeTable = new Table("invokeentity_" + viewAttrVo.getUuid());
         // 在子查询内聚合，避免多个引用属性互相放大行数，并满足ONLY_FULL_GROUP_BY。
         MySQLGroupConcat groupConcat = new MySQLGroupConcat();
         groupConcat.setExpressionList(new ExpressionList(new Column("invoke_id")));
         groupConcat.setOrderByElements(Arrays.asList(new OrderByElement().withExpression(new Column("id"))));
         PlainSelect invokeSelect = new PlainSelect()
-                .withFromItem(new Table("cmdb_attr_invoke").withSchemaName(TenantContext.get().getDbName()))
+                .withFromItem(new Table("cmdb_invokeentity").withSchemaName(TenantContext.get().getDbName()))
                 .addSelectItems(new SelectExpressionItem(new Column("cientity_id")),
                         new SelectExpressionItem(groupConcat).withAlias(new Alias("`value`")))
                 .withWhere(new EqualsTo(new Column("attr_id"), new LongValue(viewAttrVo.getAttrId())));
