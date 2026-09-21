@@ -13,6 +13,7 @@
 package neatlogic.module.cmdb.dao.mapper.ci;
 
 import neatlogic.framework.cmdb.dto.ci.CiAuthVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -30,6 +31,10 @@ public interface CiAuthMapper {
 
     public int insertCiAuth(CiAuthVo ciAuthVo);
 
+    int insertCiAuthList(@Param("ciAuthList") List<CiAuthVo> ciAuthList);
+
     public int deleteCiAuthByCiId(Long ciId);
+
+    int deleteCiAuthByCiIdList(@Param("ciIdList") List<Long> ciIdList);
 
 }
