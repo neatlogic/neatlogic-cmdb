@@ -16,7 +16,7 @@ import neatlogic.framework.autoexec.source.IAutoexecJobSource;
 import neatlogic.framework.util.$;
 
 public enum JobSource implements IAutoexecJobSource {
-    DISCOVERY("自动发现", "discovery");
+    DISCOVERY("nmc.jobsource.discovery", "discovery");
     private final String text;
     private final String value;
 

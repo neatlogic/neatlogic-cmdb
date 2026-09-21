@@ -508,6 +508,7 @@
     },
     "searchcientityapi": {
       "getname": "Query Configuration Items",
+      "model": "Model",
       "input": {
         "param": {
           "desc": {
@@ -609,6 +610,21 @@
             "needchange": "Is there any change"
           }
         }
+      }
+    }
+  },
+  "nmc": {
+    "jobsource": {
+      "discovery": "Automatic Discovery"
+    },
+    "search": {
+      "expression": {
+        "between": "Between",
+        "contains": "Contains",
+        "empty": "Is Empty",
+        "notcontains": "Does Not Contain",
+        "notempty": "Is Not Empty",
+        "notequal": "Not Equal To"
       }
     }
   },

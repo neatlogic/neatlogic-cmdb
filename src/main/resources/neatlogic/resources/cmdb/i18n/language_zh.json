@@ -508,6 +508,7 @@
     },
     "searchcientityapi": {
       "getname": "查询配置项",
+      "model": "模型",
       "input": {
         "param": {
           "desc": {
@@ -609,6 +610,21 @@
             "needchange": "是否有变化"
           }
         }
+      }
+    }
+  },
+  "nmc": {
+    "jobsource": {
+      "discovery": "自动发现"
+    },
+    "search": {
+      "expression": {
+        "between": "在此区间",
+        "contains": "包含",
+        "empty": "为空",
+        "notcontains": "不包含",
+        "notempty": "不为空",
+        "notequal": "不等于"
       }
     }
   },
