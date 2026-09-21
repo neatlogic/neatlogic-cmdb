@@ -10,13 +10,13 @@
 
 package neatlogic.module.cmdb.dao.mapper.cientity;
 
-import neatlogic.framework.cmdb.crossover.ICiEntityAttrInvokeCrossoverMapper;
+import neatlogic.framework.cmdb.crossover.IInvokeEntityCrossoverMapper;
 import neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface CiEntityAttrInvokeMapper extends ICiEntityAttrInvokeCrossoverMapper {
+public interface InvokeEntityMapper extends IInvokeEntityCrossoverMapper {
 
     List<Long> getCiEntityIdListByAttrId(Long attrId);
 

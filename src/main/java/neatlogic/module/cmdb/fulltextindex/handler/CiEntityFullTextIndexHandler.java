@@ -33,7 +33,7 @@ import neatlogic.framework.fulltextindex.dto.globalsearch.DocumentVo;
 import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrInvokeMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
@@ -65,7 +65,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
     private AttrEntityMapper attrEntityMapper;
 
     @Resource
-    private CiEntityAttrInvokeMapper ciEntityAttrInvokeMapper;
+    private InvokeEntityMapper invokeEntityMapper;
 
     @Override
     protected String getModuleId() {
@@ -107,7 +107,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attr.getType());
                         IAttrInvokeHandler attrInvokeHandler = (IAttrInvokeHandler) handler;
                         Map<Long, List<InvokeEntityVo>> map = new HashMap<>();
-                        List<InvokeEntityVo> allInvokeEntityList = ciEntityAttrInvokeMapper.getInvokeEntityListByAttrId(attr.getId());
+                        List<InvokeEntityVo> allInvokeEntityList = invokeEntityMapper.getInvokeEntityListByAttrId(attr.getId());
                         for (InvokeEntityVo invokeEntityVo : allInvokeEntityList) {
                             map.computeIfAbsent(invokeEntityVo.getCiEntityId(), key -> new ArrayList<>()).add(invokeEntityVo);
                         }

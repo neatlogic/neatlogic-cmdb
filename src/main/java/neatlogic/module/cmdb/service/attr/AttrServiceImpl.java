@@ -40,7 +40,7 @@ import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrInvokeMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -77,7 +77,7 @@ public class AttrServiceImpl implements AttrService {
     private CiSchemaMapper ciSchemaMapper;
 
     @Resource
-    private CiEntityAttrInvokeMapper ciEntityAttrInvokeMapper;
+    private InvokeEntityMapper invokeEntityMapper;
 
 
     @Override
@@ -331,7 +331,7 @@ public class AttrServiceImpl implements AttrService {
 
             //删除外部存储属性的引用数据
             if (handler instanceof IAttrInvokeHandler) {
-                ciEntityAttrInvokeMapper.deleteInvokeEntityByAttrId(attrVo.getId());
+                invokeEntityMapper.deleteInvokeEntityByAttrId(attrVo.getId());
             }
 
             //删除模型属性

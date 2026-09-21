@@ -33,7 +33,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrInvokeMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,7 +58,7 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
     private CiMapper ciMapper;
 
     @Resource
-    private CiEntityAttrInvokeMapper ciEntityAttrInvokeMapper;
+    private InvokeEntityMapper invokeEntityMapper;
 
     @Resource
     private AttrMapper attrMapper;
@@ -156,7 +156,7 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
                     } else if (attrVo.getIsInvokeAttr()) {
-                        List<InvokeEntityVo> invokeEntityList = ciEntityAttrInvokeMapper.getInvokeEntityListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
+                        List<InvokeEntityVo> invokeEntityList = invokeEntityMapper.getInvokeEntityListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                         JSONArray valueList = null;
                         if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
