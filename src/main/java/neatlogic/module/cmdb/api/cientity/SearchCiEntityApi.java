@@ -165,11 +165,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             for (String key : sortConfig.keySet()) {
                 AttrVo attrVo = attrMap.get(Long.parseLong(key.replace("attr_", "")));
                 if (attrVo != null) {
-                    IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-                    // 引用表属性没有可用于ORDER BY的动态字段。
-                    if (handler != null && handler.isCanSort() && !(handler instanceof IAttrInvokeHandler)) {
-                        sortConfigList.add(new SortVo(attrVo.getCiId(), attrVo.getId(), sortConfig.getString(key)));
-                    }
+                    sortConfigList.add(new SortVo(attrVo.getCiId(), attrVo.getId(), sortConfig.getString(key)));
                 }
             }
             if (CollectionUtils.isNotEmpty(sortConfigList)) {

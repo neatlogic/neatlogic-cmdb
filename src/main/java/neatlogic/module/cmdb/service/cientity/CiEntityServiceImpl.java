@@ -391,17 +391,6 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciVo.getId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciVo.getId()));
 
-        if (CollectionUtils.isNotEmpty(ciEntityVo.getSortList())) {
-            // 引用表属性没有动态表字段，不能参与动态字段排序。
-            Set<Long> sortableAttrIdSet = attrList.stream()
-                    .filter(attrVo -> !attrVo.getIsInvokeAttr())
-                    .map(AttrVo::getId)
-                    .collect(Collectors.toSet());
-            ciEntityVo.setSortList(ciEntityVo.getSortList().stream()
-                    .filter(sortVo -> sortableAttrIdSet.contains(sortVo.getAttrId()))
-                    .collect(Collectors.toList()));
-        }
-
         if (CollectionUtils.isNotEmpty(ciEntityVo.getExcludeRelIdList())) {
             relList.removeIf(d -> ciEntityVo.getExcludeRelIdList().contains(d.getId()));
         }
