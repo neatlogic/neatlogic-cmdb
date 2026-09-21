@@ -1002,7 +1002,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     JSONArray valueList = attrEntityData.getJSONArray("valueList");
                     //进行必要的值转换，例如密码转换成密文
                     IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
-                    handler.transferValueListToSave(attrVo, ciEntityTransactionVo.getCiEntityId(), valueList);
+                    handler.transferValueListToSave(attrVo, valueList);
                     String saveMode = attrEntityData.getString("saveMode");
                     attrEntityData.clear();
                     attrEntityData.put("saveMode", saveMode);
