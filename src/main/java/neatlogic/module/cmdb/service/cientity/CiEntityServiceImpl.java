@@ -2239,9 +2239,14 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 } else if (attrEntityVo.isInvokeAttr()) {
                     if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityVo.getAttrType());
-                        if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
-                            String nameAttrName = attrInvokeHandler.getNameAttrName(attrEntityVo);
-                            ciEntityVo.setName(nameAttrName);
+                        AttrVo attrVo = new AttrVo();
+                        attrVo.setId(attrEntityVo.getAttrId());
+                        attrVo.setName(attrEntityVo.getAttrName());
+                        attrVo.setLabel(attrEntityVo.getAttrLabel());
+                        attrVo.setType(attrEntityVo.getAttrType());
+                        JSONArray actualValueList = handler.getActualValueList(attrVo, attrEntityVo.getValueList());
+                        if (CollectionUtils.isNotEmpty(actualValueList)) {
+                            ciEntityVo.setName(actualValueList.getString(0));
                         } else {
                             ciEntityVo.setName("");
                         }
