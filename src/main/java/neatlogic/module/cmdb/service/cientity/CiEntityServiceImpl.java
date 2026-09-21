@@ -2185,7 +2185,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             this.updateInvokedExpressionAttr(deleteCiEntityVo);
 
             this.deleteCiEntity(deleteCiEntityVo);
-            this.deleteInvokeAttr(ciEntityTransactionVo);
+            this.deleteInvokeEntity(ciEntityTransactionVo);
 
             //修改事务状态
             transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
@@ -2298,7 +2298,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 topicName = "cmdb/cientity/recover";
                 eventType = CiEntityEventType.RECOVER;
             }
-            this.saveInvokeAttr(ciEntityTransactionVo);
+            this.saveInvokeEntity(ciEntityTransactionVo);
             if (CollectionUtils.isNotEmpty(metricList)) {
                 Date metricTime = new Date();
                 for (CiEntityAttrMetricVo metricVo : metricList) {
@@ -2626,7 +2626,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityMapper.deleteCiEntity(ciEntityVo);
         }
     }
-    private void saveInvokeAttr(CiEntityTransactionVo ciEntityTransactionVo) {
+    private void saveInvokeEntity(CiEntityTransactionVo ciEntityTransactionVo) {
         CiEntityVo oldCiEntityVo = ciEntityTransactionVo.getOldCiEntityVo();
         for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
             IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityTransactionVo.getAttrType());
@@ -2650,7 +2650,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         }
     }
 
-    private void deleteInvokeAttr(CiEntityTransactionVo ciEntityTransactionVo) {
+    private void deleteInvokeEntity(CiEntityTransactionVo ciEntityTransactionVo) {
         CiEntityVo oldCiEntityVo = ciEntityTransactionVo.getOldCiEntityVo();
         if (oldCiEntityVo != null) {
             List<AttrEntityVo> attrEntityList = oldCiEntityVo.getAttrEntityList();
