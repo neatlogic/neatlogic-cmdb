@@ -330,6 +330,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
         CustomViewConstAttrVo customViewConstAttrVo = customViewMapper.getCustomViewConstAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
         CustomViewGlobalAttrVo customViewGlobalAttrVo = customViewMapper.getCustomViewGlobalAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
+
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         //去掉所有引用属性
         customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
