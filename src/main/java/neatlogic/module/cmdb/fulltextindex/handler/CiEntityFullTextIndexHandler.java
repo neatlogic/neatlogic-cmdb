@@ -21,7 +21,7 @@ import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrInvokeHandler;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
-import neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo;
+import neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
@@ -77,7 +77,6 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
      */
     @Override
     protected <T> void myInitialTerms(T attrVo) {
-        System.out.println("attrVo = " + JSONObject.toJSONString(attrVo));
         List<AttrVo> attrList = new ArrayList<>();
         if (attrVo == null) {
             AttrVo pAttrVo = new AttrVo();
@@ -107,12 +106,12 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                         List<String> wordList = new ArrayList<>();
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attr.getType());
                         IAttrInvokeHandler attrInvokeHandler = (IAttrInvokeHandler) handler;
-                        Map<Long, List<AttrInvokeVo>> map = new HashMap<>();
-                        List<AttrInvokeVo> allAttrInvokeList = ciEntityAttrInvokeMapper.getAttrInvokeListByAttrId(attr.getId());
-                        for (AttrInvokeVo attrInvokeVo : allAttrInvokeList) {
-                            map.computeIfAbsent(attrInvokeVo.getCiEntityId(), key -> new ArrayList<>()).add(attrInvokeVo);
+                        Map<Long, List<InvokeEntityVo>> map = new HashMap<>();
+                        List<InvokeEntityVo> allInvokeEntityList = ciEntityAttrInvokeMapper.getAttrInvokeListByAttrId(attr.getId());
+                        for (InvokeEntityVo invokeEntityVo : allInvokeEntityList) {
+                            map.computeIfAbsent(invokeEntityVo.getCiEntityId(), key -> new ArrayList<>()).add(invokeEntityVo);
                         }
-                        for (Map.Entry<Long, List<AttrInvokeVo>> entry : map.entrySet()) {
+                        for (Map.Entry<Long, List<InvokeEntityVo>> entry : map.entrySet()) {
                             JSONArray valueList = attrInvokeHandler.convertAttrInvokeListToValueList(attr, entry.getValue());
                             JSONArray actualValueList = handler.getActualValueList(attr, valueList);
                             if (CollectionUtils.isNotEmpty(actualValueList)) {

@@ -132,7 +132,7 @@
         `cientity_id` bigint(20) NOT NULL COMMENT '配置项id',
         <if test="ciVo.attrList!=null and ciVo.attrList.size() > 0">
             <foreach collection="ciVo.attrList" item="attrVo">
-                <!-- cmdb_attr_invoke属性不在配置项动态表中创建值字段。 -->
+                <!-- cmdb_invokeentity属性不在配置项动态表中创建值字段。 -->
                 <if test="attrVo.ciId == ciVo.id and attrVo.targetCiId == null and attrVo.isInvokeAttr == false">
                     `${attrVo.id}`
                     <choose>
