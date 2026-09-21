@@ -1,0 +1,863 @@
+{
+  "cmdb": {
+    "validator": {
+      "regex": {
+        "name": "正则表达式校验组件"
+      }
+    }
+  },
+  "file": {
+    "type": {
+      "cientityimport": "配置项上传附件",
+      "cmdb": "配置管理附件",
+      "virtualci": "虚拟模型配置文件"
+    }
+  },
+  "mq": {
+    "topic": {
+      "cientitydeletetopic": {
+        "description": "配置项删除并生效后触发此主题"
+      },
+      "cientityinserttopic": {
+        "description": "配置项添加并生效后触发此主题"
+      },
+      "cientityrecovertopic": {
+        "description": "配置项恢复并生效后触发此主题",
+        "label": "配置项恢复"
+      },
+      "cientityupdatetopic": {
+        "description": "配置项修改并生效后触发此主题"
+      }
+    }
+  },
+  "nf": {
+    "api": {
+      "example": {
+        "simple": "简化格式",
+        "standard": "标准格式"
+      }
+    }
+  },
+  "nmcaa": {
+    "deleteattrapi": {
+      "getname": "删除模型属性"
+    },
+    "getattrapi": {
+      "getname": "获取属性详细信息",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "属性id"
+          }
+        }
+      }
+    },
+    "getattrlistapi": {
+      "input": {
+        "param": {
+          "desc": {
+            "idlist": "属性id列表"
+          }
+        }
+      }
+    },
+    "getciattrlistapi": {
+      "getname": "获取模型属性列表"
+    },
+    "getciattrlistforviewapi": {
+      "getname": "获取模型属性列表-视图设置专用"
+    },
+    "getciglobalattrlistapi": {
+      "getname": "获取模型全局属性列表"
+    },
+    "listattrtypeapi": {
+      "getname": "获取属性类型"
+    },
+    "saveattrapi": {
+      "getname": "保存模型属性",
+      "input": {
+        "param": {
+          "desc": {
+            "inputtype": "输入类型，人工录入|自动发现"
+          }
+        }
+      }
+    },
+    "searchattrapi": {
+      "getname": "查询属性"
+    }
+  },
+  "nmcab": {
+    "deletebatchimportfileapi": {
+      "getname": "删除批量导入文件"
+    },
+    "firebatchimportapi": {
+      "getname": "发起批量导入",
+      "input": {
+        "param": {
+          "desc": {
+            "action": "append:只添加;update:只更新;all:添加&更新"
+          }
+        }
+      }
+    },
+    "getbatchimportauditapi": {
+      "getname": "获取单个配置项导入日志"
+    },
+    "getbatchimportfilelistapi": {
+      "getname": "获取批量导入文件"
+    },
+    "getimporttemplateapi": {
+      "getname": "下载配置项导入模板"
+    },
+    "searchbatchimportauditapi": {
+      "getname": "查询批量导入日志"
+    },
+    "stopbatchimportapi": {
+      "getname": "停止批量导入"
+    },
+    "uploadbatchimportfileapi": {
+      "getname": "上传批量导入文件"
+    }
+  },
+  "nmcac": {
+    "batchdeletecientityapi": {
+      "getname": "批量删除配置项",
+      "input": {
+        "param": {
+          "desc": {
+            "cientitylist": "删除列表，包含ciId、ciEntityId和ciEntityName三个属性",
+            "needcommit": "是否需要提交"
+          }
+        }
+      }
+    },
+    "batchsavecientityapi": {
+      "getname": "保存配置项",
+      "input": {
+        "param": {
+          "desc": {
+            "issimple": "数据是否简易模式"
+          },
+          "help": {
+            "issimple": "简易模式主要给第三方系统使用，true：简易模式，false：正常模式"
+          }
+        }
+      }
+    },
+    "batchsavecientitysimpleapi": {
+      "getname": "批量保存配置项（简化版本）"
+    },
+    "batchupdatecientityapi": {
+      "getname": "批量修改配置项",
+      "input": {
+        "param": {
+          "desc": {
+            "attrentitydata": "需要修改的属性",
+            "cientityidlist": "被修改配置项id",
+            "globalattrentitydata": "需要修改的全局属性",
+            "relentitydata": "需要修改的关系"
+          }
+        }
+      }
+    },
+    "deletealertlevelapi": {
+      "getname": "删除告警级别"
+    },
+    "deleteciapi": {
+      "getname": "删除模型"
+    },
+    "deletecicatalogapi": {
+      "getname": "删除模型目录"
+    },
+    "deletecientityapi": {
+      "getname": "删除配置项"
+    },
+    "deletecitopotemplateapi": {
+      "getname": "删除拓扑场景"
+    },
+    "exportciapi": {
+      "getname": "导出配置项模型"
+    },
+    "exportcientityapi": {
+      "getname": "导出配置项",
+      "input": {
+        "param": {
+          "desc": {
+            "attrfilterlist": "属性过滤条件",
+            "idlist": "id列表",
+            "relfilterlist": "关系过滤条件",
+            "showattrrellist": "需要导出的字段列表，包括属性和关系"
+          }
+        }
+      }
+    },
+    "exportciforexcelapi": {
+      "getname": "导出配置项模型及属性列表"
+    },
+    "exportillegalcientityapi": {
+      "getname": "导出不合规配置项"
+    },
+    "getalertlevelapi": {
+      "getname": "获取告警级别"
+    },
+    "getciapi": {
+      "getname": "获取模型信息",
+      "input": {
+        "param": {
+          "desc": {
+            "needaction": "是否需要操作，需要的话会进行权限校验"
+          }
+        }
+      }
+    },
+    "getciattrrellistapi": {
+      "description": {
+        "desc": "获取模型信息接口，此接口主要用在和ITSM表单联动"
+      }
+    },
+    "getciauthapi": {
+      "getname": "获取模型授权信息"
+    },
+    "getcicatalogapi": {
+      "getname": "获取模型目录"
+    },
+    "getcientityapi": {
+      "getname": "获取配置项详细信息",
+      "input": {
+        "param": {
+          "desc": {
+            "limitattrentity": "是否限制引用属性数量，默认值是:true",
+            "limitrelentity": "是否限制关系数量，默认值是:true",
+            "needaction": "是否需要操作列，如果需要检查操作权限，会根据结果返回action列",
+            "showattrrellist": "需要显示的字段列表，包括属性关系和常量，格式：attr_xxx,relfrom_xxx或relto_xxx，xxx是对应id"
+          }
+        }
+      }
+    },
+    "getcientityauthapi": {
+      "getname": "获取配置项权限信息",
+      "input": {
+        "param": {
+          "desc": {
+            "authlist": "需要判断的权限列表"
+          }
+        }
+      }
+    },
+    "getcientitybaseinfoapi": {
+      "getname": "获取配置项基础信息"
+    },
+    "getcientitybaseinfolistapi": {
+      "description": {
+        "desc": "根据id列表获取多个配置项基础信息"
+      },
+      "getname": "获取多个配置项基础信息",
+      "input": {
+        "param": {
+          "desc": {
+            "idlist": "配置项id列表"
+          }
+        }
+      }
+    },
+    "getcientitydataapi": {
+      "getname": "获取配置项详细信息（外部调用）"
+    },
+    "getcientitylistapi": {
+      "description": {
+        "desc": "根据id列表获取多个配置项详细信息接口"
+      },
+      "getname": "获取多个配置项详细信息"
+    },
+    "getcitopotemplateapi": {
+      "getname": "获取拓扑场景"
+    },
+    "getcitypeapi": {
+      "getname": "获取模型类型信息"
+    },
+    "getciuniqueapi": {
+      "getname": "返回唯一属性id列表"
+    },
+    "getciviewapi": {
+      "getname": "获取模型显示设置"
+    },
+    "getcustomviewattrapi": {
+      "getname": "获取自定义视图属性列表"
+    },
+    "getcustomviewcientityapi": {
+      "getname": "根据配置项id获取自定义视图id数据"
+    },
+    "getcustomviewtemplateapi": {
+      "getname": "获取自定义视图模板"
+    },
+    "getdownwardcilistapi": {
+      "getname": "获取下游模型列表"
+    },
+    "getillegalcientitycountapi": {
+      "getname": "获取不合规配置项数量"
+    },
+    "getimportfieldlistapi": {
+      "getname": "获取可导入的属性和关系列表"
+    },
+    "getpasswordattrplaintextapi": {
+      "getname": "获取密码属性明文",
+      "output": {
+        "param": {
+          "desc": "密码明文"
+        }
+      }
+    },
+    "importciapi": {
+      "getname": "导入配置项模型"
+    },
+    "initcischemaapi": {
+      "getname": "初始化模型数据表"
+    },
+    "listciapi": {
+      "getname": "返回模型列表信息（下拉框用）"
+    },
+    "listcicatalogandcifortreeapi": {
+      "getname": "获取模型目录和模型树形列表"
+    },
+    "listcicatalogfortreeapi": {
+      "getname": "获取模型目录树形列表"
+    },
+    "listcientitydataforselectapi": {
+      "getname": "查询模型配置项数据（下拉框）",
+      "input": {
+        "param": {
+          "desc": {
+            "elementid": "属性｜关系｜固化属性"
+          }
+        }
+      }
+    },
+    "listcientityforselectapi": {
+      "description": {
+        "desc": "查询资源中心状态列表"
+      },
+      "getname": "查询模型数据列表（下拉框）",
+      "input": {
+        "param": {
+          "desc": {
+            "defaultvalue": "默认值列表"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": "模型数据列表"
+        }
+      }
+    },
+    "listcientitystatusapi": {
+      "getname": "获取配置项告警信息"
+    },
+    "listcifortreeapi": {
+      "description": {
+        "desc": "返回模型树型列表"
+      },
+      "getname": "获取模型树型列表"
+    },
+    "listcitopotemplateapi": {
+      "getname": "获取拓扑场景列表"
+    },
+    "listcitypeapi": {
+      "getname": "获取模型类型列表"
+    },
+    "listexpressionattrrelapi": {
+      "getname": "返回模型表达式属性和关系列表"
+    },
+    "movecicatalogapi": {
+      "getname": "移动模型目录"
+    },
+    "resetattrentityindexapi": {
+      "description": {
+        "desc": "重建引用属性索引接口，用于优化查询性能"
+      },
+      "getname": "重建引用属性索引"
+    },
+    "resetrelentityindexapi": {
+      "description": {
+        "desc": "重建关系索引接口，用于优化查询性能"
+      },
+      "getname": "重建关系索引"
+    },
+    "savealertlevelapi": {
+      "getname": "保存告警级别"
+    },
+    "saveallcitypeapi": {
+      "getname": "批量保存模型类型",
+      "input": {
+        "param": {
+          "desc": {
+            "citypelist": "模型类型列表"
+          }
+        }
+      }
+    },
+    "saveciapi": {
+      "getname": "保存模型",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "id，不提供代表新增模型"
+          }
+        }
+      }
+    },
+    "saveciauthapi": {
+      "getname": "保存模型授权",
+      "input": {
+        "param": {
+          "desc": {
+            "authlist": "授权列表，为空代表清空所有授权，范例：{authType:'user',authUuid:'xxxx',action:'cimaange'}"
+          }
+        }
+      }
+    },
+    "savecicatalogapi": {
+      "getname": "保存模型目录"
+    },
+    "savecientityalertapi": {
+      "getname": "保存配置项告警",
+      "input": {
+        "param": {
+          "help": {
+            "alertattr": "每个配置项对应一个告警属性只能有一条告警信息",
+            "alertlevel": "必须是大于等于0的整数，数字越大级别越高，如果等于0代表消除告警",
+            "alerttime": "需要提供时间戳，精确到毫秒，如果不提供则使用保存时间",
+            "cientityid": "如果提供了，会优先使用，找不到配置项才会使用ciEntityUuid",
+            "uniquename": "如果是32字符的散列，系统会直接保存，否则，系统会先做散列处理"
+          }
+        }
+      }
+    },
+    "savecientityalertbatchapi": {
+      "getname": "批量保存配置项告警",
+      "input": {
+        "param": {
+          "help": "批量保存数据时使用此参数，参数格式和单个告警要求一致"
+        }
+      }
+    },
+    "savecinameattridapi": {
+      "getname": "保存模型名称属性"
+    },
+    "savecitypeapi": {
+      "getname": "保存模型类型",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "id，不存在代表添加",
+            "ismenu": "是否在菜单中显示",
+            "isshowincientityquery": "是否在配置项查询中显示"
+          }
+        }
+      }
+    },
+    "saveciuniqueruleapi": {
+      "getname": "保存模型唯一规则"
+    },
+    "savecustomviewapi": {
+      "getname": "保存自定义视图"
+    },
+    "searchalertlevelapi": {
+      "getname": "搜索告警级别"
+    },
+    "searchattrtargetcientityapi": {
+      "getname": "查询属性目标配置项",
+      "input": {
+        "param": {
+          "desc": "选中值列表"
+        }
+      },
+      "output": {
+        "param": {
+          "desc": "表头信息"
+        }
+      }
+    },
+    "searchciattrrellistapi": {
+      "description": {
+        "desc": "搜索模型属性和关系信息接口，此接口主要用在DSL输入控件搜索属性和关系"
+      },
+      "getname": "搜索模型属性和关系信息",
+      "input": {
+        "param": {
+          "desc": {
+            "keyword": "关键字，只匹配属性和关系的唯一标识"
+          }
+        }
+      }
+    },
+    "searchcientityalertapi": {
+      "getname": "搜索配置项告警信息",
+      "input": {
+        "param": {
+          "desc": {
+            "groupidlist": "视图id列表"
+          },
+          "help": {
+            "groupidlist": "不能和配置项id列表同时为空",
+            "idlist": "不能和视图id列表同时为空"
+          }
+        }
+      }
+    },
+    "searchcientityapi": {
+      "getname": "查询配置项",
+      "input": {
+        "param": {
+          "desc": {
+            "attrid": "关系id（通过引用配置项查询引用属性时使用）",
+            "cientitylist": "配置项结果集，如果提供则不会进行搜索，补充头部信息后直接返回",
+            "condition": "需要显示的字段列表，包括属性关系和常量，范例：[\\\"attr_xxx\\\",\\\"relfrom_xxx\\\",\\\"relto_xxx\\\",\\\"const_ciid\\\"]，xxx代表对应属性或关系id",
+            "direction": "当前模型在关系中的位置",
+            "dsl": "DSL语句",
+            "fromcientityid": "引用配置项id（通过引用配置项查询引用属性时使用）",
+            "globalattrfilterlist": "全局属性过滤条件",
+            "groupid": "团体id",
+            "idlist": "需要查询的配置项id列表",
+            "isall": "是否返回所有列数据",
+            "islimitattr": "是否限制返回的引用属性数据",
+            "islimitrel": "是否限制返回的关系数据",
+            "mode": "dialog模式不会显示详情连接",
+            "needaction": "是否需要操作列，如果需要则根据用户权限返回操作列",
+            "needactiontype": "是否需要操作类型列，一般在表单控件中使用，用于标记数据是新增还是修改还是删除",
+            "needcheck": "是否需要复选列",
+            "needexpand": "是否需要显示展开控制列",
+            "relcientityid": "关系配置项id",
+            "relid": "关系id",
+            "sort": "排序规则，范例：{\\\"attr_xxxxx\\\":\\\"DESC\\\",\\\"attr_yyyyy\\\":\\\"ASC\\\"}"
+          }
+        }
+      }
+    },
+    "searchcitypeciapi": {
+      "getname": "获取模型类型和模型列表",
+      "input": {
+        "param": {
+          "desc": {
+            "cinamelist": "模型名称列表",
+            "isabstract": "是否抽象模型，0：否，1：是",
+            "isvirtual": "是否虚拟模型，0：否，1：是",
+            "typeidlist": "类型id列表"
+          }
+        }
+      }
+    },
+    "searchcustomviewapi": {
+      "getname": "查询自定义视图",
+      "input": {
+        "param": {
+          "help": {
+            "ciid": "查询场景自定义视图时才需要提供"
+          }
+        }
+      }
+    },
+    "searchcustomviewdataapi": {
+      "getname": "查询自定义视图数据",
+      "input": {
+        "param": {
+          "desc": {
+            "groupby": "分组属性的uuid",
+            "mode": "搜索模式，支持page和api两种，主要影响返回的数据结构，page是默认模式，用于页面展示，api会返回字段名，用于api调用，api模式仅支持searchMode=normal这种场景",
+            "searchmode": "normal:视图列表模式、group:视图列表分组模式、data:数据模式"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "datalist": "结果集"
+          }
+        }
+      }
+    },
+    "searchdeletecientityapi": {
+      "getname": "查询已删除配置项"
+    },
+    "searchillegalcientityapi": {
+      "getname": "查询不合规配置项"
+    },
+    "updaterelentityvaliddayapi": {
+      "getname": "更新关系有效天数",
+      "input": {
+        "param": {
+          "desc": "有效天数，0代表永远有效"
+        }
+      }
+    },
+    "validatecientityapi": {
+      "getname": "校验配置项完整性",
+      "input": {
+        "param": {
+          "desc": {
+            "attr": "属性数据",
+            "id": "配置项id，不存在代表添加",
+            "rel": "关系数据",
+            "uuid": "配置项uuid"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "needchange": "是否有变化"
+          }
+        }
+      }
+    }
+  },
+  "nmcacp": {
+    "getciforprocessmappingapi": {
+      "getname": "获取模型信息（流程图cmdb节点关系映射专用）"
+    }
+  },
+  "nmcag": {
+    "deleteglobalattrapi": {
+      "getname": "删除全局属性"
+    },
+    "deletegraphapi": {
+      "getname": "删除拓扑视图"
+    },
+    "getcientityglobalattrentityapi": {
+      "getname": "获取配置项全局属性"
+    },
+    "getglobalattrapi": {
+      "getname": "获取全局属性"
+    },
+    "getuseractivegroupapi": {
+      "getname": "获取当前用户激活团体列表"
+    },
+    "saveglobalattrapi": {
+      "getname": "保存全局属性",
+      "input": {
+        "param": {
+          "desc": "选项"
+        }
+      }
+    },
+    "searchglobalattrapi": {
+      "getname": "查询全局属性"
+    },
+    "searchglobalattritemapi": {
+      "getname": "查询全局属性值"
+    },
+    "searchgraphapi": {
+      "getname": "搜索拓扑视图"
+    }
+  },
+  "nmcah": {
+    "transactionauditcleaner": "AuditCleanerBase"
+  },
+  "nmcar": {
+    "deletereltypeapi": {
+      "getname": "删除模型关系类型"
+    },
+    "getcirellistapi": {
+      "getname": "获取模型关系列表",
+      "input": {
+        "param": {
+          "desc": "是否需要操作列，如果需要则根据用户权限返回合适的操作列"
+        }
+      }
+    },
+    "listallcirelapi": {
+      "ciidlist": "路径包含的模型id",
+      "endciid": "终点模型id",
+      "getname": "获取模型所有关系列表",
+      "startciid": "起点模型id"
+    },
+    "searchrelapi": {
+      "getname": "搜索模型关系"
+    }
+  },
+  "nmcara": {
+    "accountprotocolsaveapi": {
+      "getname": "保存账号管理协议"
+    },
+    "accountsaveapi": {
+      "getname": "保存资源中心账号"
+    },
+    "appenvlistapi": {
+      "getname": "查询应用模块环境列表"
+    },
+    "listappmodulelistfortreeapi": {
+      "getname": "查询资源模块列表树"
+    }
+  },
+  "nmcarc": {
+    "getresourceentityapi": {
+      "getname": "获取资源视图配置信息"
+    },
+    "getresourceentityviewdatalistapi": {
+      "getname": "获取资源视图数据列表"
+    },
+    "listresourceentityapi": {
+      "getname": "获取资源中心配置列表"
+    },
+    "saveresourceentityapi": {
+      "getname": "保存资源配置信息"
+    }
+  },
+  "nmcarr": {
+    "exportresourceapi": {
+      "getname": "导出资产清单列表"
+    },
+    "resourceaccountaccesstestapi": {
+      "getname": "测试账号可用性"
+    },
+    "resourceaccountsaveapi": {
+      "getname": "保存资源账号"
+    },
+    "resourcelistapi": {
+      "getname": "查询资源中心数据列表"
+    },
+    "resourcetypetreeapi": {
+      "getname": "查询资源类型树列表"
+    },
+    "saveresourcetypeapi": {
+      "getname": "保存资产类型的根模型"
+    }
+  },
+  "nmcas": {
+    "checkcihassynccollectionapi": {
+      "getname": "检查配置项模型是否有配置集合映射"
+    },
+    "deleteobjectapi": {
+      "getname": "删除自动采集对象"
+    },
+    "deletesyncauditapi": {
+      "getname": "删除自动采集执行日志"
+    },
+    "deletesynccicollectionapi": {
+      "getname": "删除配置项集合映射信息"
+    },
+    "deletesyncpolicyapi": {
+      "getname": "删除自动采集策略"
+    },
+    "deleteunknowncollectiondataapi": {
+      "getname": "删除未知设备数据"
+    },
+    "getconditionfieldapi": {
+      "getname": "获取集合搜索条件"
+    },
+    "getobjectapi": {
+      "getname": "获取采集对象信息"
+    },
+    "getsynccicollectionapi": {
+      "getname": "获取配置项集合映射信息"
+    },
+    "getsyncpolicyapi": {
+      "getname": "获取自动采集策略信息"
+    },
+    "launchsynccollectionapi": {
+      "getname": "执行自动采集"
+    },
+    "saveobjectapi": {
+      "getname": "保存自动采集对象"
+    },
+    "searchcollectiondataapi": {
+      "getname": "搜索自动采集集合数据"
+    },
+    "searchobjectapi": {
+      "getname": "搜索自动采集对象"
+    },
+    "searchsynccicollectionapi": {
+      "getname": "搜索模型集合映射"
+    },
+    "searchsyncpolicyapi": {
+      "getname": "搜索自动采集策略"
+    }
+  },
+  "nmcat": {
+    "deletetransactionapi": {
+      "getname": "删除事务"
+    },
+    "getcientitytopoapi": {
+      "getname": "获取配置项拓扑"
+    },
+    "recovertransactionapi": {
+      "getname": "恢复事务"
+    },
+    "searchtransactionapi": {
+      "getname": "查询事务"
+    }
+  },
+  "nmcdag": {
+    "getgraphapi": {
+      "getname": "获取架构图"
+    },
+    "savegraphapi": {
+      "getname": "保存架构图"
+    }
+  },
+  "nmcfe": {
+    "cmdbfulltextindextype": {
+      "cientity": "配置项"
+    }
+  },
+  "nmcnh": {
+    "cmdbnotifytriggertype": {
+      "cidelete": {
+        "desc": "模型被删除时触发通知",
+        "text": "模型删除"
+      },
+      "cientitydelete": {
+        "desc": "配置项删除并生效时触发通知",
+        "text": "配置项删除"
+      },
+      "cientityinsert": {
+        "desc": "配置项添加并且生效时触发通知",
+        "text": "配置项添加"
+      },
+      "cientitymodify": {
+        "desc": "配置项发生变化并且生效时触发通知",
+        "text": "配置项修改"
+      },
+      "cimodify": {
+        "desc": "模型基础配置、属性、关系和授权相关发生变化时触发通知"
+      }
+    }
+  },
+  "nmcpe": {
+    "abstractcitargetciidattrnotfoundexception": {
+      "abstractcitargetciidattrnotfoundexception": "抽象模型“{0}({1})”的“targetCiId(写入模型)”字段的值为空",
+      "abstractcitargetciidattrnotfoundexception_b": "抽象模型“{0}({1})”的“targetCiId(写入模型)”字段的值为空，配置路径：{2}，实际路径：{3}"
+    },
+    "cientityconfigillegalexception": {
+      "cientityconfigillegalexception": "CMDB节点模型映射信息不合法：{0}"
+    },
+    "dataconversionappendpathexception": {
+      "dataconversionappendpathexception": "配置路径：{0}，实际路径：{1}，异常信息：{2}"
+    }
+  },
+  "nmcps": {
+    "cmdbprocessstephandlertype": {
+      "cientitysync": "同步配置项",
+      "cmdbsync": "CMDB同步"
+    }
+  },
+  "nmcwe": {
+    "cmdbdispatcherdispatchfailedexception": {
+      "cmdbdispatcherdispatchfailedexception_a": "配置项模型或视图“{0}”不存在",
+      "cmdbdispatcherdispatchfailedexception_b": "在匹配结果：”{0}“中找不到处理人",
+      "cmdbdispatcherdispatchfailedexception_c": "在”{0}({1})“模型中，根据匹配条件：”{2}“找不到配置项数据",
+      "cmdbdispatcherdispatchfailedexception_d": "在”{0}({1})“模型中，根据匹配条件：”{2}“找到”{3}“条配置项数据",
+      "cmdbdispatcherdispatchfailedexception_e": "在”{0}“视图中，根据匹配条件：”{1}“找不到配置项数据",
+      "cmdbdispatcherdispatchfailedexception_f": "在”{0}“视图中，根据匹配条件：”{1}“找到”{2}“多条配置项数据"
+    }
+  },
+  "nmcwh": {
+    "cmdbdispatcher": {
+      "getname": "CMDB分派器"
+    }
+  },
+  "ocommn": {
+    "isneedpage": "是否需要分页"
+  }
+}

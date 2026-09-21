@@ -1,0 +1,863 @@
+{
+  "cmdb": {
+    "validator": {
+      "regex": {
+        "name": "Regular Expression Validator"
+      }
+    }
+  },
+  "file": {
+    "type": {
+      "cientityimport": "Configuration Item Import Attachment",
+      "cmdb": "Configuration Management Attachment",
+      "virtualci": "Virtual Model Configuration File"
+    }
+  },
+  "mq": {
+    "topic": {
+      "cientitydeletetopic": {
+        "description": "Triggered after a configuration item is deleted and the change takes effect."
+      },
+      "cientityinserttopic": {
+        "description": "Triggered after a configuration item is created and the change takes effect."
+      },
+      "cientityrecovertopic": {
+        "description": "Triggered after a configuration item is restored and the change takes effect.",
+        "label": "Configuration Item Restoration"
+      },
+      "cientityupdatetopic": {
+        "description": "Triggered after a configuration item is updated and the change takes effect."
+      }
+    }
+  },
+  "nf": {
+    "api": {
+      "example": {
+        "simple": "Simple Format",
+        "standard": "Standard Format"
+      }
+    }
+  },
+  "nmcaa": {
+    "deleteattrapi": {
+      "getname": "Delete Model Properties"
+    },
+    "getattrapi": {
+      "getname": "Get attribute details",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "Attribute ID"
+          }
+        }
+      }
+    },
+    "getattrlistapi": {
+      "input": {
+        "param": {
+          "desc": {
+            "idlist": "Attribute ID List"
+          }
+        }
+      }
+    },
+    "getciattrlistapi": {
+      "getname": "Obtain a list of model properties"
+    },
+    "getciattrlistforviewapi": {
+      "getname": "Get model property list - view settings specific"
+    },
+    "getciglobalattrlistapi": {
+      "getname": "Get the global attribute list of the model"
+    },
+    "listattrtypeapi": {
+      "getname": "Get Property Type"
+    },
+    "saveattrapi": {
+      "getname": "Save Model Properties",
+      "input": {
+        "param": {
+          "desc": {
+            "inputtype": "Input type, manual input | automatic discovery"
+          }
+        }
+      }
+    },
+    "searchattrapi": {
+      "getname": "Query Properties"
+    }
+  },
+  "nmcab": {
+    "deletebatchimportfileapi": {
+      "getname": "Delete bulk import files"
+    },
+    "firebatchimportapi": {
+      "getname": "Initiate bulk import",
+      "input": {
+        "param": {
+          "desc": {
+            "action": "Append: only add; Update: only update; All: Add&Update"
+          }
+        }
+      }
+    },
+    "getbatchimportauditapi": {
+      "getname": "Obtain individual configuration item import logs"
+    },
+    "getbatchimportfilelistapi": {
+      "getname": "Obtain batch import files"
+    },
+    "getimporttemplateapi": {
+      "getname": "Download Configuration Item Import Template"
+    },
+    "searchbatchimportauditapi": {
+      "getname": "Query batch import logs"
+    },
+    "stopbatchimportapi": {
+      "getname": "Stop bulk import"
+    },
+    "uploadbatchimportfileapi": {
+      "getname": "Upload batch import files"
+    }
+  },
+  "nmcac": {
+    "batchdeletecientityapi": {
+      "getname": "Batch Delete Configuration Items",
+      "input": {
+        "param": {
+          "desc": {
+            "cientitylist": "Delete the list, including three attributes: ciId, ciEntityId, and ciEntityName",
+            "needcommit": "Do you need to submit"
+          }
+        }
+      }
+    },
+    "batchsavecientityapi": {
+      "getname": "Save Configuration Item",
+      "input": {
+        "param": {
+          "desc": {
+            "issimple": "Is the data in a simple mode"
+          },
+          "help": {
+            "issimple": "Simple mode is mainly used by third-party systems, true: Simple mode, false: Normal mode"
+          }
+        }
+      }
+    },
+    "batchsavecientitysimpleapi": {
+      "getname": "Batch Save Configuration Items (Simplified Version)"
+    },
+    "batchupdatecientityapi": {
+      "getname": "Batch Modify Configuration Items",
+      "input": {
+        "param": {
+          "desc": {
+            "attrentitydata": "Properties that need to be modified",
+            "cientityidlist": "Modified configuration item ID",
+            "globalattrentitydata": "Global attributes that need to be modified",
+            "relentitydata": "Relationships that need to be modified"
+          }
+        }
+      }
+    },
+    "deletealertlevelapi": {
+      "getname": "Delete alarm level"
+    },
+    "deleteciapi": {
+      "getname": "Delete Model"
+    },
+    "deletecicatalogapi": {
+      "getname": "Delete model directory"
+    },
+    "deletecientityapi": {
+      "getname": "Delete Configuration Item"
+    },
+    "deletecitopotemplateapi": {
+      "getname": "Delete topology scene"
+    },
+    "exportciapi": {
+      "getname": "Export Configuration Item Model"
+    },
+    "exportcientityapi": {
+      "getname": "Export Configuration Items",
+      "input": {
+        "param": {
+          "desc": {
+            "attrfilterlist": "Attribute filtering criteria",
+            "idlist": "ID List",
+            "relfilterlist": "Relationship filtering criteria",
+            "showattrrellist": "List of fields to be exported, including attributes and relationships"
+          }
+        }
+      }
+    },
+    "exportciforexcelapi": {
+      "getname": "Export configuration item model and Property list"
+    },
+    "exportillegalcientityapi": {
+      "getname": "Export non compliant configuration items"
+    },
+    "getalertlevelapi": {
+      "getname": "Obtain alarm level"
+    },
+    "getciapi": {
+      "getname": "Obtain model information",
+      "input": {
+        "param": {
+          "desc": {
+            "needaction": "Do you need to operate? If necessary, permission verification will be performed"
+          }
+        }
+      }
+    },
+    "getciattrrellistapi": {
+      "description": {
+        "desc": "Obtain model information interface, which is mainly used for linking with ITSM forms"
+      }
+    },
+    "getciauthapi": {
+      "getname": "Obtain model authorization information"
+    },
+    "getcicatalogapi": {
+      "getname": "Get model directory"
+    },
+    "getcientityapi": {
+      "getname": "Obtain configuration item details",
+      "input": {
+        "param": {
+          "desc": {
+            "limitattrentity": "Whether to limit the number of referenced attributes, default value is: true",
+            "limitrelentity": "Whether to limit the number of relationships, default value is: true",
+            "needaction": "Do you need an action column? If you need to check the operation permissions, the action column will be returned based on the results",
+            "showattrrellist": "List of fields to be displayed, including attribute relationships and constants, format: attr_ Xxx, relfrom_ Xxx or relto_ Xxx, xxx is the corresponding ID"
+          }
+        }
+      }
+    },
+    "getcientityauthapi": {
+      "getname": "Obtain configuration item permission information",
+      "input": {
+        "param": {
+          "desc": {
+            "authlist": "List of permissions that need to be determined"
+          }
+        }
+      }
+    },
+    "getcientitybaseinfoapi": {
+      "getname": "Obtain basic information of configuration items"
+    },
+    "getcientitybaseinfolistapi": {
+      "description": {
+        "desc": "Obtain basic information of multiple configuration items based on the ID list"
+      },
+      "getname": "Obtain basic information for multiple configuration items",
+      "input": {
+        "param": {
+          "desc": {
+            "idlist": "Configuration Item ID List"
+          }
+        }
+      }
+    },
+    "getcientitydataapi": {
+      "getname": "Get configuration item details (external call)"
+    },
+    "getcientitylistapi": {
+      "description": {
+        "desc": "Obtain detailed information of multiple configuration items based on the ID list interface"
+      },
+      "getname": "Obtain detailed information of multiple configuration items"
+    },
+    "getcitopotemplateapi": {
+      "getname": "Obtain topology scene"
+    },
+    "getcitypeapi": {
+      "getname": "Obtain model type information"
+    },
+    "getciuniqueapi": {
+      "getname": "Returns a list of unique attribute IDs"
+    },
+    "getciviewapi": {
+      "getname": "Get model display settings"
+    },
+    "getcustomviewattrapi": {
+      "getname": "Get a list of custom view properties"
+    },
+    "getcustomviewcientityapi": {
+      "getname": "Obtain custom view ID data based on configuration item ID"
+    },
+    "getcustomviewtemplateapi": {
+      "getname": "Get custom view templates"
+    },
+    "getdownwardcilistapi": {
+      "getname": "Obtain downstream model list"
+    },
+    "getillegalcientitycountapi": {
+      "getname": "Obtain the number of non compliant configuration items"
+    },
+    "getimportfieldlistapi": {
+      "getname": "Obtain a list of importable attributes and relationships"
+    },
+    "getpasswordattrplaintextapi": {
+      "getname": "Obtain password attribute plaintext",
+      "output": {
+        "param": {
+          "desc": "Password plaintext"
+        }
+      }
+    },
+    "importciapi": {
+      "getname": "Import Configuration Item Model"
+    },
+    "initcischemaapi": {
+      "getname": "Initialize Model Data Table"
+    },
+    "listciapi": {
+      "getname": "Return model list information (for dropdown boxes)"
+    },
+    "listcicatalogandcifortreeapi": {
+      "getname": "Obtain model directory and model tree list"
+    },
+    "listcicatalogfortreeapi": {
+      "getname": "Get the model directory tree list"
+    },
+    "listcientitydataforselectapi": {
+      "getname": "Query Model Configuration Item Data (Dropdown Box)",
+      "input": {
+        "param": {
+          "desc": {
+            "elementid": "Attribute | Relationship | Fixed Attribute"
+          }
+        }
+      }
+    },
+    "listcientityforselectapi": {
+      "description": {
+        "desc": "Query Content Center Status List"
+      },
+      "getname": "Query Model Data List (Dropdown Box)",
+      "input": {
+        "param": {
+          "desc": {
+            "defaultvalue": "Default Value List"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": "Model Data List"
+        }
+      }
+    },
+    "listcientitystatusapi": {
+      "getname": "Obtain configuration item alarm information"
+    },
+    "listcifortreeapi": {
+      "description": {
+        "desc": "Return the model tree list"
+      },
+      "getname": "Obtain a model tree list"
+    },
+    "listcitopotemplateapi": {
+      "getname": "Get a list of topology scenes"
+    },
+    "listcitypeapi": {
+      "getname": "Obtain a list of model types"
+    },
+    "listexpressionattrrelapi": {
+      "getname": "Returns a list of model expression properties and relationships"
+    },
+    "movecicatalogapi": {
+      "getname": "Mobile Model Catalog"
+    },
+    "resetattrentityindexapi": {
+      "description": {
+        "desc": "Rebuild the reference attribute index interface to optimize query performance"
+      },
+      "getname": "Rebuild Reference Attribute Index"
+    },
+    "resetrelentityindexapi": {
+      "description": {
+        "desc": "Rebuild the relational index interface to optimize query performance"
+      },
+      "getname": "Rebuild Relationship Index"
+    },
+    "savealertlevelapi": {
+      "getname": "Save alarm level"
+    },
+    "saveallcitypeapi": {
+      "getname": "Batch Save Model Types",
+      "input": {
+        "param": {
+          "desc": {
+            "citypelist": "Model Type List"
+          }
+        }
+      }
+    },
+    "saveciapi": {
+      "getname": "Save Model",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID, does not provide a representative for adding a new model"
+          }
+        }
+      }
+    },
+    "saveciauthapi": {
+      "getname": "Save Model Authorization",
+      "input": {
+        "param": {
+          "desc": {
+            "authlist": "Authorization list, empty means clearing all authorizations. Example: {authType: 'user', authUuid: 'xxxx', action: 'cimaange'}"
+          }
+        }
+      }
+    },
+    "savecicatalogapi": {
+      "getname": "Save Model Catalog"
+    },
+    "savecientityalertapi": {
+      "getname": "Save Configuration Item Alert",
+      "input": {
+        "param": {
+          "help": {
+            "alertattr": "Each configuration item corresponds to an alarm attribute and can only have one alarm message",
+            "alertlevel": "It must be an integer greater than or equal to 0. The higher the number, the higher the level. If it is equal to 0, it means the alarm is eliminated",
+            "alerttime": "A timestamp needs to be provided, accurate to milliseconds. If not provided, the save time will be used",
+            "cientityid": "If provided, it will be used first, and ciEntityUuid will only be used if the configuration item cannot be found",
+            "uniquename": "If it is a 32 character hash, the system will directly save it. Otherwise, the system will perform hash processing first"
+          }
+        }
+      }
+    },
+    "savecientityalertbatchapi": {
+      "getname": "Batch save configuration item alarm",
+      "input": {
+        "param": {
+          "help": "Use this parameter when saving data in bulk, and the parameter format is consistent with the requirements for a single alarm"
+        }
+      }
+    },
+    "savecinameattridapi": {
+      "getname": "Save Model Name Properties"
+    },
+    "savecitypeapi": {
+      "getname": "Save Model Type",
+      "input": {
+        "param": {
+          "desc": {
+            "id": "ID, does not exist to represent adding",
+            "ismenu": "Is it displayed in the menu",
+            "isshowincientityquery": "Whether to show in CI Query"
+          }
+        }
+      }
+    },
+    "saveciuniqueruleapi": {
+      "getname": "Save Model Unique Rules"
+    },
+    "savecustomviewapi": {
+      "getname": "Save Custom View"
+    },
+    "searchalertlevelapi": {
+      "getname": "Search alarm level"
+    },
+    "searchattrtargetcientityapi": {
+      "getname": "Query Property Target Configuration Item",
+      "input": {
+        "param": {
+          "desc": "Selected Value List"
+        }
+      },
+      "output": {
+        "param": {
+          "desc": "Header information "
+        }
+      }
+    },
+    "searchciattrrellistapi": {
+      "description": {
+        "desc": "Search model properties and relationship information interface, mainly used for DSL input controls to search for properties and relationships"
+      },
+      "getname": "Search for model attributes and relationship information",
+      "input": {
+        "param": {
+          "desc": {
+            "keyword": "Keywords that only match unique identifiers of attributes and relationships"
+          }
+        }
+      }
+    },
+    "searchcientityalertapi": {
+      "getname": "Search for configuration item alarm information",
+      "input": {
+        "param": {
+          "desc": {
+            "groupidlist": "View ID List"
+          },
+          "help": {
+            "groupidlist": "Cannot be empty at the same time as the configuration item id list",
+            "idlist": "Cannot be empty at the same time as the view id list"
+          }
+        }
+      }
+    },
+    "searchcientityapi": {
+      "getname": "Query Configuration Items",
+      "input": {
+        "param": {
+          "desc": {
+            "attrid": "Relationship ID (used when querying reference properties through reference configuration items)",
+            "cientitylist": "The configuration item result set, if provided, will not be searched, and will be returned directly after supplementing the header information",
+            "condition": "A list of fields that need to be displayed, including attribute relationships and constants. For example, [ \"attr_xxx \", \"relfrom_xxx \",  \"relto_xxx \",  \"const_ciid \"], where xxx represents the corresponding attribute or relationship ID",
+            "direction": "The position of the current model in the relationship",
+            "dsl": "DSL statement",
+            "fromcientityid": "Reference configuration item ID (used when querying reference properties through reference configuration items)",
+            "globalattrfilterlist": "Global Attribute Filter Criteria",
+            "groupid": "Group ID",
+            "idlist": "List of configuration item IDs that need to be queried",
+            "isall": "Do you want to return all column data",
+            "islimitattr": "Whether to restrict the returned reference attribute data",
+            "islimitrel": "Whether to restrict the returned relationship data",
+            "mode": "The dialog mode will not display detailed connections",
+            "needaction": "Do you need an action column? If so, return the action column based on user permissions",
+            "needactiontype": "Do you need an action type column, usually used in form controls to mark whether data is added, modified, or deleted",
+            "needcheck": "Do you need a check column",
+            "needexpand": "Do you need to display the expanded control column",
+            "relcientityid": "Relationship configuration item ID",
+            "relid": "Relationship ID",
+            "sort": "Sort rules, example: { \"attr_xxxxx \":  \"DESC \",  \"attr_yyyyy \":  \"ASC \"}"
+          }
+        }
+      }
+    },
+    "searchcitypeciapi": {
+      "getname": "Obtain model types and model lists",
+      "input": {
+        "param": {
+          "desc": {
+            "cinamelist": "Model Name List",
+            "isabstract": "Abstract model, 0: No, 1: Yes",
+            "isvirtual": "Virtual model, 0: No, 1: Yes",
+            "typeidlist": "Type ID List"
+          }
+        }
+      }
+    },
+    "searchcustomviewapi": {
+      "getname": "Query Custom View",
+      "input": {
+        "param": {
+          "help": {
+            "ciid": "Only required when querying custom views of the scene"
+          }
+        }
+      }
+    },
+    "searchcustomviewdataapi": {
+      "getname": "Query custom view data",
+      "input": {
+        "param": {
+          "desc": {
+            "groupby": "Uuid of grouping attributes",
+            "mode": "Search mode supports two types: page and api, which mainly affect the structure of returned data. Page is the default mode for displaying on pages, while api returns field names for api calls. Api mode only supports scenarios where searchMode=normal.",
+            "searchmode": "Normal: view list mode, group: view list group mode, data: data mode"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "datalist": "Result Set"
+          }
+        }
+      }
+    },
+    "searchdeletecientityapi": {
+      "getname": "Query deleted configuration items"
+    },
+    "searchillegalcientityapi": {
+      "getname": "Query non compliant configuration items"
+    },
+    "updaterelentityvaliddayapi": {
+      "getname": "Update relationship validity days",
+      "input": {
+        "param": {
+          "desc": "Valid days, 0 represents forever valid"
+        }
+      }
+    },
+    "validatecientityapi": {
+      "getname": "Verify the integrity of configuration items",
+      "input": {
+        "param": {
+          "desc": {
+            "attr": "attribute data ",
+            "id": "Configuration item ID, does not exist to represent adding",
+            "rel": "Relationship data",
+            "uuid": "Configuration item uuid"
+          }
+        }
+      },
+      "output": {
+        "param": {
+          "desc": {
+            "needchange": "Is there any change"
+          }
+        }
+      }
+    }
+  },
+  "nmcacp": {
+    "getciforprocessmappingapi": {
+      "getname": "Obtain model information (dedicated to CMDB node relationship mapping in the flowchart)"
+    }
+  },
+  "nmcag": {
+    "deleteglobalattrapi": {
+      "getname": "Delete Global Attribute"
+    },
+    "deletegraphapi": {
+      "getname": "Delete topology view"
+    },
+    "getcientityglobalattrentityapi": {
+      "getname": "Get Configuration Item Global Properties"
+    },
+    "getglobalattrapi": {
+      "getname": "Get Global Properties"
+    },
+    "getuseractivegroupapi": {
+      "getname": "Obtain the list of active groups for the current user“"
+    },
+    "saveglobalattrapi": {
+      "getname": "Save Global Properties",
+      "input": {
+        "param": {
+          "desc": "option"
+        }
+      }
+    },
+    "searchglobalattrapi": {
+      "getname": "Query Global Properties"
+    },
+    "searchglobalattritemapi": {
+      "getname": "Query global attribute values"
+    },
+    "searchgraphapi": {
+      "getname": "Search Topology View"
+    }
+  },
+  "nmcah": {
+    "transactionauditcleaner": "AuditCleanerBase"
+  },
+  "nmcar": {
+    "deletereltypeapi": {
+      "getname": "Delete model relationship type"
+    },
+    "getcirellistapi": {
+      "getname": "Obtain a list of model relationships",
+      "input": {
+        "param": {
+          "desc": "Do you need an action column? If so, return the appropriate action column based on user permissions"
+        }
+      }
+    },
+    "listallcirelapi": {
+      "ciidlist": "Model ID included in the path",
+      "endciid": "Endpoint Model ID",
+      "getname": "Obtain a list of all relationships in the model",
+      "startciid": "Starting point model ID"
+    },
+    "searchrelapi": {
+      "getname": "Search model relationships"
+    }
+  },
+  "nmcara": {
+    "accountprotocolsaveapi": {
+      "getname": "Save Account Management Agreement"
+    },
+    "accountsaveapi": {
+      "getname": "Save Resource Center Account"
+    },
+    "appenvlistapi": {
+      "getname": "Query the list of application module environments"
+    },
+    "listappmodulelistfortreeapi": {
+      "getname": "Query Resource Module List Tree"
+    }
+  },
+  "nmcarc": {
+    "getresourceentityapi": {
+      "getname": "Obtain resource view configuration information"
+    },
+    "getresourceentityviewdatalistapi": {
+      "getname": "Obtain Resource View Data List"
+    },
+    "listresourceentityapi": {
+      "getname": "Obtain a list of resource center configurations"
+    },
+    "saveresourceentityapi": {
+      "getname": "Save resource configuration information"
+    }
+  },
+  "nmcarr": {
+    "exportresourceapi": {
+      "getname": "Export asset inventory list"
+    },
+    "resourceaccountaccesstestapi": {
+      "getname": "Test account availability"
+    },
+    "resourceaccountsaveapi": {
+      "getname": "Save resource account"
+    },
+    "resourcelistapi": {
+      "getname": "Query Resource Center Data List"
+    },
+    "resourcetypetreeapi": {
+      "getname": "Query Resource Type Tree List"
+    },
+    "saveresourcetypeapi": {
+      "getname": "Save the root model of asset types"
+    }
+  },
+  "nmcas": {
+    "checkcihassynccollectionapi": {
+      "getname": "Check if the configuration item model has a configuration set mapping"
+    },
+    "deleteobjectapi": {
+      "getname": "Delete automatic collection object"
+    },
+    "deletesyncauditapi": {
+      "getname": "Delete automatic collection execution logs"
+    },
+    "deletesynccicollectionapi": {
+      "getname": "Delete configuration item set mapping information"
+    },
+    "deletesyncpolicyapi": {
+      "getname": "Delete automatic collection policy"
+    },
+    "deleteunknowncollectiondataapi": {
+      "getname": "Delete unknown device data"
+    },
+    "getconditionfieldapi": {
+      "getname": "Get collection search criteria"
+    },
+    "getobjectapi": {
+      "getname": "Obtain collection object information"
+    },
+    "getsynccicollectionapi": {
+      "getname": "Get configuration item collection mapping information"
+    },
+    "getsyncpolicyapi": {
+      "getname": "Obtain automatic collection strategy information"
+    },
+    "launchsynccollectionapi": {
+      "getname": "Execute automatic collection"
+    },
+    "saveobjectapi": {
+      "getname": "Save automatic collection objects"
+    },
+    "searchcollectiondataapi": {
+      "getname": "Search for automatic collection of collection data"
+    },
+    "searchobjectapi": {
+      "getname": "Search for automatic collection objects"
+    },
+    "searchsynccicollectionapi": {
+      "getname": "Search model set mapping"
+    },
+    "searchsyncpolicyapi": {
+      "getname": "Search for automatic collection strategy"
+    }
+  },
+  "nmcat": {
+    "deletetransactionapi": {
+      "getname": "Delete transaction"
+    },
+    "getcientitytopoapi": {
+      "getname": "Obtain Configuration Item Topology"
+    },
+    "recovertransactionapi": {
+      "getname": "Resume transactions"
+    },
+    "searchtransactionapi": {
+      "getname": "inquiry transaction"
+    }
+  },
+  "nmcdag": {
+    "getgraphapi": {
+      "getname": "Obtain architecture diagram"
+    },
+    "savegraphapi": {
+      "getname": "Save Architecture Diagram"
+    }
+  },
+  "nmcfe": {
+    "cmdbfulltextindextype": {
+      "cientity": "Configuration Items"
+    }
+  },
+  "nmcnh": {
+    "cmdbnotifytriggertype": {
+      "cidelete": {
+        "desc": "Trigger notification when model is deleted",
+        "text": "Model deletion"
+      },
+      "cientitydelete": {
+        "desc": "Trigger notification when configuration item is deleted and takes effect",
+        "text": "Configuration Item Deletion"
+      },
+      "cientityinsert": {
+        "desc": "Trigger notification when configuration items are added and take effect",
+        "text": "Configuration Item Creation"
+      },
+      "cientitymodify": {
+        "desc": "Trigger notification when configuration items change and take effect",
+        "text": "Configuration Item Update"
+      },
+      "cimodify": {
+        "desc": "Trigger notifications when changes occur in the basic configuration, attributes, relationships, and authorization related to the model"
+      }
+    }
+  },
+  "nmcpe": {
+    "abstractcitargetciidattrnotfoundexception": {
+      "abstractcitargetciidattrnotfoundexception": "The value of the \"targetCiId (write model)\" field in the abstract model \"{0} ({1})\" is empty",
+      "abstractcitargetciidattrnotfoundexception_b": "The value of the \"targetCiId (write model)\" field in the abstract model \"{0} ({1})\" is empty, configuration path: {2}, actual path: {3}"
+    },
+    "cientityconfigillegalexception": {
+      "cientityconfigillegalexception": "The CMDB node model mapping information is illegal: {0}"
+    },
+    "dataconversionappendpathexception": {
+      "dataconversionappendpathexception": "Configuration path: {0}, actual path: {1}, exception message: {2}"
+    }
+  },
+  "nmcps": {
+    "cmdbprocessstephandlertype": {
+      "cientitysync": "Synchronize configuration items",
+      "cmdbsync": "CMDB synchronization"
+    }
+  },
+  "nmcwe": {
+    "cmdbdispatcherdispatchfailedexception": {
+      "cmdbdispatcherdispatchfailedexception_a": "The configuration item model or view '{0}' does not exist",
+      "cmdbdispatcherdispatchfailedexception_b": "Unable to find handler in matching result: {0}",
+      "cmdbdispatcherdispatchfailedexception_c": "In the {0} ({1}) model, configuration item data cannot be found based on the matching condition: {2}",
+      "cmdbdispatcherdispatchfailedexception_d": "In the {0} ({1}) model, find {3} configuration item data based on matching criteria: {2}",
+      "cmdbdispatcherdispatchfailedexception_e": "In the {0} view, configuration item data cannot be found based on the matching criteria: {1}",
+      "cmdbdispatcherdispatchfailedexception_f": "In the {0} view, find multiple configuration item data for {2} based on the matching criteria: {1}"
+    }
+  },
+  "nmcwh": {
+    "cmdbdispatcher": {
+      "getname": "CMDB Dispatcher"
+    }
+  },
+  "ocommn": {
+    "isneedpage": "Do you need pagination"
+  }
+}
