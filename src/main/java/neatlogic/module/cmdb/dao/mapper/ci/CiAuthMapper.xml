@@ -14,7 +14,7 @@
         WHERE ci_id = #{value}
     </select>
 
-    <select id="getCiAuthByCiIdList" parameterType="java.lang.Long" resultType="neatlogic.framework.cmdb.dto.ci.CiAuthVo"
+    <select id="getCiAuthByCiIdList" parameterType="java.util.List" resultType="neatlogic.framework.cmdb.dto.ci.CiAuthVo"
             useCache="true">
         SELECT `ci_id`     AS ciId,
                `auth_type` AS authType,
@@ -38,10 +38,34 @@
                 #{authUuid})
     </insert>
 
+    <insert id="insertCiAuthList">
+        INSERT INTO `cmdb_ci_auth` (`ci_id`,
+                                    `auth_type`,
+                                    `action`,
+                                    `auth_uuid`)
+        VALUES
+        <foreach collection="ciAuthList" item="ciAuth" separator=",">
+            (#{ciAuth.ciId},
+             #{ciAuth.authType},
+             #{ciAuth.action},
+             #{ciAuth.authUuid})
+        </foreach>
+        ON DUPLICATE KEY UPDATE `auth_uuid` = VALUES(`auth_uuid`)
+    </insert>
+
     <delete id="deleteCiAuthByCiId" parameterType="java.lang.Long">
         DELETE
         FROM `cmdb_ci_auth`
         WHERE `ci_id` = #{ciId}
+    </delete>
+
+    <delete id="deleteCiAuthByCiIdList">
+        DELETE
+        FROM `cmdb_ci_auth`
+        WHERE `ci_id` IN
+        <foreach collection="ciIdList" item="ciId" open="(" separator="," close=")">
+            #{ciId}
+        </foreach>
     </delete>
 
 </mapper>
