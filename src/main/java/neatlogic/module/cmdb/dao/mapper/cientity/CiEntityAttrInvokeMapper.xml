@@ -32,19 +32,19 @@
 
     <!-- 按实际引用值匹配索引，不再使用索引记录主键；属性ID限制避免不同属性之间串值。 -->
     <select id="getInvokeEntityListByInvokeIdList" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
-        SELECT DISTINCT attr_invoke.id,
-               attr_invoke.cientity_id AS ciEntityId,
-               attr_invoke.attr_id AS attrId,
-               attr_invoke.type,
-               attr_invoke.invoke_id AS invokeId
-        FROM cmdb_invokeentity attr_invoke
+        SELECT DISTINCT id,
+               cientity_id AS ciEntityId,
+               attr_id AS attrId,
+               type,
+               invoke_id AS invokeId
+        FROM cmdb_invokeentity
         <choose>
             <when test="invokeIdList != null and invokeIdList.size() > 0 and attrIdList != null and attrIdList.size() > 0">
-                WHERE attr_invoke.invoke_id IN
+                WHERE invoke_id IN
                 <foreach collection="invokeIdList" item="invokeId" open="(" close=")" separator=",">
                     #{invokeId}
                 </foreach>
-                AND attr_invoke.attr_id IN
+                AND attr_id IN
                 <foreach collection="attrIdList" item="attrId" open="(" close=")" separator=",">
                     #{attrId}
                 </foreach>
