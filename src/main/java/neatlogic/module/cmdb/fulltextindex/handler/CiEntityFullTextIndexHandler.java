@@ -107,7 +107,7 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attr.getType());
                         IAttrInvokeHandler attrInvokeHandler = (IAttrInvokeHandler) handler;
                         Map<Long, List<InvokeEntityVo>> map = new HashMap<>();
-                        List<InvokeEntityVo> allInvokeEntityList = ciEntityAttrInvokeMapper.getAttrInvokeListByAttrId(attr.getId());
+                        List<InvokeEntityVo> allInvokeEntityList = ciEntityAttrInvokeMapper.getInvokeEntityListByAttrId(attr.getId());
                         for (InvokeEntityVo invokeEntityVo : allInvokeEntityList) {
                             map.computeIfAbsent(invokeEntityVo.getCiEntityId(), key -> new ArrayList<>()).add(invokeEntityVo);
                         }

@@ -11,7 +11,7 @@
 package neatlogic.module.cmdb.dao.mapper.cientity;
 
 import neatlogic.framework.cmdb.crossover.ICiEntityAttrInvokeCrossoverMapper;
-import neatlogic.framework.cmdb.dto.cientity.AttrInvokeVo;
+import neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -20,16 +20,16 @@ public interface CiEntityAttrInvokeMapper extends ICiEntityAttrInvokeCrossoverMa
 
     List<Long> getCiEntityIdListByAttrId(Long attrId);
 
-    List<AttrInvokeVo> getAttrInvokeListByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
+    List<InvokeEntityVo> getInvokeEntityListByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
 
-    List<AttrInvokeVo> getAttrInvokeListByAttrId(Long attrId);
+    List<InvokeEntityVo> getInvokeEntityListByAttrId(Long attrId);
 
     // 视图值为聚合的invoke_id，读取匹配索引后按配置项、属性分别还原。
-    List<AttrInvokeVo> getAttrInvokeListByInvokeIdList(@Param("invokeIdList") List<Long> invokeIdList, @Param("attrIdList") List<Long> attrIdList);
+    List<InvokeEntityVo> getInvokeEntityListByInvokeIdList(@Param("invokeIdList") List<Long> invokeIdList, @Param("attrIdList") List<Long> attrIdList);
 
-    int insertAttrInvokeList(@Param("attrInvokeList") List<AttrInvokeVo> attrInvokeList);
+    int insertInvokeEntityList(@Param("invokeEntityList") List<InvokeEntityVo> invokeEntityList);
 
-    int deleteAttrInvokeByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
+    int deleteInvokeEntityByCiEntityIdAndAttrId(@Param("ciEntityId") Long ciEntityId, @Param("attrId") Long attrId);
 
-    int deleteAttrInvokeByAttrId(Long attrId);
+    int deleteInvokeEntityByAttrId(Long attrId);
 }

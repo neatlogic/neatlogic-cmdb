@@ -262,7 +262,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
                     } else if (attrVo.getIsInvokeAttr()) {
-                        List<InvokeEntityVo> invokeEntityList = ciEntityAttrInvokeMapper.getAttrInvokeListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
+                        List<InvokeEntityVo> invokeEntityList = ciEntityAttrInvokeMapper.getInvokeEntityListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
                         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
                         JSONArray valueList = null;
                         if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
@@ -2636,10 +2636,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
                 attrInvokeHandler.afterSaveCiEntity(attrEntityVo, oldValueList);
                 // 只有引用属性需要替换cmdb_invokeentity中的索引记录。
-                ciEntityAttrInvokeMapper.deleteAttrInvokeByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
+                ciEntityAttrInvokeMapper.deleteInvokeEntityByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
                 List<InvokeEntityVo> invokeEntityList = attrInvokeHandler.convertValueListToAttrInvokeList(attrEntityVo);
                 if (CollectionUtils.isNotEmpty(invokeEntityList)) {
-                    ciEntityAttrInvokeMapper.insertAttrInvokeList(invokeEntityList);
+                    ciEntityAttrInvokeMapper.insertInvokeEntityList(invokeEntityList);
                 }
             }
         }
@@ -2654,7 +2654,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
                     // 删除时按实际存储位置获取待传递给属性处理器的旧值。
                     attrInvokeHandler.afterDeleteCiEntity(attrEntityVo);// resourcepool_cabinet_device
-                    ciEntityAttrInvokeMapper.deleteAttrInvokeByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityVo.getAttrId());// cmdb_invokeentity
+                    ciEntityAttrInvokeMapper.deleteInvokeEntityByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityVo.getAttrId());// cmdb_invokeentity
                 }
             }
         }

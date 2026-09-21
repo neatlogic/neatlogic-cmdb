@@ -9,7 +9,7 @@
         WHERE attr_id = #{value}
     </select>
 
-    <select id="getAttrInvokeListByCiEntityIdAndAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
+    <select id="getInvokeEntityListByCiEntityIdAndAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
         SELECT id,
                cientity_id AS ciEntityId,
                attr_id AS attrId,
@@ -20,7 +20,7 @@
           AND attr_id = #{attrId}
     </select>
 
-    <select id="getAttrInvokeListByAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
+    <select id="getInvokeEntityListByAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
         SELECT id,
                cientity_id AS ciEntityId,
                attr_id AS attrId,
@@ -31,7 +31,7 @@
     </select>
 
     <!-- 按实际引用值匹配索引，不再使用索引记录主键；属性ID限制避免不同属性之间串值。 -->
-    <select id="getAttrInvokeListByInvokeIdList" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
+    <select id="getInvokeEntityListByInvokeIdList" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
         SELECT DISTINCT attr_invoke.id,
                attr_invoke.cientity_id AS ciEntityId,
                attr_invoke.attr_id AS attrId,
@@ -53,7 +53,7 @@
         </choose>
     </select>
 
-    <insert id="insertAttrInvokeList">
+    <insert id="insertInvokeEntityList">
         INSERT INTO cmdb_invokeentity (id, cientity_id, attr_id, type, invoke_id)
         VALUES
         <foreach collection="invokeEntityList" item="invokeEntity" separator=",">
@@ -61,13 +61,13 @@
         </foreach>
     </insert>
 
-    <delete id="deleteAttrInvokeByCiEntityIdAndAttrId">
+    <delete id="deleteInvokeEntityByCiEntityIdAndAttrId">
         DELETE FROM `cmdb_invokeentity`
         WHERE cientity_id = #{ciEntityId}
           AND attr_id = #{attrId}
     </delete>
 
-    <delete id="deleteAttrInvokeByAttrId">
+    <delete id="deleteInvokeEntityByAttrId">
         DELETE FROM `cmdb_invokeentity`
         WHERE attr_id = #{value}
     </delete>

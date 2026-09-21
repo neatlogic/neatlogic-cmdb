@@ -331,7 +331,7 @@ public class AttrServiceImpl implements AttrService {
 
             //删除外部存储属性的引用数据
             if (handler instanceof IAttrInvokeHandler) {
-                ciEntityAttrInvokeMapper.deleteAttrInvokeByAttrId(attrVo.getId());
+                ciEntityAttrInvokeMapper.deleteInvokeEntityByAttrId(attrVo.getId());
             }
 
             //删除模型属性
