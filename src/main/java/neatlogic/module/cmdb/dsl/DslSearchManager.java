@@ -22,6 +22,7 @@ import neatlogic.framework.cmdb.exception.attr.GlobalAttrOrAttrNotFoundException
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.dsl.DslSyntaxIrregularException;
 import neatlogic.framework.common.util.PageUtil;
+import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
@@ -157,6 +158,7 @@ public class DslSearchManager {
                     throw new GlobalAttrOrAttrNotFoundException(attrName);
                 }
             } else {
+                validateAttrStorage(attrVo);
                 this.searchItemMap.put(attrName, new SearchItem(ciId, attrVo));
             }
         } else {
@@ -184,6 +186,7 @@ public class DslSearchManager {
                         break;
                     }
                 } else {
+                    validateAttrStorage(attrVo);
                     SearchItem searchItem = new SearchItem(currentCiId, attrVo);
                     if (!searchItemList.isEmpty()) {
                         searchItem.setPrev(searchItemList.get(searchItemList.size() - 1));
@@ -197,6 +200,13 @@ public class DslSearchManager {
             if (!isBreak) {
                 this.searchItemMap.put(attrName, searchItemList.get(searchItemList.size() - 1));
             }
+        }
+    }
+
+    private void validateAttrStorage(AttrVo attrVo) {
+        // 当前DSL只支持动态字段和目标模型引用，不支持cmdb_invokeentity属性。
+        if (attrVo.getTargetCiId() == null && attrVo.getIsInvokeAttr()) {
+            throw new ApiRuntimeException("属性" + attrVo.getLabel() + "使用独立存储，不支持DSL搜索");
         }
     }
 

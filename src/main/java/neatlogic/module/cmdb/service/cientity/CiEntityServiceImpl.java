@@ -20,6 +20,7 @@ import neatlogic.framework.asynchronization.threadlocal.InputFromContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrInvokeHandler;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.cientityevent.CiEntityEventManager;
 import neatlogic.framework.cmdb.cientityevent.CiEntityEventType;
@@ -59,10 +60,7 @@ import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityAttrMetricMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.RelEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.*;
 import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
@@ -119,6 +117,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
     @Resource
     private CiViewMapper ciViewMapper;
+
+    @Resource
+    private InvokeEntityMapper invokeEntityMapper;
 
     @Override
     public CiEntityVo getCiEntityBaseInfoById(Long ciEntityId) {
@@ -260,6 +261,18 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             }
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
+                    } else if (attrVo.getIsInvokeAttr()) {
+                        List<InvokeEntityVo> invokeEntityList = invokeEntityMapper.getInvokeEntityListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
+                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                        JSONArray valueList = null;
+                        if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+                            valueList = attrInvokeHandler.convertInvokeEntityListToValueList(attrVo, invokeEntityList);
+                        }
+                        if (valueList == null) {
+                            valueList = new JSONArray();
+                        }
+                        JSONArray actualValueList = handler.getActualValueList(attrVo, valueList);
+                        returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                     }
                 }
             }
@@ -405,6 +418,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         attrFilterVo.setCiId(attrVo.getCiId());
                         attrFilterVo.setType(attrVo.getType());
                         attrFilterVo.setNeedTargetCi(attrVo.isNeedTargetCi());
+                        attrFilterVo.setIsInvokeAttr(attrVo.getIsInvokeAttr());
                         isExists = true;
                         break;
                     }
@@ -1466,17 +1480,19 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     AttrFilterVo filterVo = new AttrFilterVo();
                     filterVo.setAttrId(attrId);
                     filterVo.setExpression(SearchExpression.EQ.getExpression());
-                    filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(d -> {
+                    JSONArray valueArray = new JSONArray();
+                    for (Object d : attrEntityTransactionVo.getValueList()) {
                         if (d != null) {
                             if (StringUtils.isBlank(d.toString())) {
                                 throw new CiUniqueAttrNotFoundException(op.get());
                             }
-                            return d.toString();
+                            valueArray.add(d);
                         } else {
                             throw new CiUniqueAttrNotFoundException(op.get());
                         }
-                    }).toList());
-                    valueList.add(String.join(",", filterVo.getValueList()));
+                    }
+                    filterVo.setValueList(valueArray);
+                    valueList.add(String.join(",", filterVo.getValueList().stream().map(Object::toString).toList()));
                     ciEntityConditionVo.addAttrFilter(filterVo);
                 } else {
                     if (oldEntity != null) {
@@ -1485,17 +1501,19 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityVo.getValueList().stream().map(d -> {
+                            JSONArray valueArray = new JSONArray();
+                            for (Object d : attrEntityTransactionVo.getValueList()) {
                                 if (d != null) {
                                     if (StringUtils.isBlank(d.toString())) {
                                         throw new CiUniqueAttrNotFoundException(op.get());
                                     }
-                                    return d.toString();
+                                    valueArray.add(d);
                                 } else {
                                     throw new CiUniqueAttrNotFoundException(op.get());
                                 }
-                            }).toList());
-                            valueList.add(String.join(",", filterVo.getValueList()));
+                            }
+                            filterVo.setValueList(valueArray);
+                            valueList.add(String.join(",", filterVo.getValueList().stream().map(Object::toString).toList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             throw new CiUniqueAttrNotFoundException(op.get());
@@ -1784,7 +1802,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).toList());
+                            filterVo.setValueList(new JSONArray().fluentAddAll(attrEntityTransactionVo.getValueList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         }
                     }
@@ -1998,7 +2016,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             AttrFilterVo filterVo = new AttrFilterVo();
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
-                            filterVo.setValueList(attrEntityTransactionVo.getValueList().stream().map(Object::toString).toList());
+                            filterVo.setValueList(new JSONArray().fluentAddAll(attrEntityTransactionVo.getValueList()));
                             ciEntityConditionVo.addAttrFilter(filterVo);
                         } else {
                             AttrEntityVo attrEntityVo = oldEntity.getAttrEntityByAttrId(attrId);
@@ -2006,7 +2024,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                 AttrFilterVo filterVo = new AttrFilterVo();
                                 filterVo.setAttrId(attrId);
                                 filterVo.setExpression(SearchExpression.EQ.getExpression());
-                                filterVo.setValueList(attrEntityVo.getValueList().stream().map(Object::toString).toList());
+                                filterVo.setValueList(new JSONArray().fluentAddAll(attrEntityVo.getValueList()));
                                 ciEntityConditionVo.addAttrFilter(filterVo);
                             }
                         }
@@ -2167,6 +2185,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             this.updateInvokedExpressionAttr(deleteCiEntityVo);
 
             this.deleteCiEntity(deleteCiEntityVo);
+            this.deleteInvokeEntity(ciEntityTransactionVo);
 
             //修改事务状态
             transactionVo.setCommitUser(UserContext.get().getUserUuid(true));
@@ -2212,6 +2231,22 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                         List<CiEntityVo> invokeCiEntityList = ciEntityMapper.getCiEntityBaseInfoByAttrIdAndFromCiEntityId(ciEntityVo.getId(), attrEntityVo.getAttrId());
                         if (CollectionUtils.isNotEmpty(invokeCiEntityList)) {
                             ciEntityVo.setName(invokeCiEntityList.stream().map(CiEntityVo::getName).collect(Collectors.joining(",")));
+                        } else {
+                            ciEntityVo.setName("");
+                        }
+                        updateCiEntityName(ciEntityVo);
+                    }
+                } else if (attrEntityVo.isInvokeAttr()) {
+                    if (Objects.equals(ciVo.getNameAttrId(), attrEntityVo.getAttrId())) {
+                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityVo.getAttrType());
+                        AttrVo attrVo = new AttrVo();
+                        attrVo.setId(attrEntityVo.getAttrId());
+                        attrVo.setName(attrEntityVo.getAttrName());
+                        attrVo.setLabel(attrEntityVo.getAttrLabel());
+                        attrVo.setType(attrEntityVo.getAttrType());
+                        JSONArray actualValueList = handler.getActualValueList(attrVo, attrEntityVo.getValueList());
+                        if (CollectionUtils.isNotEmpty(actualValueList)) {
+                            ciEntityVo.setName(actualValueList.getString(0));
                         } else {
                             ciEntityVo.setName("");
                         }
@@ -2263,6 +2298,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 topicName = "cmdb/cientity/recover";
                 eventType = CiEntityEventType.RECOVER;
             }
+            this.saveInvokeEntity(ciEntityTransactionVo);
             if (CollectionUtils.isNotEmpty(metricList)) {
                 Date metricTime = new Date();
                 for (CiEntityAttrMetricVo metricVo : metricList) {
@@ -2590,6 +2626,44 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             ciEntityMapper.deleteCiEntity(ciEntityVo);
         }
     }
+    private void saveInvokeEntity(CiEntityTransactionVo ciEntityTransactionVo) {
+        CiEntityVo oldCiEntityVo = ciEntityTransactionVo.getOldCiEntityVo();
+        for (AttrEntityTransactionVo attrEntityTransactionVo : ciEntityTransactionVo.getAttrEntityTransactionList()) {
+            IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityTransactionVo.getAttrType());
+            if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+                JSONArray oldValueList = new JSONArray();
+                if (oldCiEntityVo != null) {
+                    AttrEntityVo attrEntityVo = oldCiEntityVo.getAttrEntityByAttrId(attrEntityTransactionVo.getAttrId());
+                    if (attrEntityVo != null && attrEntityVo.getValueList() != null) {
+                        oldValueList = attrEntityVo.getValueList();
+                    }
+                }
+                AttrEntityVo attrEntityVo = new AttrEntityVo(attrEntityTransactionVo);
+                attrInvokeHandler.afterSaveCiEntity(attrEntityVo, oldValueList);
+                // 只有引用属性需要替换cmdb_invokeentity中的索引记录。
+                invokeEntityMapper.deleteInvokeEntityByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityTransactionVo.getAttrId());
+                List<InvokeEntityVo> invokeEntityList = attrInvokeHandler.convertValueListToInvokeEntityList(attrEntityVo);
+                if (CollectionUtils.isNotEmpty(invokeEntityList)) {
+                    invokeEntityMapper.insertInvokeEntityList(invokeEntityList);
+                }
+            }
+        }
+    }
+
+    private void deleteInvokeEntity(CiEntityTransactionVo ciEntityTransactionVo) {
+        CiEntityVo oldCiEntityVo = ciEntityTransactionVo.getOldCiEntityVo();
+        if (oldCiEntityVo != null) {
+            List<AttrEntityVo> attrEntityList = oldCiEntityVo.getAttrEntityList();
+            for (AttrEntityVo attrEntityVo : attrEntityList) {
+                IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrEntityVo.getAttrType());
+                if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+                    // 删除时按实际存储位置获取待传递给属性处理器的旧值。
+                    attrInvokeHandler.afterDeleteCiEntity(attrEntityVo);// resourcepool_cabinet_device
+                    invokeEntityMapper.deleteInvokeEntityByCiEntityIdAndAttrId(ciEntityTransactionVo.getCiEntityId(), attrEntityVo.getAttrId());// cmdb_invokeentity
+                }
+            }
+        }
+    }
 
     /**
      * 提交事务，返回配置项id
@@ -2744,7 +2818,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                     return null;
                 }
             }
-            attrFilterVo.setValueList(newValueList);
+            attrFilterVo.setValueList(new JSONArray().fluentAddAll(newValueList));
         } else {
             List<String> newValueList = new ArrayList<>();
             if (Objects.equals(expression, "notequal")) {
@@ -2756,7 +2830,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             } else {
                 newValueList.addAll(valueList);
             }
-            attrFilterVo.setValueList(new ArrayList<>(newValueList));
+            attrFilterVo.setValueList(new JSONArray().fluentAddAll(newValueList));
         }
         attrFilterVo.setExpression(expression);
         return attrFilterVo;

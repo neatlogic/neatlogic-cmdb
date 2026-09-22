@@ -16,10 +16,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrInvokeHandler;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
+import neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.cientity.CiEntityNotFoundException;
@@ -30,6 +33,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.utils.CiEntityBuilder;
 import org.apache.commons.collections4.CollectionUtils;
@@ -52,6 +56,9 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
 
     @Resource
     private CiMapper ciMapper;
+
+    @Resource
+    private InvokeEntityMapper invokeEntityMapper;
 
     @Resource
     private AttrMapper attrMapper;
@@ -148,6 +155,18 @@ public class GetCiEntityAttrEntityApi extends PrivateApiComponentBase {
                             }
                             returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                         }
+                    } else if (attrVo.getIsInvokeAttr()) {
+                        List<InvokeEntityVo> invokeEntityList = invokeEntityMapper.getInvokeEntityListByCiEntityIdAndAttrId(returnCiEntityVo.getId(), attrVo.getId());
+                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
+                        JSONArray valueList = null;
+                        if (handler instanceof IAttrInvokeHandler attrInvokeHandler) {
+                            valueList = attrInvokeHandler.convertInvokeEntityListToValueList(attrVo, invokeEntityList);
+                        }
+                        if (valueList == null) {
+                            valueList = new JSONArray();
+                        }
+                        JSONArray actualValueList = handler.getActualValueList(attrVo, valueList);
+                        returnCiEntityVo.addAttrEntityData(attrVo.getId(), CiEntityBuilder.buildAttrObj(returnCiEntityVo.getId(), attrVo, valueList, actualValueList));
                     }
                 }
             }

@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS `cmdb_invokeentity` (
+    `id` bigint NOT NULL COMMENT '主键ID',
+    `cientity_id` bigint NOT NULL COMMENT '配置项ID',
+    `attr_id` bigint NOT NULL COMMENT '属性ID',
+    `type` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '引用类型',
+    `invoke_id` bigint NOT NULL COMMENT '引用ID',
+    PRIMARY KEY (`id`),
+    KEY `idx_cientityid` (`cientity_id`),
+    KEY `idx_attrid` (`attr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='配置项属性引用数据';

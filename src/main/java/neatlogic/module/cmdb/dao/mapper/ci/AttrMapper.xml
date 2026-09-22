@@ -68,6 +68,7 @@
             resultType="neatlogic.framework.cmdb.dto.ci.AttrVo" useCache="false">
         SELECT a.`id`,
         a.`ci_id` AS ciId,
+        a.`type`,
         a.`name`,
         a.`label`,
         a.`description`,
@@ -322,6 +323,16 @@
           AND `id` != #{id}
     </select>
 
+    <select id="getAttrListByType" parameterType="java.lang.String" resultType="neatlogic.framework.cmdb.dto.ci.AttrVo">
+        SELECT
+            `id`,
+            `ci_id` AS ciId,
+            `type`,
+            `name`,
+            `label`
+        FROM `cmdb_attr`
+        WHERE `type` = #{value}
+    </select>
 
     <update id="updateAttr" parameterType="neatlogic.framework.cmdb.dto.ci.AttrVo">
         UPDATE

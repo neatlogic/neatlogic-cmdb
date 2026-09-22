@@ -123,6 +123,14 @@
                             </when>
                             <when test="attrFilter.expression == 'like'">
                                 <choose>
+                                    <when test="attrFilter.type == 'attr' and attrFilter.isInvokeAttr == true">
+                                        <if test="attrFilter.valueStringList != null and attrFilter.valueStringList.size() > 0">
+                                            <foreach collection="attrFilter.valueStringList" item="value" open="("
+                                                     close=")" separator=" or ">
+                                                `${attrFilter.attrUuid}` LIKE CONCAT('%', #{value}, '%' )
+                                            </foreach>
+                                        </if>
+                                    </when>
                                     <when test="attrFilter.type != 'globalattr'">
                                         <!--由于mybatis没有JSONArray的typeHandler，因此需要先转换成List<String>再使用-->
                                         <if test="attrFilter.valueStringList != null and attrFilter.valueStringList.size() > 0">

@@ -611,9 +611,10 @@
                     <when test="attr.needTargetCi == true ">
                         `cmdb_attrentity_${attr.id}`.`to_cientity_id` AS `attr_${attr.id}`,
                     </when>
-                    <otherwise>
+                    <!-- 引用属性通过cmdb_invokeentity还原，不读取不存在的动态字段。 -->
+                    <when test="attr.isInvokeAttr == false">
                         ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
-                    </otherwise>
+                    </when>
                 </choose>
             </if>
         </foreach>
@@ -742,6 +743,16 @@
                 </choose>-->
             </if>
         </foreach>
+        <!-- 引用表属性根据处理器标识关联cmdb_invokeentity，不再依赖具体属性类型。 -->
+        <if test="attrFilterList != null and attrFilterList.size() > 0">
+            <foreach collection="attrFilterList" item="attrFilter">
+                <if test="attrFilter.isInvokeAttr == true and ((attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null')">
+                    LEFT JOIN cmdb_invokeentity `cmdb_invokeentity_${attrFilter.attrId}`
+                    ON `ci_base`.id = `cmdb_invokeentity_${attrFilter.attrId}`.cientity_id
+                    AND `cmdb_invokeentity_${attrFilter.attrId}`.attr_id = #{attrFilter.attrId}
+                </if>
+            </foreach>
+        </if>
         <if test="attrCiEntityFilter != null ">
             JOIN `cmdb_attrentity` `cmdb_attrentity_${attrCiEntityFilter.attrId}` ON
             `cmdb_attrentity_${attrCiEntityFilter.attrId}`.`attr_id` = #{attrCiEntityFilter.attrId} and
@@ -1137,6 +1148,25 @@
                 <foreach collection="attrFilterList" item="attrFilter">
                     <if test="(attrFilter.valueList != null and attrFilter.valueList.size() > 0) or attrFilter.expression == 'is-null' or attrFilter.expression == 'is-not-null'">
                         <choose>
+                            <!-- 引用表属性统一通过isInvokeAttr标识进入独立索引查询。 -->
+                            <when test="attrFilter.isInvokeAttr == true">
+                                AND
+                                <choose>
+                                    <when test="attrFilter.expression == 'like'">
+                                        <!-- 结构化过滤值同时匹配位置层级和引用ID，多选节点之间为OR关系。 -->
+                                        <foreach collection="attrFilter.valueList" item="value" open="(" close=")" separator=" OR ">
+                                            (`cmdb_invokeentity_${attrFilter.attrId}`.type = LOWER(#{value.type})
+                                            AND `cmdb_invokeentity_${attrFilter.attrId}`.invoke_id = #{value.invokeId})
+                                        </foreach>
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-null'">
+                                        `cmdb_invokeentity_${attrFilter.attrId}`.id IS NULL
+                                    </when>
+                                    <when test="attrFilter.expression == 'is-not-null'">
+                                        `cmdb_invokeentity_${attrFilter.attrId}`.id IS NOT NULL
+                                    </when>
+                                </choose>
+                            </when>
                             <when test="attrFilter.needTargetCi == true">
                                 AND
                                 <choose>
@@ -1430,7 +1460,8 @@
 
     <sql id="ciEntityColumnSqlLite">
         <foreach collection="attrList" item="attr">
-            <if test="attr.needTargetCi == false ">
+            <!-- 精简查询只投影普通动态表属性。 -->
+            <if test="attr.needTargetCi == false and attr.isInvokeAttr == false">
                 ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
             </if>
         </foreach>
@@ -1765,7 +1796,8 @@
         INSERT INTO ${ciTableName}
         (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <!-- cmdb_invokeentity属性由事务钩子保存，不参与动态表写入。 -->
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 `${attr.attrId}`,
                 `${attr.attrId}_hash`,
             </if>
@@ -1773,7 +1805,8 @@
         cientity_id
         ) VALUES (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <!-- 值列表与字段列表保持相同的动态表属性过滤条件。 -->
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 #{attr.value},
                 #{attr.value, typeHandler=Md5Handler},
             </if>
@@ -1781,7 +1814,8 @@
         #{id}
         ) ON DUPLICATE KEY UPDATE
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <!-- 更新时同样跳过cmdb_invokeentity属性。 -->
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 `${attr.attrId}` = #{attr.value},
                 `${attr.attrId}_hash` = #{attr.value,typeHandler=Md5Handler},
             </if>
@@ -1792,7 +1826,8 @@
     <insert id="insertCiEntity" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityVo">
         INSERT ignore INTO ${ciTableName} (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <!-- 新增配置项时仅写入动态表属性。 -->
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 `${attr.attrId}`,
                 `${attr.attrId}_hash`,
             </if>
@@ -1800,7 +1835,8 @@
         cientity_id)
         VALUES (
         <foreach collection="attrEntityList" item="attr">
-            <if test="attr.isNeedTargetCi == false and attr.fromCiId == ciId">
+            <!-- 插入值与动态字段列表使用相同过滤条件。 -->
+            <if test="attr.isNeedTargetCi == false and attr.isInvokeAttr == false and attr.fromCiId == ciId">
                 #{attr.value},
                 #{attr.value,typeHandler=Md5Handler},
             </if>

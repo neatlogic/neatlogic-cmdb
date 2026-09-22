@@ -16,6 +16,7 @@ import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.batch.BatchRunner;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrInvokeHandler;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.crossover.ICiSchemaViewCrossoverMapper;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -39,6 +40,7 @@ import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
@@ -74,6 +76,9 @@ public class AttrServiceImpl implements AttrService {
     @Resource
     private CiSchemaMapper ciSchemaMapper;
 
+    @Resource
+    private InvokeEntityMapper invokeEntityMapper;
+
 
     @Override
     @Transactional
@@ -87,7 +92,7 @@ public class AttrServiceImpl implements AttrService {
         attrVo.setCiVo(ciVo);
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
         handler.afterInsert(attrVo);
-        if (!handler.isNeedTargetCi()) {
+        if (!handler.isNeedTargetCi() && !(handler instanceof IAttrInvokeHandler)) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
             CountDownLatch latch = new CountDownLatch(1);
             EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
@@ -320,16 +325,21 @@ public class AttrServiceImpl implements AttrService {
             //删除引用属性数据
             ciEntityMapper.deleteAttrEntityByAttrId(attrVo.getId());
 
-            //删除模型属性
-            attrMapper.deleteAttrById(attrVo.getId());
-
             //某些类型的属性可能有删除后续操作
             IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
             handler.afterDelete(attrVo);
+
+            //删除外部存储属性的引用数据
+            if (handler instanceof IAttrInvokeHandler) {
+                invokeEntityMapper.deleteInvokeEntityByAttrId(attrVo.getId());
+            }
+
+            //删除模型属性
+            attrMapper.deleteAttrById(attrVo.getId());
             TransactionUtil.commitTx(tx);
             //物理删除字段
             //由于以上事务中的dml操作包含了以下ddl操作的表，如果使用 EscapeTransactionJob会导致事务等待产生死锁，所以这里不再使用EscapeTransactionJob去保证事务一致性。即使ddl删除字段失败，以上事务也会提交
-            if (!attrVo.isNeedTargetCi()) {
+            if (!attrVo.isNeedTargetCi() && !attrVo.getIsInvokeAttr()) {
                 ciSchemaMapper.deleteAttrFromCiTable(attrVo.getCiId(), attrCi.getCiTableName(), attrVo);
             }
         } catch (Exception ex) {

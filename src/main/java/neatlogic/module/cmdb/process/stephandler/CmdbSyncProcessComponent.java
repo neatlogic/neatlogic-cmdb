@@ -752,7 +752,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
             AttrFilterVo filterVo = new AttrFilterVo();
             filterVo.setAttrId(attrId);
             filterVo.setExpression(SearchExpression.EQ.getExpression());
-            filterVo.setValueList(valueList);
+            filterVo.setValueList(new JSONArray().fluentAddAll(valueList));
             ciEntityConditionVo.addAttrFilter(filterVo);
         }
         if (CollectionUtils.isNotEmpty(ciEntityConditionVo.getAttrFilterList())) {

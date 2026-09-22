@@ -12,13 +12,16 @@
 
 package neatlogic.module.cmdb.fulltextindex.handler;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
 import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.cmdb.attrvaluehandler.core.AttrValueHandlerFactory;
+import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrInvokeHandler;
 import neatlogic.framework.cmdb.attrvaluehandler.core.IAttrValueHandler;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.cientity.AttrEntityVo;
+import neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.cientity.RelEntityVo;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
@@ -30,6 +33,7 @@ import neatlogic.framework.fulltextindex.dto.globalsearch.DocumentVo;
 import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.AttrEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
@@ -60,6 +64,9 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
     @Resource
     private AttrEntityMapper attrEntityMapper;
 
+    @Resource
+    private InvokeEntityMapper invokeEntityMapper;
+
     @Override
     protected String getModuleId() {
         return "cmdb";
@@ -84,14 +91,34 @@ public class CiEntityFullTextIndexHandler extends FullTextIndexHandlerBase {
         Set<Long> ciIdSet = new HashSet<>();
         if (CollectionUtils.isNotEmpty(attrList)) {
             for (AttrVo attr : attrList) {
-                if (attr.getTargetCiId() == null) {
+                // 专有名词批量查询只能读取动态表字段，引用属性由详情还原链路处理。
+                if (attr.getTargetCiId() == null && !attr.getIsInvokeAttr()) {
                     List<String> wordList = attrEntityMapper.getAttrValueByCiId(attr);
                     FullTextIndexUtil.addWord(wordList);
                 } else {
-                    if (!ciIdSet.contains(attr.getTargetCiId())) {
-                        List<String> wordList = ciEntityMapper.getCiEntityNameByCiId(attr.getTargetCiId());
+                    if (attr.getTargetCiId() != null) {
+                        if (!ciIdSet.contains(attr.getTargetCiId())) {
+                            List<String> wordList = ciEntityMapper.getCiEntityNameByCiId(attr.getTargetCiId());
+                            FullTextIndexUtil.addWord(wordList);
+                            ciIdSet.add(attr.getTargetCiId());
+                        }
+                    } else if (attr.getIsInvokeAttr()) {
+                        List<String> wordList = new ArrayList<>();
+                        IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attr.getType());
+                        IAttrInvokeHandler attrInvokeHandler = (IAttrInvokeHandler) handler;
+                        Map<Long, List<InvokeEntityVo>> map = new HashMap<>();
+                        List<InvokeEntityVo> allInvokeEntityList = invokeEntityMapper.getInvokeEntityListByAttrId(attr.getId());
+                        for (InvokeEntityVo invokeEntityVo : allInvokeEntityList) {
+                            map.computeIfAbsent(invokeEntityVo.getCiEntityId(), key -> new ArrayList<>()).add(invokeEntityVo);
+                        }
+                        for (Map.Entry<Long, List<InvokeEntityVo>> entry : map.entrySet()) {
+                            JSONArray valueList = attrInvokeHandler.convertInvokeEntityListToValueList(attr, entry.getValue());
+                            JSONArray actualValueList = handler.getActualValueList(attr, valueList);
+                            if (CollectionUtils.isNotEmpty(actualValueList)) {
+                                wordList.add(actualValueList.get(0).toString());
+                            }
+                        }
                         FullTextIndexUtil.addWord(wordList);
-                        ciIdSet.add(attr.getTargetCiId());
                     }
                 }
             }

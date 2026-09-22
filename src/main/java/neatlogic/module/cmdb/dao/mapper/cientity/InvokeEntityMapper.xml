@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper">
+
+    <select id="getCiEntityIdListByAttrId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT DISTINCT
+               cientity_id
+        FROM `cmdb_invokeentity`
+        WHERE attr_id = #{value}
+    </select>
+
+    <select id="getInvokeEntityListByCiEntityIdAndAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
+        SELECT id,
+               cientity_id AS ciEntityId,
+               attr_id AS attrId,
+               type,
+               invoke_id AS invokeId
+        FROM `cmdb_invokeentity`
+        WHERE cientity_id = #{ciEntityId}
+          AND attr_id = #{attrId}
+    </select>
+
+    <select id="getInvokeEntityListByAttrId" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
+        SELECT id,
+               cientity_id AS ciEntityId,
+               attr_id AS attrId,
+               type,
+               invoke_id AS invokeId
+        FROM `cmdb_invokeentity`
+        WHERE attr_id = #{attrId}
+    </select>
+
+    <!-- 按实际引用值匹配索引，不再使用索引记录主键；属性ID限制避免不同属性之间串值。 -->
+    <select id="getInvokeEntityListByInvokeIdList" resultType="neatlogic.framework.cmdb.dto.cientity.InvokeEntityVo">
+        SELECT DISTINCT id,
+               cientity_id AS ciEntityId,
+               attr_id AS attrId,
+               type,
+               invoke_id AS invokeId
+        FROM cmdb_invokeentity
+        <choose>
+            <when test="invokeIdList != null and invokeIdList.size() > 0 and attrIdList != null and attrIdList.size() > 0">
+                WHERE invoke_id IN
+                <foreach collection="invokeIdList" item="invokeId" open="(" close=")" separator=",">
+                    #{invokeId}
+                </foreach>
+                AND attr_id IN
+                <foreach collection="attrIdList" item="attrId" open="(" close=")" separator=",">
+                    #{attrId}
+                </foreach>
+            </when>
+            <otherwise>WHERE 1 = 0</otherwise>
+        </choose>
+    </select>
+
+    <insert id="insertInvokeEntityList">
+        INSERT INTO cmdb_invokeentity (id, cientity_id, attr_id, type, invoke_id)
+        VALUES
+        <foreach collection="invokeEntityList" item="invokeEntity" separator=",">
+            (#{invokeEntity.id}, #{invokeEntity.ciEntityId}, #{invokeEntity.attrId}, #{invokeEntity.type}, #{invokeEntity.invokeId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteInvokeEntityByCiEntityIdAndAttrId">
+        DELETE FROM `cmdb_invokeentity`
+        WHERE cientity_id = #{ciEntityId}
+          AND attr_id = #{attrId}
+    </delete>
+
+    <delete id="deleteInvokeEntityByAttrId">
+        DELETE FROM `cmdb_invokeentity`
+        WHERE attr_id = #{value}
+    </delete>
+</mapper>

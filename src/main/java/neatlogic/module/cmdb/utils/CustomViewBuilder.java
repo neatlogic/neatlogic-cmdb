@@ -464,8 +464,12 @@ public class CustomViewBuilder {
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
                 if (attrVo.getTargetCiId() == null) {
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                    if (attrVo.getIsInvokeAttr()) {
+                        addInvokeAttrSelect(plainSelect, viewAttrVo, "ci_base");
+                    } else {
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                    }
                 } /*else {
                     CiVo targetCiVo = ciService.getCiById(attrVo.getTargetCiId());
                     if (targetCiVo != null) {
@@ -579,8 +583,12 @@ public class CustomViewBuilder {
             for (CustomViewAttrVo viewAttrVo : customViewCiVo.getAttrList()) {
                 AttrVo attrVo = viewAttrVo.getAttrVo();
                 if (attrVo.getTargetCiId() == null) {
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
-                    plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                    if (attrVo.getIsInvokeAttr()) {
+                        addInvokeAttrSelect(plainSelect, viewAttrVo, "cmdb_" + ciVo.getId());
+                    } else {
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
+                        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`" + attrVo.getId() + "_hash`").withTable(new Table("cmdb_" + attrVo.getCiId()))).withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
+                    }
                 } /*else {
                     CiVo targetCiVo = ciService.getCiById(attrVo.getTargetCiId());
                     if (targetCiVo != null) {
@@ -606,6 +614,39 @@ public class CustomViewBuilder {
             //plainSelect.withWhere(getExpiredExpression());
             return select;
         }
+    }
+
+    /**
+     * 按配置项聚合属性的全部invoke_id，值列和hash使用同一聚合结果，左关联保留空属性。
+     */
+    private void addInvokeAttrSelect(PlainSelect plainSelect, CustomViewAttrVo viewAttrVo, String ciTableName) {
+        Table invokeTable = new Table("invokeentity_" + viewAttrVo.getUuid());
+        // 在子查询内聚合，避免多个引用属性互相放大行数，并满足ONLY_FULL_GROUP_BY。
+        MySQLGroupConcat groupConcat = new MySQLGroupConcat();
+        groupConcat.setExpressionList(new ExpressionList(new Column("invoke_id")));
+        groupConcat.setOrderByElements(Arrays.asList(new OrderByElement().withExpression(new Column("id"))));
+        PlainSelect invokeSelect = new PlainSelect()
+                .withFromItem(new Table("cmdb_invokeentity").withSchemaName(TenantContext.get().getDbName()))
+                .addSelectItems(new SelectExpressionItem(new Column("cientity_id")),
+                        new SelectExpressionItem(groupConcat).withAlias(new Alias("`value`")))
+                .withWhere(new EqualsTo(new Column("attr_id"), new LongValue(viewAttrVo.getAttrId())));
+        GroupByElement groupBy = new GroupByElement();
+        groupBy.addGroupByExpression(new Column("cientity_id"));
+        invokeSelect.setGroupByElement(groupBy);
+        plainSelect.addJoins(new Join().withLeft(true)
+                .withRightItem(new SubSelect().withSelectBody(invokeSelect).withAlias(new Alias(invokeTable.getName())))
+                .addOnExpression(new EqualsTo(new Column("cientity_id").withTable(invokeTable),
+                        new Column("id").withTable(new Table(ciTableName)))));
+        // 类型与引用ID排序固定，索引记录重建后即使主键变化，值和hash也保持稳定。
+        plainSelect.addSelectItems(new SelectExpressionItem(new Column("`value`").withTable(invokeTable))
+                .withAlias(new Alias("`" + viewAttrVo.getUuid() + "`")));
+        Function function = new Function();
+        function.setName("md5");
+        ExpressionList expressionList = new ExpressionList();
+        expressionList.addExpressions(new Column("`value`").withTable(invokeTable));
+        function.setParameters(expressionList);
+        plainSelect.addSelectItems(new SelectExpressionItem(function)
+                .withAlias(new Alias("`" + viewAttrVo.getUuid() + "_hash`")));
     }
 
     private Expression getExpiredExpression() {
