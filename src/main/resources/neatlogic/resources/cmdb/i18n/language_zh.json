@@ -622,6 +622,11 @@
         "between": "在此区间",
         "contains": "包含",
         "empty": "为空",
+        "equal": "等于",
+        "greater": "大于",
+        "greaterorequal": "大于等于",
+        "less": "小于",
+        "lessorequal": "小于等于",
         "notcontains": "不包含",
         "notempty": "不为空",
         "notequal": "不等于"
