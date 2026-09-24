@@ -13,7 +13,7 @@ public class RelFilterExceptionI18nTest extends RelFilterI18nTestBase {
     @Test
     public void allReasonsHaveTranslations() {
         for (Locale locale : new Locale[]{Locale.CHINESE, Locale.ENGLISH}) {
-            Locale.setDefault(locale);
+            setLocale(locale);
             for (Reason reason : Reason.values()) {
                 String message = new RelFilterInvalidException(reason, "attrId").getMessage();
                 Assert.assertNotEquals(reason.getKey(), message);
@@ -32,7 +32,7 @@ public class RelFilterExceptionI18nTest extends RelFilterI18nTestBase {
         RelFilterInvalidException zh = new RelFilterInvalidException("fromFilter", zhCause);
         Assert.assertEquals("过滤条件“fromFilter”无效：filterCiId必须是有效编号", zh.getMessage());
         Assert.assertSame(zhCause, zh.getCause());
-        Locale.setDefault(Locale.ENGLISH);
+        setLocale(Locale.ENGLISH);
         RelFilterInvalidException enCause = new RelFilterInvalidException(Reason.ID_INVALID, "filterCiId");
         RelFilterInvalidException en = new RelFilterInvalidException("toFilter", enCause);
         Assert.assertEquals("Invalid filter \"toFilter\": filterCiId must be a valid ID", en.getMessage());
