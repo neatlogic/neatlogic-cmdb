@@ -876,6 +876,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             if (expiredTimeVo != null && expiredTimeVo.getExpiredDay() > 0) {
                 ciEntityMapper.updateCiEntityExpiredTime(expiredTimeVo);
             }
+            // 仅续期时不会进入提交逻辑，也需要解除本次保存设置的编辑锁。
+            if (transactionGroupVo.isNeedLock() && ciEntityTransactionVo.getOldCiEntityVo() != null) {
+                ciEntityTransactionVo.getOldCiEntityVo().setIsLocked(0);
+                ciEntityMapper.updateCiEntityLockById(ciEntityTransactionVo.getOldCiEntityVo());
+            }
             return 0L;
         }
     }
