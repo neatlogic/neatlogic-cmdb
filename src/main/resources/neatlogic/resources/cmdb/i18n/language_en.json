@@ -1,5 +1,15 @@
 {
   "cmdb": {
+    "scheduler": {
+      "job": {
+        "clearexpiredrelentity": {
+          "name": "Expired CI Relationship Cleanup"
+        },
+        "expiredcientitycleaner": {
+          "name": "Scheduled Expired CI Cleanup"
+        }
+      }
+    },
     "validator": {
       "regex": {
         "name": "Regular Expression Validator"
@@ -7,6 +17,11 @@
     }
   },
   "file": {
+    "handler": {
+      "cientityformimportfilehandler": {
+        "displayname": "Configuration Item Form Upload Attachment"
+      }
+    },
     "type": {
       "cientityimport": "Configuration Item Import Attachment",
       "cmdb": "Configuration Management Attachment",

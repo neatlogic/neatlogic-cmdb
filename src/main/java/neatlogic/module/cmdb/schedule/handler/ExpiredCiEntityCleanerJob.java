@@ -37,9 +37,10 @@ import java.util.List;
 @Component
 @DisallowConcurrentExecution
 public class ExpiredCiEntityCleanerJob extends JobBase {
+    /** 返回当前语言环境下的过期配置项清理作业名称。 */
     @Override
     public String getName() {
-        return "过期配置项定时清理";
+        return "cmdb.scheduler.job.expiredcientitycleaner.name";
     }
 
     Logger logger = LoggerFactory.getLogger(ExpiredCiEntityCleanerJob.class);

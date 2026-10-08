@@ -529,9 +529,10 @@ public class CiEntityFormImportFileHandler extends FileTypeHandlerBase {
         return analyseWorkbook(wb, ciId, "append", EditModeType.GLOBAL.getValue());
     }
 
+    /** 返回当前语言环境下的文件类型显示名称。 */
     @Override
     public String getDisplayName() {
-        return "配置项表单上传附件";
+        return $.t("file.handler.cientityformimportfilehandler.displayname");
     }
 
     @Override

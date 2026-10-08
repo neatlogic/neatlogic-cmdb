@@ -1,5 +1,15 @@
 {
   "cmdb": {
+    "scheduler": {
+      "job": {
+        "clearexpiredrelentity": {
+          "name": "过期配置项关系清理"
+        },
+        "expiredcientitycleaner": {
+          "name": "过期配置项定时清理"
+        }
+      }
+    },
     "validator": {
       "regex": {
         "name": "正则表达式校验组件"
@@ -7,6 +17,11 @@
     }
   },
   "file": {
+    "handler": {
+      "cientityformimportfilehandler": {
+        "displayname": "配置项表单上传附件"
+      }
+    },
     "type": {
       "cientityimport": "配置项上传附件",
       "cmdb": "配置管理附件",

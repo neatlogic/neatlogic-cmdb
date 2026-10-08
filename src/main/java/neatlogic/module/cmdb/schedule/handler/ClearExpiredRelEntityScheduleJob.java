@@ -47,9 +47,10 @@ import java.util.Map;
 @Component
 @DisallowConcurrentExecution
 public class ClearExpiredRelEntityScheduleJob extends JobBase {
+    /** 返回当前语言环境下的过期配置项关系清理作业名称。 */
     @Override
     public String getName() {
-        return "过期配置项关系清理";
+        return "cmdb.scheduler.job.clearexpiredrelentity.name";
     }
 
     private static final String CRON_EXPRESSION = "0 0 0 * * ?";
