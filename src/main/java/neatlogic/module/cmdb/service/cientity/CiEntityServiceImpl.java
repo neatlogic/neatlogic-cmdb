@@ -54,6 +54,7 @@ import neatlogic.framework.fulltextindex.core.IFullTextIndexHandler;
 import neatlogic.framework.mq.core.ITopic;
 import neatlogic.framework.mq.core.TopicFactory;
 import neatlogic.framework.transaction.core.AfterTransactionJob;
+import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.framework.util.$;
 import neatlogic.module.cmdb.attrexpression.AttrExpressionRebuildManager;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
@@ -719,9 +720,20 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         return saveCiEntity(ciEntityTransactionList, transactionGroupVo);
     }
 
+    /**
+     * 逐个独立提交配置项，后续配置项保存失败时不回滚已经提交的配置项。
+     */
     @Override
     public Long saveCiEntityWithoutTransaction
             (List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo) {
+        return saveCiEntityList(ciEntityTransactionList, transactionGroupVo, true);
+    }
+
+    /**
+     * 批量保存前统一获取旧值快照，根据入口要求选择独立事务或参与调用方事务。
+     */
+    private Long saveCiEntityList(List<CiEntityTransactionVo> ciEntityTransactionList,
+                                  TransactionGroupVo transactionGroupVo, boolean independentTransaction) {
         for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
             transactionGroupVo.addExclude(ciEntityTransactionVo.getCiEntityId());
         }
@@ -751,10 +763,26 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
 
             for (CiEntityTransactionVo ciEntityTransactionVo : ciEntityTransactionList) {
-                Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
-                if (transactionId > 0L) {
-                    transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
-                    hasTransaction = true;
+                org.springframework.transaction.TransactionStatus tx = null;
+                if (independentTransaction) {
+                    // 类内调用不会触发事务代理，显式开启新事务并挂起可能存在的外层事务。
+                    tx = TransactionUtil.openNewTx();
+                }
+                try {
+                    Long transactionId = saveCiEntity(ciEntityTransactionVo, transactionGroupVo);
+                    if (transactionId > 0L) {
+                        // 事务组关联与配置项保存一起提交，避免保存成功却丢失分组记录。
+                        transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), transactionId);
+                        hasTransaction = true;
+                    }
+                    if (tx != null) {
+                        TransactionUtil.commitTx(tx);
+                    }
+                } catch (RuntimeException | Error ex) {
+                    if (tx != null && !tx.isCompleted()) {
+                        TransactionUtil.rollbackTx(tx);
+                    }
+                    throw ex;
                 }
             }
         }
@@ -769,7 +797,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     @Transactional
     public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo
             transactionGroupVo) {
-        return saveCiEntityWithoutTransaction(ciEntityTransactionList, transactionGroupVo);
+        // 普通批量保存仍参与入口事务，保留整批提交或回滚的语义。
+        return saveCiEntityList(ciEntityTransactionList, transactionGroupVo, false);
     }
 
     @Transactional
@@ -846,6 +875,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             CiEntityExpiredTimeVo expiredTimeVo = ciEntityMapper.getCiEntityExpiredTimeById(ciEntityTransactionVo.getCiEntityId());
             if (expiredTimeVo != null && expiredTimeVo.getExpiredDay() > 0) {
                 ciEntityMapper.updateCiEntityExpiredTime(expiredTimeVo);
+            }
+            // 仅续期时不会进入提交逻辑，也需要解除本次保存设置的编辑锁。
+            if (transactionGroupVo.isNeedLock() && ciEntityTransactionVo.getOldCiEntityVo() != null) {
+                ciEntityTransactionVo.getOldCiEntityVo().setIsLocked(0);
+                ciEntityMapper.updateCiEntityLockById(ciEntityTransactionVo.getOldCiEntityVo());
             }
             return 0L;
         }

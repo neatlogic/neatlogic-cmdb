@@ -57,6 +57,9 @@ public interface CiEntityService {
      */
     List<CiEntityVo> searchCiEntity(CiEntityVo ciEntityVo);
 
+    /**
+     * 按独立事务逐个保存配置项，失败时保留此前已提交的配置项。
+     */
     Long saveCiEntityWithoutTransaction(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo transactionGroupVo);
 
     @Transactional

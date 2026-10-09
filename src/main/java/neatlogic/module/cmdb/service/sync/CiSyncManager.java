@@ -136,7 +136,9 @@ public class CiSyncManager {
         };
 
 
+        /** 按唯一规则定位配置项，包含过期数据以复用原编号并在保存时续期。 */
         private List<CiEntityVo> searchCiEntityWithCache(CiEntityVo conditionVo) {
+            conditionVo.setIncludeExpired(true);
             Object lock;
             int hash = Objects.hash(conditionVo.getCiId(), CollectionUtils.isNotEmpty(conditionVo.getAttrFilterList()) ? JSON.toJSONString(conditionVo.getAttrFilterList()) : "");
             synchronized (filterLock) {
@@ -328,7 +330,8 @@ public class CiSyncManager {
                         if (StringUtils.isNotBlank(v)) {
                             List<String> valueList = new ArrayList<>();
                             valueList.add(v);
-                            filterVo.setValueList(new JSONArray().fluentAdd(valueList));
+                            // 普通唯一属性使用单层值列表，避免把实际值查询成带方括号的字符串。
+                            filterVo.setValueList(new JSONArray().fluentAddAll(valueList));
                         } else {
                             throw new CiUniqueAttrNotFoundException(syncCiCollectionVo, ciVo, syncMappingVo.getField(parentKey), dataObj);
                         }

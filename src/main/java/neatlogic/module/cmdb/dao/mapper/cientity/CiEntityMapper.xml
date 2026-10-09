@@ -1057,11 +1057,12 @@
 
     <sql id="ciEntityConditionSql">
         <where>
-            <!--过期配置项过滤开始-->
-            (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
-            (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id
-            and xx.expired_time &gt;= NOW()))
-            <!--过期配置项过滤结束-->
+            <!--普通查询排除过期数据，同步定位允许复用尚未删除的配置项。-->
+            <if test="includeExpired != true">
+                (not exists (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id) or exists
+                (select 1 from cmdb_cientity_expiredtime xx where xx.cientity_id = `ci_base`.id
+                and xx.expired_time &gt;= NOW()))
+            </if>
             <if test="includeIdList != null and includeIdList.size() > 0">
                 AND `ci_base`.id in
                 <foreach collection="includeIdList" item="includeId" open="(" close=")" separator=",">
