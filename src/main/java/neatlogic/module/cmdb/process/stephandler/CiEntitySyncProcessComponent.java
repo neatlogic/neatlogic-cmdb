@@ -33,10 +33,7 @@ import neatlogic.framework.process.crossover.IProcessTaskCrossoverMapper;
 import neatlogic.framework.process.crossover.IProcessTaskCrossoverService;
 import neatlogic.framework.process.crossover.IProcessTaskStepDataCrossoverMapper;
 import neatlogic.framework.process.crossover.ISelectContentByHashCrossoverMapper;
-import neatlogic.framework.process.dto.ProcessTaskFormAttributeDataVo;
-import neatlogic.framework.process.dto.ProcessTaskStepDataVo;
-import neatlogic.framework.process.dto.ProcessTaskStepVo;
-import neatlogic.framework.process.dto.ProcessTaskStepWorkerVo;
+import neatlogic.framework.process.dto.*;
 import neatlogic.framework.process.exception.processtask.ProcessTaskException;
 import neatlogic.framework.process.spring.condition.ProcessComponentLoadCondition;
 import neatlogic.framework.process.stephandler.core.ProcessStepHandlerBase;
@@ -167,6 +164,8 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
         // 审计详情
         JSONArray auditList = new JSONArray();
         if (MapUtils.isNotEmpty(syncCiEntityMap)) {
+            ProcessTaskVo processTaskVo = processTaskCrossoverMapper.getProcessTaskById(currentProcessTaskStepVo.getProcessTaskId());
+            String defaultDescription = "<a target='_blank' onclick='event.stopPropagation();' href='process.html#/task-detail?processTaskId=" + processTaskVo.getId() + "&processTaskStepId=" +currentProcessTaskStepVo.getId()+ "'>" + processTaskVo.getTitle() + " " + currentProcessTaskStepVo.getName()+ "</a>";
             new EscapeTransactionJob(() -> {
                 // 获取表单数据，写入CMDB
                 InputFromContext.init(InputFrom.ITSM);
@@ -177,6 +176,10 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                     for (int entityIndex = 0; entityIndex < ciEntitySyncList.size(); entityIndex++) {
                         JSONObject auditObj = new JSONObject();
                         JSONObject ciEntityObj = ciEntitySyncList.getJSONObject(entityIndex);
+                        String description = ciEntityObj.getString("description");
+                        if (StringUtils.isBlank(description)) {
+                            description = defaultDescription;
+                        }
                         String uuid = ciEntityObj.getString("uuid");
                         CiEntityTransactionVo ciEntityTransactionVo = ciEntityTransactionMap.get(uuid);
                         try {
@@ -191,7 +194,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 auditObj.put("action", TransactionActionType.DELETE.getValue());
                                 CiEntityVo ciEntityVo = new CiEntityVo();
                                 ciEntityVo.setId(ciEntityObj.getLong("id"));
-                                ciEntityVo.setDescription(ciEntityObj.getString("description"));
+                                ciEntityVo.setDescription(description);
                                 Long transactionId = ciEntityService.deleteCiEntity(ciEntityVo, true, transactionGroupVo);
                                 auditObj.put("status", "success");
                                 auditObj.put("transactionId", transactionId);
@@ -200,7 +203,7 @@ public class CiEntitySyncProcessComponent extends ProcessStepHandlerBase {
                                 ciEntityTransactionVo.setCiId(ciId);
                                 ciEntityTransactionVo.setCiEntityId(id);
                                 ciEntityTransactionVo.setCiEntityUuid(uuid);
-                                ciEntityTransactionVo.setDescription(ciEntityObj.getString("description"));
+                                ciEntityTransactionVo.setDescription(description);
                                 if ("insert".equalsIgnoreCase(ciEntityObj.getString("actionType")) || id == null) {
                                     ciEntityTransactionVo.setAction(TransactionActionType.INSERT.getValue());
                                 } else {
