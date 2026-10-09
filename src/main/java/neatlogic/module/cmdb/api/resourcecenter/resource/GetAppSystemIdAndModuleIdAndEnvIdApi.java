@@ -21,7 +21,6 @@ import neatlogic.framework.cmdb.exception.resourcecenter.AppEnvNotFoundException
 import neatlogic.framework.cmdb.exception.resourcecenter.AppModuleNotFoundException;
 import neatlogic.framework.cmdb.exception.resourcecenter.AppSystemNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.common.constvalue.systemuser.SystemUser;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
@@ -39,7 +38,7 @@ import javax.annotation.Resource;
  * @since 2022/7/11 16:14
  **/
 @Service
-@AuthUser(SystemUser.AUTOEXEC)
+
 @AuthAction(action = CMDB_BASE.class)
 @OperationType(type = OperationTypeEnum.SEARCH)
 public class GetAppSystemIdAndModuleIdAndEnvIdApi extends PrivateApiComponentBase {
