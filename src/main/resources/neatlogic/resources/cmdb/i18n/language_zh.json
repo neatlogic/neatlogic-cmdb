@@ -10,6 +10,10 @@
         }
       }
     },
+    "tenantconfig": {
+      "syncbatchrunnercount": "将自动采集数据同步到 CMDB 时的并发线程数，默认值为 5",
+      "syncmongodbcursormaxretry": "将自动采集数据同步到 CMDB 时 MongoDB 游标丢失后的最大自动重连次数，默认值为 5"
+    },
     "validator": {
       "regex": {
         "name": "正则表达式校验组件"

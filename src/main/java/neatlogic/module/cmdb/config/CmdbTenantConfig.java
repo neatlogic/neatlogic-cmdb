@@ -13,10 +13,11 @@
 package neatlogic.module.cmdb.config;
 
 import neatlogic.framework.config.ITenantConfig;
+import neatlogic.framework.util.$;
 
 public enum CmdbTenantConfig implements ITenantConfig {
-    SYNC_BATCH_RUNNER_COUNT("sync.batch.runner.count", "5", "同步自动采集数据进CMDB时并发线程数，默认是5"),
-    SYNC_MONGODB_CURSOR_MAX_RETRY("sync.mongodb.cursor.max.retry", "5", "同步自动采集数据进CDMB时遇到mongodb游标丢失后，进行自动重连的最大次数，默认是5");
+    SYNC_BATCH_RUNNER_COUNT("sync.batch.runner.count", "5", "cmdb.tenantconfig.syncbatchrunnercount"),
+    SYNC_MONGODB_CURSOR_MAX_RETRY("sync.mongodb.cursor.max.retry", "5", "cmdb.tenantconfig.syncmongodbcursormaxretry");
 
     final String key;
     final String value;
@@ -38,9 +39,10 @@ public enum CmdbTenantConfig implements ITenantConfig {
         return value;
     }
 
+    /** 返回当前语言环境下的租户配置描述。 */
     @Override
     public String getDescription() {
-        return description;
+        return $.t(description);
     }
 
     @Override

@@ -10,6 +10,10 @@
         }
       }
     },
+    "tenantconfig": {
+      "syncbatchrunnercount": "Concurrent thread count when synchronizing automatically collected data to CMDB; default: 5",
+      "syncmongodbcursormaxretry": "Maximum automatic reconnection attempts after a MongoDB cursor is lost while synchronizing automatically collected data to CMDB; default: 5"
+    },
     "validator": {
       "regex": {
         "name": "Regular Expression Validator"
