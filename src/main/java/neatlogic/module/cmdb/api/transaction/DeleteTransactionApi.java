@@ -20,6 +20,8 @@ import neatlogic.framework.cmdb.dto.transaction.TransactionGroupVo;
 import neatlogic.framework.cmdb.dto.transaction.TransactionVo;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.cmdb.enums.group.GroupType;
+import neatlogic.framework.cmdb.event.CmdbEventEntry;
+import neatlogic.framework.cmdb.event.CmdbEventType;
 import neatlogic.framework.cmdb.exception.transaction.TransactionAuthException;
 import neatlogic.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
 import neatlogic.framework.common.constvalue.ApiParamType;
@@ -84,6 +86,7 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
                 if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkCiEntityIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
                     throw new TransactionAuthException();
                 }
+                CmdbEventEntry.doEvent(transactionVo.getCiEntityTransactionVo(), CmdbEventType.TRANSACTION_ROLLBACK);
                 transactionMapper.deleteTransactionById(transactionVo.getId());
                 // 解除配置项修改锁定
                 CiEntityVo ciEntityVo = new CiEntityVo();
@@ -101,6 +104,7 @@ public class DeleteTransactionApi extends PrivateApiComponentBase {
             if (!CiAuthChecker.chain().checkCiEntityTransactionPrivilege(transactionVo.getCiId()).checkCiEntityIsInGroup(transactionVo.getCiEntityId(), GroupType.MAINTAIN).check()) {
                 throw new TransactionAuthException();
             }
+            CmdbEventEntry.doEvent(transactionVo.getCiEntityTransactionVo(), CmdbEventType.TRANSACTION_ROLLBACK);
             transactionMapper.deleteTransactionById(transactionVo.getId());
             // 解除配置项修改锁定
             CiEntityVo ciEntityVo = new CiEntityVo();

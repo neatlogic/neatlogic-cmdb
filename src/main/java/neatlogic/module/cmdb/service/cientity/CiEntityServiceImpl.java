@@ -37,6 +37,8 @@ import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.dto.transaction.*;
 import neatlogic.framework.cmdb.enums.*;
 import neatlogic.framework.cmdb.enums.group.GroupType;
+import neatlogic.framework.cmdb.event.CmdbEventEntry;
+import neatlogic.framework.cmdb.event.CmdbEventType;
 import neatlogic.framework.cmdb.exception.attr.AttrNotFoundException;
 import neatlogic.framework.cmdb.exception.attrtype.AttrTypeNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
@@ -672,7 +674,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 //如果需要提交
                 for (TransactionVo transactionVo : transactionList) {
                     TransactionGroupVo oldTransactionGroup = transactionMapper.getTransactionGroupByTransactionId(transactionVo.getId());
-                    commitTransaction(transactionVo, oldTransactionGroup);
+                    commitTransaction(transactionVo, oldTransactionGroup, CmdbEventType.TRANSACTION_DELETE_COMMIT);
                 }
             }*/
         }
@@ -705,7 +707,10 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         // 写入配置项事务
         transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
         if (allowCommit) {
-            commitTransaction(transactionVo, transactionGroupVo);
+            commitTransaction(transactionVo, transactionGroupVo, CmdbEventType.CIENTITY_DELETE_COMMITTED);
+        } else {
+            // 未提交删除只登记拟变化，数据库事务成功后才运行商业插件。
+            CmdbEventEntry.doEvent(ciEntityTransactionVo, CmdbEventType.CIENTITY_DELETE_PENDING);
         }
 
         return transactionVo.getId();
@@ -866,7 +871,21 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             transactionMapper.insertCiEntityTransaction(ciEntityTransactionVo);
             //提交事务
             if (ciEntityTransactionVo.isAllowCommit()) {
-                commitTransaction(transactionVo, transactionGroupVo);
+                CmdbEventType cmdbEventType;
+                if (TransactionActionType.INSERT.getValue().equals(ciEntityTransactionVo.getAction())) {
+                    cmdbEventType = CmdbEventType.CIENTITY_CREATE_COMMITTED;
+                } else {
+                    cmdbEventType = CmdbEventType.CIENTITY_UPDATE_COMMITTED;
+                }
+                commitTransaction(transactionVo, transactionGroupVo, cmdbEventType);
+            } else {
+                CmdbEventType cmdbEventType;
+                if (TransactionActionType.INSERT.getValue().equals(ciEntityTransactionVo.getAction())) {
+                    cmdbEventType = CmdbEventType.CIENTITY_CREATE_PENDING;
+                } else {
+                    cmdbEventType = CmdbEventType.CIENTITY_UPDATE_PENDING;
+                }
+                CmdbEventEntry.doEvent(ciEntityTransactionVo, cmdbEventType);
             }
             return transactionVo.getId();
         } else {
@@ -2124,10 +2143,12 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      *
      * @param transactionVo      事务
      * @param transactionGroupVo 事务分组
+     * @param cmdbEventType      本次提交对应的商业事件场景
      * @return Long 配置项id
      */
-    private Long commitTransaction(TransactionVo transactionVo, TransactionGroupVo transactionGroupVo) {
+    private Long commitTransaction(TransactionVo transactionVo, TransactionGroupVo transactionGroupVo, CmdbEventType cmdbEventType) {
         CiEntityTransactionVo ciEntityTransactionVo = transactionVo.getCiEntityTransactionVo();
+        CmdbEventEntry.doEvent(ciEntityTransactionVo, cmdbEventType);
         if (ciEntityTransactionVo.getAction().equals(TransactionActionType.DELETE.getValue())) { // 删除配置项
             //补充对端配置项事务信息
             List<RelEntityVo> relEntityList = relEntityMapper.getRelEntityByCiEntityId(ciEntityTransactionVo.getCiEntityId());
@@ -2193,6 +2214,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                                     transactionMapper.insertTransaction(toTransactionVo);
                                     transactionMapper.insertCiEntityTransaction(endCiEntityTransactionVo);
                                     transactionMapper.insertTransactionGroup(transactionGroupVo.getId(), toTransactionVo.getId());
+                                    // 对端关系删除前登记被动变化，多个关系由商业核心按目标合并。
+                                    CmdbEventEntry.doEvent(endCiEntityTransactionVo, CmdbEventType.CIENTITY_PASSIVE_UPDATE);
                                     //发送消息到消息队列
                                     ITopic<CiEntityTransactionVo> topic = TopicFactory.getTopic("cmdb/cientity/update");
                                     if (topic != null) {
@@ -2382,6 +2405,8 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             endCiEntityTransactionVo.setTransactionId(toTransactionVo.getId());
                             endCiEntityTransactionVo.setOldCiEntityVo(this.getCiEntityByIdLite(ciId, ciEntityId, true, false, false));
                             createSnapshot(endCiEntityTransactionVo);
+                            // 先登记旧数据；最终事务载荷及关系数据在提交前由商业核心补齐。
+                            CmdbEventEntry.doEvent(endCiEntityTransactionVo, CmdbEventType.CIENTITY_PASSIVE_UPDATE);
                             ciEntityTransactionMap.put(endCiEntityTransactionVo.getCiEntityId(), endCiEntityTransactionVo);
                         }
 
@@ -2720,7 +2745,15 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             }
             try {
                 if (validateCiEntityTransactionForCommit(transactionVo.getCiEntityTransactionVo())) {
-                    this.commitTransaction(transactionVo, transactionGroupVo);
+                    CmdbEventType cmdbEventType;
+                    if (TransactionActionType.INSERT.getValue().equals(transactionVo.getCiEntityTransactionVo().getAction())) {
+                        cmdbEventType = CmdbEventType.TRANSACTION_CREATE_COMMIT;
+                    } else if (TransactionActionType.DELETE.getValue().equals(transactionVo.getCiEntityTransactionVo().getAction())) {
+                        cmdbEventType = CmdbEventType.TRANSACTION_DELETE_COMMIT;
+                    } else {
+                        cmdbEventType = CmdbEventType.TRANSACTION_UPDATE_COMMIT;
+                    }
+                    this.commitTransaction(transactionVo, transactionGroupVo, cmdbEventType);
                     statusList.add(new TransactionStatusVo(transactionVo.getId(), TransactionStatus.COMMITED));
                 }
             } catch (Exception ex) {
@@ -2745,7 +2778,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         transactionVo.setAction(TransactionActionType.RECOVER.getValue());
         transactionVo.getCiEntityTransactionVo().setAction(TransactionActionType.RECOVER.getValue());
         if (validateCiEntityTransaction(ciEntityTransactionVo)) {
-            this.commitTransaction(transactionVo, new TransactionGroupVo());
+            this.commitTransaction(transactionVo, new TransactionGroupVo(), CmdbEventType.CIENTITY_RECOVER);
         }
         transactionMapper.updateTransactionStatus(transactionVo);
     }
