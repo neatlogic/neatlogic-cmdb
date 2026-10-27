@@ -57,6 +57,26 @@
       }
     }
   },
+  "nmc": {
+    "jobsource": {
+      "discovery": "自动发现"
+    },
+    "search": {
+      "expression": {
+        "between": "在此区间",
+        "contains": "包含",
+        "empty": "为空",
+        "equal": "等于",
+        "greater": "大于",
+        "greaterorequal": "大于等于",
+        "less": "小于",
+        "lessorequal": "小于等于",
+        "notcontains": "不包含",
+        "notempty": "不为空",
+        "notequal": "不等于"
+      }
+    }
+  },
   "nmcaa": {
     "deleteattrapi": {
       "getname": "删除模型属性"
@@ -527,7 +547,6 @@
     },
     "searchcientityapi": {
       "getname": "查询配置项",
-      "model": "模型",
       "input": {
         "param": {
           "desc": {
@@ -553,7 +572,8 @@
             "sort": "排序规则，范例：{\\\"attr_xxxxx\\\":\\\"DESC\\\",\\\"attr_yyyyy\\\":\\\"ASC\\\"}"
           }
         }
-      }
+      },
+      "model": "模型"
     },
     "searchcitypeciapi": {
       "getname": "获取模型类型和模型列表",
@@ -629,26 +649,6 @@
             "needchange": "是否有变化"
           }
         }
-      }
-    }
-  },
-  "nmc": {
-    "jobsource": {
-      "discovery": "自动发现"
-    },
-    "search": {
-      "expression": {
-        "between": "在此区间",
-        "contains": "包含",
-        "empty": "为空",
-        "equal": "等于",
-        "greater": "大于",
-        "greaterorequal": "大于等于",
-        "less": "小于",
-        "lessorequal": "小于等于",
-        "notcontains": "不包含",
-        "notempty": "不为空",
-        "notequal": "不等于"
       }
     }
   },
