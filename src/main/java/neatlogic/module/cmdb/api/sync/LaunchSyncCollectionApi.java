@@ -12,7 +12,6 @@
 
 package neatlogic.module.cmdb.api.sync;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -70,7 +69,7 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
     @Input({@Param(name = "id", type = ApiParamType.LONG, desc = "term.cmdb.syncid"),
             @Param(name = "auditId", type = ApiParamType.LONG, desc = "执行记录id"),
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.syncidlist"),
-            @Param(name = "conditionList", type = ApiParamType.JSONARRAY, desc = "条件列表"),
+            @Param(name = "conditionList", type = ApiParamType.JSONARRAY, desc = "单条执行时不传或null使用预设，传数组覆盖本次条件，空数组跳过预设"),
             @Param(name = "collectionList", type = ApiParamType.JSONARRAY, desc = "term.cmdb.collectionlist"),
             @Param(name = "collectionObjList", type = ApiParamType.JSONARRAY, help = "需要包含category和type属性", desc = "term.cmdb.collectionobjlist"),
             @Param(name = "batchTag", type = ApiParamType.STRING, desc = "term.cmdb.batchtag"),
@@ -145,17 +144,22 @@ public class LaunchSyncCollectionApi extends PrivateApiComponentBase {
             }
         }
         if (CollectionUtils.isNotEmpty(syncCiCollectionList)) {
-            if (syncCiCollectionList.size() == 1 && CollectionUtils.isNotEmpty(conditionList)) {
-                List<SyncConditionVo> cList = new ArrayList<>();
-                for (int i = 0; i < conditionList.size(); i++) {
-                    cList.add(JSON.toJavaObject(conditionList.getJSONObject(i), SyncConditionVo.class));
-                }
-                syncCiCollectionList.get(0).setConditionList(cList);
-            }
+            applyConditionList(syncCiCollectionList, conditionList);
             CiSyncManager.doSync(syncCiCollectionList, batchTag, startTime);
         } else {
             throw new NoSyncToRunException();
         }
         return null;
     }
+    /** 单条显式条件覆盖预设；批量执行按各同步映射自己的预设过滤。 */
+    private void applyConditionList(List<SyncCiCollectionVo> collectionList, JSONArray conditionList) {
+        for (SyncCiCollectionVo collection : collectionList) {
+            if (collectionList.size() == 1 && conditionList != null) {
+                collection.setConditionList(conditionList.toJavaList(SyncConditionVo.class));
+            } else {
+                collection.setConditionList(collection.getDefaultConditionList());
+            }
+        }
+    }
+
 }

@@ -70,6 +70,9 @@ public interface SyncMapper extends ISyncCrossoverMapper {
 
     void updateSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);
 
+    /** 仅保存同步映射的预设条件及修改信息。 */
+    void updateSyncCiCollectionCondition(SyncCiCollectionVo syncCiCollectionVo);
+
     void updateSyncCiCollectionLastSyncDate(Long id);
 
     void insertSyncCiCollection(SyncCiCollectionVo syncCiCollectionVo);

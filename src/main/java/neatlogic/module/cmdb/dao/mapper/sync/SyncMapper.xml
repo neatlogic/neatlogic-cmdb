@@ -6,6 +6,7 @@
     <select id="getPassiveSyncCiCollectionByCiId" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
+        a.default_condition AS defaultConditionStr,
                a.ci_id             AS ciId,
                cc.name             AS ciName,
                cc.label            AS ciLabel,
@@ -206,6 +207,7 @@
 
     <resultMap id="syncCiCollectionMap" type="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
         <id property="id" column="id"/>
+        <result property="defaultConditionStr" column="defaultConditionStr" typeHandler="CompressHandler"/>
         <result property="ciId" column="ciId"/>
         <result property="ciLabel" column="ciLabel"/>
         <result property="ciName" column="ciName"/>
@@ -240,6 +242,7 @@
         d.cron FROM (
         SELECT
         a.id,
+        a.default_condition AS defaultConditionStr,
         a.ci_id AS ciId,
         b.label AS ciLabel,
         b.name AS ciName,
@@ -326,6 +329,7 @@
 
     <resultMap id="syncCiCollectionResultMap" type="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
         <id property="id" column="id"/>
+        <result property="defaultConditionStr" column="defaultConditionStr" typeHandler="CompressHandler"/>
         <result property="ciId" column="ciId"/>
         <result property="ciName" column="ciName"/>
         <result property="ciLabel" column="ciLabel"/>
@@ -359,6 +363,7 @@
     <select id="getSyncCiCollectionByCollectionName" parameterType="java.lang.String"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
+        a.default_condition AS defaultConditionStr,
                a.ci_id             AS ciId,
                cc.name             AS ciName,
                cc.label            AS ciLabel,
@@ -392,6 +397,7 @@
     <select id="getSyncCiCollectionByCiIdAndCollectionName"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
+        a.default_condition AS defaultConditionStr,
                a.ci_id             AS ciId,
                cc.name             AS ciName,
                cc.label            AS ciLabel,
@@ -426,6 +432,7 @@
     <select id="getSyncCiCollectionById" parameterType="java.lang.Long"
             resultMap="syncCiCollectionResultMap">
         SELECT a.id,
+        a.default_condition AS defaultConditionStr,
                a.ci_id             AS ciId,
                cc.name             AS ciName,
                cc.label            AS ciLabel,
@@ -459,6 +466,7 @@
     <select id="getSyncCiCollectionByIdList" resultMap="syncCiCollectionResultMap">
         SELECT
         a.id,
+        a.default_condition AS defaultConditionStr,
         a.ci_id AS ciId,
         cc.name AS ciName,
         cc.label AS ciLabel,
@@ -506,6 +514,14 @@
             lcu               = #{lcu},
             description       = #{description},
             last_sync_date    = null
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateSyncCiCollectionCondition" parameterType="neatlogic.framework.cmdb.dto.sync.SyncCiCollectionVo">
+        UPDATE cmdb_sync_ci_collection
+        SET default_condition = #{defaultConditionStr, typeHandler=CompressHandler},
+            lcu = #{lcu},
+            lcd = NOW(3)
         WHERE id = #{id}
     </update>
 

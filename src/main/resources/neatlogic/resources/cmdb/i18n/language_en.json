@@ -801,6 +801,9 @@
     "saveobjectapi": {
       "getname": "Save automatic collection objects"
     },
+    "savesynccicollectionconditionapi": {
+      "getname": "Save synchronization filter preset"
+    },
     "searchcollectiondataapi": {
       "getname": "Search for automatic collection of collection data"
     },

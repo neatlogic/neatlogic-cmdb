@@ -47,6 +47,7 @@ import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.common.constvalue.InputFrom;
 import neatlogic.framework.config.ConfigManager;
 import neatlogic.framework.exception.core.ApiRuntimeException;
+import neatlogic.framework.exception.type.ParamIrregularException;
 import neatlogic.module.cmdb.config.CmdbTenantConfig;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
@@ -1298,6 +1299,11 @@ public class CiSyncManager {
         if (ciCollectionVo == null) {
             throw new SyncCiCollectionNotFoundException(syncAuditVo.getCiCollectionId());
         }
+        JSONObject config = syncAuditVo.getConfig();
+        if (config != null) {
+            // 快照校验必须先于状态更新，恢复失败时任务仍可保持暂停状态。
+            restoreSyncCondition(ciCollectionVo, config);
+        }
         List<SyncCiCollectionVo> syncList = new ArrayList<>();
         TransactionGroupVo transactionGroupVo = new TransactionGroupVo();
         transactionGroupVo.setId(syncAuditVo.getTransactionGroupId());
@@ -1310,7 +1316,6 @@ public class CiSyncManager {
         if (CollectionUtils.isNotEmpty(syncList)) {
             String batchTag = null;
             Long startTime = null;
-            JSONObject config = syncAuditVo.getConfig();
             if (config != null) {
                 batchTag = config.getString("batchTag");
                 startTime = config.getLong("startTime");
@@ -1333,12 +1338,7 @@ public class CiSyncManager {
                     syncAuditVo.setCiCollectionId(syncCiCollectionVo.getId());
                     syncAuditVo.setTransactionGroupId(transactionGroupVo.getId());
                     syncAuditVo.setInputFrom(InputFromContext.get().getInputFrom());
-                    if (StringUtils.isNotBlank(batchTag) && startTime != null) {
-                        JSONObject config = new JSONObject();
-                        config.put("batchTag", batchTag);
-                        config.put("startTime", startTime);
-                        syncAuditVo.setConfig(config);
-                    }
+                    syncAuditVo.setConfig(buildSyncConfig(syncCiCollectionVo, batchTag, startTime));
                     syncAuditMapper.insertSyncAudit(syncAuditVo);
                     syncCiCollectionVo.setSyncAudit(syncAuditVo);
                     syncCiCollectionVo.setTransactionGroup(transactionGroupVo);
@@ -1352,4 +1352,29 @@ public class CiSyncManager {
             }
         }
     }
+
+    /** 固化本次执行条件，恢复任务时不受后续预设修改影响。 */
+    private static JSONObject buildSyncConfig(SyncCiCollectionVo collection, String batchTag, Long startTime) {
+        JSONObject config = new JSONObject();
+        config.put("batchTag", batchTag);
+        config.put("startTime", startTime);
+        List<SyncConditionVo> conditionList = collection.getConditionList();
+        if (conditionList == null) {
+            conditionList = new ArrayList<>();
+        }
+        config.put("conditionList", JSON.parseArray(JSON.toJSONString(conditionList)));
+        return config;
+    }
+
+    /** 仅恢复新审计显式保存的条件快照，历史记录继续沿用原行为。 */
+    private static void restoreSyncCondition(SyncCiCollectionVo collection, JSONObject config) {
+        if (config.containsKey("conditionList")) {
+            JSONArray conditions = config.getJSONArray("conditionList");
+            if (conditions == null) {
+                throw new ParamIrregularException("conditionList");
+            }
+            collection.setConditionList(conditions.toJavaList(SyncConditionVo.class));
+        }
+    }
+
 }

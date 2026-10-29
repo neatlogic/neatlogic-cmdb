@@ -801,6 +801,9 @@
     "saveobjectapi": {
       "getname": "保存自动采集对象"
     },
+    "savesynccicollectionconditionapi": {
+      "getname": "保存同步过滤预设"
+    },
     "searchcollectiondataapi": {
       "getname": "搜索自动采集集合数据"
     },
