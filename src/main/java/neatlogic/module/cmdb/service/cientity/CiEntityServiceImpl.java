@@ -1555,7 +1555,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
                             JSONArray valueArray = new JSONArray();
-                            for (Object d : attrEntityTransactionVo.getValueList()) {
+                            for (Object d : attrEntityVo.getValueList()) {
                                 if (d != null) {
                                     if (StringUtils.isBlank(d.toString())) {
                                         throw new CiUniqueAttrNotFoundException(op.get());
