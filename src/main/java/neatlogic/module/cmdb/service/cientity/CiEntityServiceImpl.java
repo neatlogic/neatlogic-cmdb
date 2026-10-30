@@ -803,7 +803,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     public Long saveCiEntity(List<CiEntityTransactionVo> ciEntityTransactionList, TransactionGroupVo
             transactionGroupVo) {
         // 普通批量保存仍参与入口事务，保留整批提交或回滚的语义。
-        return saveCiEntityList(ciEntityTransactionList, transactionGroupVo, false);
+        return saveCiEntityList(ciEntityTransactionList, transactionGroupVo, false);//
     }
 
     @Transactional
@@ -859,7 +859,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
         ciEntityTransactionVo.setTransactionId(transactionVo.getId());
 
         transactionVo.setCiEntityTransactionVo(ciEntityTransactionVo);
-        boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);
+        boolean hasChange = validateCiEntityTransaction(ciEntityTransactionVo);//
 
         if (hasChange) {
             //生成配置项名称
@@ -1555,7 +1555,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                             filterVo.setAttrId(attrId);
                             filterVo.setExpression(SearchExpression.EQ.getExpression());
                             JSONArray valueArray = new JSONArray();
-                            for (Object d : attrEntityTransactionVo.getValueList()) {
+                            for (Object d : attrEntityVo.getValueList()) {
                                 if (d != null) {
                                     if (StringUtils.isBlank(d.toString())) {
                                         throw new CiUniqueAttrNotFoundException(op.get());
