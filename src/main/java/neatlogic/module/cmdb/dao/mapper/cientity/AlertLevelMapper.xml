@@ -30,7 +30,7 @@
     <select id="getAlertLevelByNameAndType" resultType="neatlogic.framework.cmdb.dto.cientity.AlertLevelVo">
         select id, level, name, label, type, color
         from cmdb_cientity_alertlevel
-        where name = #{name}
+        where lower(name) = lower(#{name})
           and type = #{type}
     </select>
 

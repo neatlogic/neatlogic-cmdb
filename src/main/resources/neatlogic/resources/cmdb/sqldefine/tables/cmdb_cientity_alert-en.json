@@ -53,6 +53,16 @@
       "name": "alert_link",
       "type": "varchar(255)",
       "description": "Create a new table named `configuration_mangement_identity_alert` with the `alert_link` field."
+    },
+    {
+      "name": "alert_uuid",
+      "type": "char(32)",
+      "description": "Source-generated 32-character MD5 alert identifier."
+    },
+    {
+      "name": "source",
+      "type": "varchar(50)",
+      "description": "Alert source."
     }
   ],
   "indexes": [
@@ -85,6 +95,16 @@
         "cientity_uuid"
       ],
       "description": "Standard index covering the cientity_uuid field, suitable for filtering, join, and sort queries."
+    },
+    {
+      "name": "uk_alert_uuid",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "alert_uuid"
+      ],
+      "description": "Unique source alert identifier index."
     }
   ]
 }

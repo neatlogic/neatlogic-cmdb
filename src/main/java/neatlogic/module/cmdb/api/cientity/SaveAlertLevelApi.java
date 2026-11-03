@@ -58,7 +58,7 @@ public class SaveAlertLevelApi extends PrivateApiComponentBase {
             @Param(name = "level", desc = "common.level", type = ApiParamType.INTEGER, isRequired = true),
             @Param(name = "name", desc = "common.uniquename", type = ApiParamType.STRING, isRequired = true),
             @Param(name = "label", desc = "common.name", type = ApiParamType.STRING),
-            @Param(name = "type", desc = "common.type", type = ApiParamType.STRING, rule = "inspect,monitor", isRequired = true),
+            @Param(name = "type", desc = "common.type", type = ApiParamType.STRING, rule = "inspect,monitor,informant", isRequired = true),
             @Param(name = "color", desc = "common.color", type = ApiParamType.STRING)})
     @Output({@Param(explode = AlertLevelVo[].class)})
     @Description(desc = "nmcac.savealertlevelapi.getname")

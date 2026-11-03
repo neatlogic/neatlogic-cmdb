@@ -19,6 +19,12 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CiEntityAlertMapper {
+    /** 按源端 UUID 原子写入，重复消息只更新同一来源的记录。 */
+    void upsertSourceCiEntityAlert(CiEntityAlertVo alert);
+
+    /** 精确消除来源告警，不依赖当前配置项关联。 */
+    void deleteSourceCiEntityAlert(@Param("source") String source, @Param("alertUuid") String alertUuid);
+
     CiEntityAlertVo getCiEntityAlert(CiEntityAlertVo ciEntityAlertVo);
 
     List<CiEntityStatusVo> listCiEntityStatus(@Param("ciEntityIdList") List<Long> ciEntityIdList);

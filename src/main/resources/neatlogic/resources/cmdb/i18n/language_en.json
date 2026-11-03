@@ -1,5 +1,6 @@
 {
   "cmdb": {
+    "alert": {"unknownlevel": "Unknown severity", "informanttype": "Informant monitoring", "informantsubscribe": "Sync Informant service alerts to CMDB"},
     "scheduler": {
       "job": {
         "clearexpiredrelentity": {

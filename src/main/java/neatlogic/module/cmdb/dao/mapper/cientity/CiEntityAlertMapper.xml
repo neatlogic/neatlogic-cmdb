@@ -6,6 +6,8 @@
         <id property="ciEntityId" column="ciEntityId"/>
         <collection property="alertList" ofType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
             <id property="id" column="id"/>
+            <result property="alertUuid" column="alertUuid"/>
+            <result property="source" column="source"/>
             <result property="level" column="level"/>
             <result property="levelName" column="levelName"/>
             <result property="levelColor" column="levelColor"/>
@@ -19,6 +21,8 @@
     <select id="listCiEntityStatus" resultMap="ciEntityStatusMap">
         select
         a.id,
+        a.alert_uuid as alertUuid,
+        a.source as source,
         a.cientity_id as ciEntityId,
         a.cientity_uuid as ciEntityUuid,
         a.ip as ip,
@@ -60,6 +64,8 @@
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
         select
         a.id,
+        a.alert_uuid as alertUuid,
+        a.source as source,
         b.ci_id as ciId,
         a.cientity_id as ciEntityId,
         b.name as ciEntityName,
@@ -83,6 +89,8 @@
     <select id="getCiEntityAlert" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo"
             resultType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
         select id,
+               alert_uuid as alertUuid,
+               source as source,
                cientity_id   as ciEntityId,
                cientity_uuid as ciEntityUuid,
                ip            as ip,
@@ -95,6 +103,7 @@
         from cmdb_cientity_alert
         where cientity_id = #{ciEntityId}
           and metric_name = #{metricName}
+          and source is null and alert_uuid is null
     </select>
 
     <update id="updateCiEntityAlert" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
@@ -108,7 +117,7 @@
             metric_value  = #{metricValue},
             alert_message = #{alertMessage},
             alert_link    = #{alertLink}
-        where id = #{id}
+        where id = #{id} and source is null and alert_uuid is null
     </update>
 
     <insert id="insertCiEntityAlert" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
@@ -137,6 +146,7 @@
 
     <delete id="deleteCiEntityAlertByCiEntityIdAndLevelList">
         delete from cmdb_cientity_alert where cientity_id = #{ciEntityId}
+        and source is null and alert_uuid is null
         and level in
         <foreach collection="levelList" item="level" open="(" close=")" separator=",">
             #{level}
@@ -146,6 +156,25 @@
     <delete id="deleteCiEntityAlertById" parameterType="java.lang.Long">
         delete
         from cmdb_cientity_alert
-        where id = #{value}
+        where id = #{value} and source is null and alert_uuid is null
+    </delete>
+
+    <!-- 来源告警使用唯一 UUID 保证并发重复投递不会产生多条；不同来源碰撞不覆盖。 -->
+    <insert id="upsertSourceCiEntityAlert" parameterType="neatlogic.framework.cmdb.dto.cientity.CiEntityAlertVo">
+        insert into cmdb_cientity_alert
+        (id, alert_uuid, source, cientity_id, ip, level, alert_time, metric_name, metric_value, alert_message)
+        values (#{id}, #{alertUuid}, #{source}, #{ciEntityId}, #{ip}, #{level}, #{alertTime}, #{metricName}, #{metricValue}, #{alertMessage})
+        on duplicate key update
+        cientity_id = case when source = values(source) then values(cientity_id) else cientity_id end,
+        ip = case when source = values(source) then values(ip) else ip end,
+        level = case when source = values(source) then values(level) else level end,
+        alert_time = case when source = values(source) then values(alert_time) else alert_time end,
+        metric_name = case when source = values(source) then values(metric_name) else metric_name end,
+        metric_value = case when source = values(source) then values(metric_value) else metric_value end,
+        alert_message = case when source = values(source) then values(alert_message) else alert_message end
+    </insert>
+
+    <delete id="deleteSourceCiEntityAlert">
+        delete from cmdb_cientity_alert where source = #{source} and alert_uuid = #{alertUuid}
     </delete>
 </mapper>

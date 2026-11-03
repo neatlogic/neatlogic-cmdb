@@ -53,6 +53,16 @@
       "name": "alert_link",
       "type": "varchar(255)",
       "description": "配置管理cientity_alert表的alert_link字段。"
+    },
+    {
+      "name": "alert_uuid",
+      "type": "char(32)",
+      "description": "告警源端生成的32位MD5标识。"
+    },
+    {
+      "name": "source",
+      "type": "varchar(50)",
+      "description": "告警来源。"
     }
   ],
   "indexes": [
@@ -85,6 +95,16 @@
         "cientity_uuid"
       ],
       "description": "普通索引，覆盖 cientity_uuid 字段，适合用于过滤、关联或排序查询。"
+    },
+    {
+      "name": "uk_alert_uuid",
+      "type": "BTREE",
+      "unique": true,
+      "primary": false,
+      "columns": [
+        "alert_uuid"
+      ],
+      "description": "来源告警唯一标识索引。"
     }
   ]
 }

@@ -1,5 +1,6 @@
 {
   "cmdb": {
+    "alert": {"unknownlevel": "不明级别", "informanttype": "Informant监控", "informantsubscribe": "Informant服务告警同步CMDB"},
     "scheduler": {
       "job": {
         "clearexpiredrelentity": {
