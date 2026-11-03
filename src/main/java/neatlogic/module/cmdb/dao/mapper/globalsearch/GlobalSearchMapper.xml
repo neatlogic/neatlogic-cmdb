@@ -3,7 +3,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="neatlogic.module.cmdb.dao.mapper.globalsearch.GlobalSearchMapper">
-    <select id="searchCiEntityCountByWord" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
+    <select id="searchCiEntityCountByKeyword" resultType="neatlogic.framework.cmdb.dto.ci.CiVo">
         select count(distinct cientity.id) as ciEntityCount,
         ci.id as id,
         ci.name as name,
@@ -11,13 +11,29 @@
         ci.icon as icon
         from cmdb_ci ci
         join cmdb_cientity cientity on ci.id = cientity.ci_id
-        join fulltextindex_target_cmdb b on cientity.id = b.target_id and b.target_type = 'cientity'
+        join (
+        select b.target_id as id
+        from fulltextindex_target_cmdb b
         join fulltextindex_field_cmdb c on b.target_id = c.target_id
         join fulltextindex_word d on c.word_id = d.id
-        where
-        <foreach collection="wordList" open="(" close=")" separator=" or " item="item">
-            d.word like concat(#{item},'%')
-        </foreach>
+        where b.target_type = 'cientity'
+        <choose>
+            <when test="wordList != null and wordList.size() > 0">
+                and
+                <foreach collection="wordList" open="(" close=")" separator=" or " item="item">
+                    d.word like concat(#{item},'%')
+                </foreach>
+            </when>
+            <otherwise>
+                and 1 = 0
+            </otherwise>
+        </choose>
+        <!-- ID 直接查询主表，不依赖全文索引；UNION 合并并去除重复命中。 -->
+        <if test="keywordId != null">
+            union
+            select id from cmdb_cientity where id = #{keywordId}
+        </if>
+        ) matched on cientity.id = matched.id
         group by ci.id
     </select>
 </mapper>

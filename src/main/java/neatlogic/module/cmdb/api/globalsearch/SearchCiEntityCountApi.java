@@ -16,7 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
 import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.common.constvalue.ApiParamType;
-import neatlogic.framework.fulltextindex.utils.FullTextIndexUtil;
+import neatlogic.framework.common.dto.BasePageVo;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
@@ -49,14 +49,17 @@ public class SearchCiEntityCountApi extends PrivateApiComponentBase {
         return null;
     }
 
+    /** 复用分页条件的关键字解析，同时统计文本及完整配置项 ID 的命中结果。 */
     @Input({@Param(name = "keyword", type = ApiParamType.STRING, isRequired = true, desc = "关键字")})
     @Output({@Param(name = "ciList", type = ApiParamType.JSONARRAY, desc = "模型列表"), @Param(name = "wordList", type = ApiParamType.JSONARRAY, desc = "分词结果")})
     @Description(desc = "根据关键字搜索配置项数量")
     @Override
     public Object myDoService(JSONObject jsonObj) {
-        List<String> wordList = FullTextIndexUtil.sliceKeyword(jsonObj.getString("keyword"));
+        BasePageVo condition = new BasePageVo();
+        condition.setKeyword(jsonObj.getString("keyword"));
+        List<String> wordList = condition.getKeywordList();
         JSONObject returnObj = new JSONObject();
-        returnObj.put("ciList", globalSearchMapper.searchCiEntityCountByWord(wordList));
+        returnObj.put("ciList", globalSearchMapper.searchCiEntityCountByKeyword(wordList, condition.getKeywordId()));
         returnObj.put("wordList", wordList);
         return returnObj;
     }

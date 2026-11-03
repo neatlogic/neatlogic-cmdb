@@ -18,5 +18,11 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface GlobalSearchMapper {
-    List<CiVo> searchCiEntityCountByWord(@Param("wordList") List<String> wordList);
+    /** 保留仅按分词统计的调用入口，兼容已有调用方。 */
+    default List<CiVo> searchCiEntityCountByWord(List<String> wordList) {
+        return searchCiEntityCountByKeyword(wordList, null);
+    }
+
+    /** 合并全文索引和配置项 ID 的命中结果，按模型去重统计。 */
+    List<CiVo> searchCiEntityCountByKeyword(@Param("wordList") List<String> wordList, @Param("keywordId") Long keywordId);
 }
