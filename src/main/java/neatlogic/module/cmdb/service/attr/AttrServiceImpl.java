@@ -31,6 +31,7 @@ import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.cmdb.enums.TransactionStatus;
 import neatlogic.framework.cmdb.exception.attr.*;
+import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.exception.core.ApiRuntimeException;
 import neatlogic.framework.fulltextindex.core.FullTextIndexHandlerFactory;
@@ -40,8 +41,8 @@ import neatlogic.framework.transaction.core.EscapeTransactionJob;
 import neatlogic.framework.transaction.util.TransactionUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.cientity.InvokeEntityMapper;
 import neatlogic.module.cmdb.dao.mapper.cischema.CiSchemaMapper;
 import neatlogic.module.cmdb.dao.mapper.transaction.TransactionMapper;
 import neatlogic.module.cmdb.fulltextindex.enums.CmdbFullTextIndexType;
@@ -80,14 +81,26 @@ public class AttrServiceImpl implements AttrService {
     private InvokeEntityMapper invokeEntityMapper;
 
 
+    /** 虚拟模型字段仅由视图配置生成，必须在属性及表结构写入前校验。 */
+    private CiVo checkAttrModel(Long ciId) {
+        CiVo ciVo = ciMapper.getCiById(ciId);
+        if (ciVo == null) {
+            throw new CiNotFoundException(ciId);
+        }
+        if (Objects.equals(ciVo.getIsVirtual(), 1)) {
+            throw new AttrVirtualCiDeniedException();
+        }
+        return ciVo;
+    }
+
     @Override
     @Transactional
     public void insertAttr(AttrVo attrVo) {
+        CiVo ciVo = checkAttrModel(attrVo.getCiId());
         if (attrMapper.checkAttrNameIsRepeat(attrVo) > 0) {
             throw new AttrNameRepeatException(attrVo.getName());
         }
         attrMapper.insertAttr(attrVo);
-        CiVo ciVo = ciMapper.getCiById(attrVo.getCiId());
         //把模型信息设进去为了可以生成属性表名
         attrVo.setCiVo(ciVo);
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
@@ -157,6 +170,9 @@ public class AttrServiceImpl implements AttrService {
         if (oldAttrVo == null) {
             throw new AttrNotFoundException(attrVo.getId());
         }
+        // 根据持久化归属校验，避免替换请求中的模型 ID 绕过虚拟模型限制。
+        checkAttrModel(oldAttrVo.getCiId());
+        CiVo ciVo = checkAttrModel(attrVo.getCiId());
         IAttrValueHandler handler = AttrValueHandlerFactory.getHandler(attrVo.getType());
         if (handler.isNeedTargetCi() && !oldAttrVo.getTargetCiId().equals(attrVo.getTargetCiId())) {
             if (ciEntityMapper.getAttrEntityCountByFromCiIdAndAttrId(attrVo.getCiId(), attrVo.getId()) > 0) {
@@ -164,7 +180,6 @@ public class AttrServiceImpl implements AttrService {
             }
         }
         attrMapper.updateAttr(attrVo);
-        CiVo ciVo = ciMapper.getCiById(attrVo.getCiId());
         //把模型信息设进去为了可以生成属性表名
         attrVo.setCiVo(ciVo);
 
@@ -247,7 +262,12 @@ public class AttrServiceImpl implements AttrService {
      */
     @Override
     public void deleteAttr(AttrVo attrVo) {
-        CiVo attrCi = ciMapper.getCiById(attrVo.getCiId());
+        AttrVo storedAttr = attrMapper.getAttrById(attrVo.getId());
+        if (storedAttr == null) {
+            throw new AttrNotFoundException(attrVo.getId());
+        }
+        checkAttrModel(storedAttr.getCiId());
+        CiVo attrCi = checkAttrModel(attrVo.getCiId());
         //检查是否被表达式属性引用
         List<AttrVo> attrList = attrMapper.getExpressionAttrByValueAttrId(attrVo.getId());
         if (CollectionUtils.isNotEmpty(attrList)) {
