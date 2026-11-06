@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ /*
+  ~ Copyright (C) 2025  TechSure Co., Ltd.  All Rights Reserved.
+  ~ This file is part of the NeatLogic software.
+  ~ Licensed under the Sustainable Use License (SUL), Version 4.x – 2025.
+  ~ You may use this file only in compliance with the License.
+  ~ See the LICENSE file distributed with this work for the full license text.
+  ~ Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  */
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMatchMapper">
+    <!-- 动态表与列只来自校验后的模型及属性编号；来源值全部使用绑定参数。 -->
+    <select id="match" resultType="neatlogic.framework.cmdb.dto.cientity.match.CiEntityMatchCandidateVo" useCache="false" timeout="10">
+        SELECT ce.id, ce.ci_id AS ciId, ce.name, actual.name AS ciName, actual.label AS ciLabel
+        FROM cmdb_cientity ce
+        JOIN cmdb_ci actual ON actual.id = ce.ci_id
+        WHERE actual.is_virtual = 0 AND actual.is_abstract = 0
+        AND EXISTS (SELECT 1 FROM ${ci.ciTableName} scope WHERE scope.cientity_id = ce.id)
+        AND (NOT EXISTS (SELECT 1 FROM cmdb_cientity_expiredtime ex WHERE ex.cientity_id = ce.id)
+             OR EXISTS (SELECT 1 FROM cmdb_cientity_expiredtime ex WHERE ex.cientity_id = ce.id AND ex.expired_time &gt;= NOW()))
+        <choose>
+            <when test="conditions != null and conditions.size() > 0">
+                <foreach collection="conditions" item="condition">
+                    AND EXISTS (
+                        SELECT 1 FROM ${condition.ciTableName} av
+                        WHERE av.cientity_id = ce.id
+                        AND
+                        <choose>
+                            <when test="condition.type == 'number'">
+                                <!-- 数值等值沿用闭区间语义，每个来源值各自匹配，不能拼成跨值区间。 -->
+                                <foreach collection="condition.valueList" item="value" open="(" close=")" separator=" OR ">
+                                    av.`${condition.attrId}` BETWEEN #{value} AND #{value}
+                                </foreach>
+                            </when>
+                            <otherwise>
+                                <!-- 复用属性哈希索引缩小文本候选，原文二次比较避免哈希碰撞误关联。 -->
+                                av.`${condition.attrId}_hash` IN
+                                <foreach collection="condition.valueList" item="value" open="(" close=")" separator=",">#{value,typeHandler=neatlogic.framework.dao.plugin.Md5Handler}</foreach>
+                                AND
+                                av.`${condition.attrId}` IN
+                                <foreach collection="condition.valueList" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                            </otherwise>
+                        </choose>
+                    )
+                </foreach>
+            </when>
+            <otherwise>AND 1 = 0</otherwise>
+        </choose>
+        ORDER BY ce.id
+        LIMIT 2
+    </select>
+</mapper>
