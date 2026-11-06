@@ -36,7 +36,7 @@ public class EnumValueHandler implements IAttrValueHandler {
      */
     @Override
     public String getName() {
-        return "cmdb.attrtype.enum";
+        return "nmcahh.enumvaluehandler.getname";
     }
 
     @Override
