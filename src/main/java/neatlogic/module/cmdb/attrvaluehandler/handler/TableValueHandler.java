@@ -20,6 +20,7 @@ import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.enums.SearchExpression;
 import neatlogic.framework.cmdb.exception.attr.AttrValueIrregularException;
+import neatlogic.framework.util.$;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityCachedMapper;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
@@ -56,7 +57,7 @@ public class TableValueHandler implements IAttrValueHandler {
      */
     @Override
     public String getName() {
-        return "cmdb.attrtype.table";
+        return "nmcahh.tablevaluehandler.getname";
     }
 
     @Override
