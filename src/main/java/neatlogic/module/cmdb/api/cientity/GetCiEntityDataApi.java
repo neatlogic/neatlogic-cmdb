@@ -202,46 +202,61 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
             }
         }
         entityObj.put("attrList", attrObjList);
+        entityObj.put("relList", buildRelList(entity.getRelEntityList(), relList, ciViewList));
+
+        return entityObj;
+    }
+
+    /** 按关系和方向组织对端信息，复用已加载名称并保留旧版 ID 数组。 */
+    private JSONArray buildRelList(List<RelEntityVo> relEntityList, List<RelVo> relList, List<CiViewVo> ciViewList) {
         JSONArray relObjList = new JSONArray();
-        if (CollectionUtils.isNotEmpty(entity.getRelEntityList())) {
-            for (RelEntityVo relEntityVo : entity.getRelEntityList()) {
+        if (CollectionUtils.isNotEmpty(relEntityList)) {
+            for (RelEntityVo relEntityVo : relEntityList) {
                 if (CollectionUtils.isNotEmpty(ciViewList)) {
                     Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("rel" + relEntityVo.getDirection()) && d.getItemId().equals(relEntityVo.getRelId())).findAny();
                     op.ifPresent(viewVo -> relEntityVo.setRelLabel(viewVo.getAlias()));
                 }
-                Optional<Object> op = relObjList.stream().filter(d -> ((JSONObject) d).getLong("id").equals(relEntityVo.getRelId())).findFirst();
+                Optional<Object> op = relObjList.stream().filter(d -> ((JSONObject) d).getLong("id").equals(relEntityVo.getRelId())
+                        && ((JSONObject) d).getString("direction").equals(relEntityVo.getDirection())).findFirst();
                 JSONObject relObj;
                 if (op.isPresent()) {
                     relObj = (JSONObject) op.get();
                 } else {
                     relObj = new JSONObject();
                     relObj.put("value", new JSONArray());
+                    relObj.put("valueList", new JSONArray());
                     relObjList.add((relObj));
                 }
                 relObj.put("id", relEntityVo.getRelId());
                 relObj.put("name", relEntityVo.getRelName());
                 relObj.put("label", relEntityVo.getRelLabel());
                 relObj.put("direction", relEntityVo.getDirection());
+                JSONObject valueObj = new JSONObject();
                 if (relEntityVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
-                    relObj.getJSONArray("value").add(relEntityVo.getToCiEntityId());
+                    valueObj.put("id", relEntityVo.getToCiEntityId());
+                    valueObj.put("name", relEntityVo.getToCiEntityName());
                     relObj.put("ciName", relEntityVo.getToCiName());
                     relObj.put("ciLabel", relEntityVo.getToCiLabel());
                     relObj.put("ciId", relEntityVo.getToCiId());
                 } else {
-                    relObj.getJSONArray("value").add(relEntityVo.getFromCiEntityId());
+                    valueObj.put("id", relEntityVo.getFromCiEntityId());
+                    valueObj.put("name", relEntityVo.getFromCiEntityName());
                     relObj.put("ciName", relEntityVo.getFromCiName());
                     relObj.put("ciLabel", relEntityVo.getFromCiLabel());
                     relObj.put("ciId", relEntityVo.getFromCiId());
                 }
-
+                // 两个数组同步追加，保持旧版 ID 列表与新增名称列表逐项对应。
+                relObj.getJSONArray("value").add(valueObj.getLong("id"));
+                relObj.getJSONArray("valueList").add(valueObj);
             }
         }
-        //补充值为空的属性值
+        // 按关系和方向补充空值，自关联关系的两端分别保留。
         if (CollectionUtils.isNotEmpty(relList)) {
             for (RelVo rel : relList) {
-                if (entity.getRelEntityList().stream().noneMatch(d -> d.getRelId().equals(rel.getId()))) {
+                if (relEntityList.stream().noneMatch(d -> d.getRelId().equals(rel.getId())
+                        && d.getDirection().equals(rel.getDirection()))) {
                     if (CollectionUtils.isNotEmpty(ciViewList)) {
-                        Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().startsWith("rel") && d.getItemId().equals(rel.getId())).findAny();
+                        Optional<CiViewVo> op = ciViewList.stream().filter(d -> d.getType().equals("rel" + rel.getDirection()) && d.getItemId().equals(rel.getId())).findAny();
                         if (op.isPresent()) {
                             CiViewVo ciview = op.get();
                             if (ciview.getType().equals("relfrom")) {
@@ -268,12 +283,11 @@ public class GetCiEntityDataApi extends PrivateApiComponentBase {
                     }
                     relObj.put("direction", rel.getDirection());
                     relObj.put("value", new JSONArray());
+                    relObj.put("valueList", new JSONArray());
                     relObjList.add((relObj));
                 }
             }
         }
-        entityObj.put("relList", relObjList);
-
-        return entityObj;
+        return relObjList;
     }
 }
