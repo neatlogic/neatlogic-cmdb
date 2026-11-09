@@ -903,5 +903,22 @@
   },
   "ocommn": {
     "isneedpage": "是否需要分页"
+  },
+  "nmcahh": {
+    "enumvaluehandler": {
+      "getname": "枚举型"
+    },
+    "setvaluehandler": {
+      "getname": "多选集合"
+    },
+    "tablevaluehandler": {
+      "getname": "表格"
+    },
+    "expressionvaluehandler": {
+      "getname": "表达式"
+    },
+    "hyperlinkvaluehandler": {
+      "getname": "超链接"
+    }
   }
 }

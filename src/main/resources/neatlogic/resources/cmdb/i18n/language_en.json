@@ -903,5 +903,22 @@
   },
   "ocommn": {
     "isneedpage": "Do you need pagination"
+  },
+  "nmcahh": {
+    "enumvaluehandler": {
+      "getname": "Enumeration"
+    },
+    "setvaluehandler": {
+      "getname": "Multi-Select Set"
+    },
+    "tablevaluehandler": {
+      "getname": "Table"
+    },
+    "expressionvaluehandler": {
+      "getname": "Expression"
+    },
+    "hyperlinkvaluehandler": {
+      "getname": "Hyperlink"
+    }
   }
 }

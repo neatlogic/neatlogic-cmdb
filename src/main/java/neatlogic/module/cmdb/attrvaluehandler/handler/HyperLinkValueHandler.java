@@ -30,7 +30,7 @@ public class HyperLinkValueHandler implements IAttrValueHandler {
      */
     @Override
     public String getName() {
-        return "cmdb.attrtype.hyperlink";
+        return "nmcahh.hyperlinkvaluehandler.getname";
     }
 
     @Override

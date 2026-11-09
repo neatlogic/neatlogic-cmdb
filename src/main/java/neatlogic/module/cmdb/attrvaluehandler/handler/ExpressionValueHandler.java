@@ -50,7 +50,7 @@ public class ExpressionValueHandler implements IAttrValueHandler {
      */
     @Override
     public String getName() {
-        return "cmdb.attrtype.expression";
+        return "nmcahh.expressionvaluehandler.getname";
     }
 
     @Override

@@ -38,7 +38,7 @@ public class SetValueHandler implements IAttrValueHandler {
      */
     @Override
     public String getName() {
-        return "cmdb.attrtype.set";
+        return "nmcahh.setvaluehandler.getname";
     }
 
     @Override
