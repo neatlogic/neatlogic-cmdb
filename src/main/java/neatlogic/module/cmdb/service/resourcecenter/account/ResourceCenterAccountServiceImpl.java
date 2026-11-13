@@ -29,6 +29,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -111,13 +112,17 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         }
     }
 
+    /** 账号定义校验由保存和接入预检共用，不创建账号或资源关系。 */
     @Override
-    public JSONObject saveAccount(Long id, AccountVo paramAccountVo) {
+    public void validateAccountDefinition(AccountVo paramAccountVo, boolean creating) {
         AccountProtocolVo protocolVo = resourceAccountMapper.getAccountProtocolVoByProtocolId(paramAccountVo.getProtocolId());
         if (protocolVo == null) {
             throw new ResourceCenterAccountProtocolNotFoundException(paramAccountVo.getProtocolId());
         }
         paramAccountVo.setProtocol(protocolVo.getName());
+        if (creating && "tagent".equals(protocolVo.getName())) {
+            throw new ResourceCenterAccountNotCreateTagentAccountException();
+        }
         if (!StringUtils.equals(protocolVo.getName(), "tagent") && StringUtils.isEmpty(paramAccountVo.getAccount())) {
             throw new ResourceCenterAccountNameIsNotNullException();
         }
@@ -126,27 +131,38 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             if (resourceAccountMapper.checkAccountNameIsRepeats(paramAccountVo) > 0) {
                 throw new ResourceCenterAccountNameRepeatsException(paramAccountVo.getName());
             }
-        } else {
-            // 如果是私有类型账号，需要校验该资产中所有公有和私有账号中是否存在账号及协议都相同的，如果存在则不能更新
-            Long resourceId = paramAccountVo.getResourceId();
-            if (resourceId == null) {
-                throw new ParamNotExistsException("resourceId");
-            }
-            List<AccountVo> accountVoList = resourceAccountMapper.getResourceAccountListByResourceId(resourceId);
-            for (AccountVo accountVo : accountVoList) {
-                if (Objects.equals(paramAccountVo.getName(), accountVo.getName()) && !Objects.equals(paramAccountVo.getId(), accountVo.getId())) {
+        }
+    }
+
+    /** 沿用资源中心原有名称及协议冲突检查，不获取写锁或建立绑定。 */
+    @Override
+    public List<String> validateAccountBinding(Long resourceId, AccountVo paramAccountVo) {
+        if (AccountType.PRIVATE.getValue().equals(paramAccountVo.getType())) {
+            for (AccountVo account : resourceAccountMapper.getResourceAccountListByResourceId(resourceId)) {
+                if (Objects.equals(paramAccountVo.getName(), account.getName()) && !Objects.equals(paramAccountVo.getId(), account.getId())) {
                     throw new ResourceCenterAccountNameRepeatsException(paramAccountVo.getName());
                 }
             }
-            List<String> failureReasonList = check(resourceId, paramAccountVo);
+        }
+        return check(resourceId, paramAccountVo);
+    }
+
+    @Override
+    public JSONObject saveAccount(Long id, AccountVo paramAccountVo) {
+        validateAccountDefinition(paramAccountVo, id == null);
+        String type = paramAccountVo.getType();
+        if (!Objects.equals(type, AccountType.PUBLIC.getValue())) {
+            Long resourceId = paramAccountVo.getResourceId();
+            if (resourceId == null) throw new ParamNotExistsException("resourceId");
+            // 入库时仍用关系锁复核，防止提交后产生并发冲突。
+            resourceAccountMapper.lockBoundAccountIds(resourceId);
+            List<String> failureReasonList = validateAccountBinding(resourceId, paramAccountVo);
             if (CollectionUtils.isNotEmpty(failureReasonList)) {
                 JSONObject resultObj = new JSONObject();
                 resultObj.put("failureReasonList", failureReasonList);
                 return resultObj;
             }
-            List<ResourceAccountVo> resourceAccountVoList = new ArrayList<>();
-            resourceAccountVoList.add(new ResourceAccountVo(resourceId, paramAccountVo.getId()));
-            resourceAccountMapper.insertIgnoreResourceAccount(resourceAccountVoList);
+            resourceAccountMapper.insertIgnoreResourceAccount(Collections.singletonList(new ResourceAccountVo(resourceId, paramAccountVo.getId())));
         }
         List<Long> tagIdList = paramAccountVo.getTagIdList();
         List<AccountTagVo> accountTagVoList = new ArrayList<>();
@@ -186,10 +202,9 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
             if (oldVo == null) {
                 throw new ResourceCenterAccountNotFoundException(id);
             }
-            paramAccountVo.setProtocolId(protocolVo.getId());
             resourceAccountMapper.updateAccount(paramAccountVo);
         } else {
-            if (Objects.equals(protocolVo.getName(), "tagent")) {
+            if (Objects.equals(paramAccountVo.getProtocol(), "tagent")) {
                 throw new ResourceCenterAccountNotCreateTagentAccountException();
             }
             paramAccountVo.setFcu(UserContext.get().getUserUuid());
@@ -201,8 +216,11 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         return resultObj;
     }
 
+    /** 所有整组替换和增量修改在同一索引范围上串行化。 */
     @Override
+    @Transactional
     public JSONObject saveResourceAccount(Long resourceId, List<Long> accountIdList) {
+        resourceAccountMapper.lockBoundAccountIds(resourceId);
         int successCount = 0;
         List<String> failureReasonList = new ArrayList<>();
         // 查询该资产绑定的公有账号列表，再根据账号ID解绑
@@ -261,6 +279,37 @@ public class ResourceCenterAccountServiceImpl implements ResourceCenterAccountSe
         resultObj.put("failureCount", failureReasonList.size());
         resultObj.put("failureReasonList", failureReasonList);
         return resultObj;
+    }
+
+    /** 只修改审批确认的目标绑定。发现目标基线变化时交回申请人重新确认。 */
+    @Override
+    @Transactional
+    public List<Long> lockBoundAccountIds(Long resourceId) {
+        return resourceAccountMapper.lockBoundAccountIds(resourceId);
+    }
+
+    /** 仅修改通过基线检查的单项公共账号绑定。 */
+    @Override
+    public void changePublicBinding(Long resourceId, Long accountId, boolean expectedBound, boolean bind) {
+        List<Long> current = resourceAccountMapper.lockBoundAccountIds(resourceId);
+        AccountVo account = resourceAccountMapper.getAccountById(accountId);
+        if (account == null || !AccountType.PUBLIC.getValue().equals(account.getType())) {
+            throw new ResourceCenterAccountNotFoundException(accountId);
+        }
+        if (current.contains(accountId) != expectedBound) {
+            throw new ResourceAccountBindingConflictException(resourceId, accountId);
+        }
+        if (bind == expectedBound) {
+            return;
+        }
+        if (bind) {
+            if (!validateAccountBinding(resourceId, account).isEmpty()) {
+                throw new ResourceAccountBindingConflictException(resourceId, accountId);
+            }
+            resourceAccountMapper.insertIgnoreResourceAccount(Collections.singletonList(new ResourceAccountVo(resourceId, accountId)));
+        } else {
+            resourceAccountMapper.deleteResourceAccountByResourceIdListAndAccountIdList(Collections.singletonList(resourceId), Collections.singletonList(accountId));
+        }
     }
 
     /**

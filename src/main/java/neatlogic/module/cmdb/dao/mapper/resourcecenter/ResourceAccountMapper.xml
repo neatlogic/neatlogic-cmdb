@@ -634,4 +634,7 @@
         </foreach>
     </delete>
 
+    <select id="lockBoundAccountIds" resultType="long">
+        SELECT account_id FROM cmdb_resourcecenter_resource_account WHERE resource_id = #{value} FOR UPDATE
+    </select>
 </mapper>

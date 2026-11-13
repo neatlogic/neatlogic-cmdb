@@ -1018,10 +1018,21 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
      * 3、如果修改模式是Partial，attr_xxx为空，代表删除整个属性，如果只是valueList清空，代表属性删除了值，其他不提供的代表不动。
      *
      * @param ciEntityTransactionVo 配置项事务实体
-     * @return true:验证成功 false:验证失败
+     * @return true 表示存在变更，false 表示无变更；校验失败抛出领域异常
      */
     @Override
     public boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
+        return validateCiEntityTransaction(ciEntityTransactionVo, true);
+    }
+
+    /** 只校验事务副本并返回是否有变更，预检时不刷新正式配置项的更新时间。 */
+    @Override
+    public boolean validateCiEntityTransactionReadOnly(CiEntityTransactionVo transaction) {
+        return validateCiEntityTransaction(transaction, false);
+    }
+
+    /** 写入与只读预检共用全部规则，仅正式写入允许续期配置项。 */
+    private boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo, boolean renew) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciEntityTransactionVo.getCiId()));
         List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo() {{
@@ -1668,7 +1679,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
 
         if (MapUtils.isNotEmpty(ciEntityTransactionVo.getRelEntityData())) {
             hasChange = true;
-        } else {
+        } else if (renew) {
             //如果没有任何修改，也要renew一下配置项和关系
             ciEntityMapper.updateCiEntityBaseInfo(new CiEntityVo(ciEntityTransactionVo.getCiEntityId()));
 

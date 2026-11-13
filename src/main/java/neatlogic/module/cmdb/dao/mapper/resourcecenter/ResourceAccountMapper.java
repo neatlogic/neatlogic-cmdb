@@ -124,4 +124,7 @@ public interface ResourceAccountMapper extends IResourceAccountCrossoverMapper {
 
     int deleteResourceAccountByAccountIdList(List<Long> list);
 
+
+    /** 锁定资源的绑定索引范围，包括当前没有绑定的情况。 */
+    List<Long> lockBoundAccountIds(Long resourceId);
 }
