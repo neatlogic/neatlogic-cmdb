@@ -104,6 +104,7 @@ public class DateTimeValueHandler implements IAttrValueHandler {
         return new SearchExpression[]{SearchExpression.BT, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
+    /** 去掉空值，转换毫秒时间戳，并严格校验输入的日期时间字符串。 */
     @Override
     public void transferValueListToSave(AttrVo attrVo, JSONArray valueList) {
         if (CollectionUtils.isNotEmpty(valueList)) {
@@ -124,7 +125,7 @@ public class DateTimeValueHandler implements IAttrValueHandler {
                     if (valueList.get(i) instanceof Long) {
                         valueList.set(i, sdf.format(new Date(valueList.getLong(i))));
                     } else {
-                        DateUtils.parseDate(valueList.getString(i), format);
+                        DateUtils.parseDateStrictly(valueList.getString(i), format);
                     }
                 } catch (ParseException e) {
                     throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), format);

@@ -101,6 +101,7 @@ public class DateValueHandler implements IAttrValueHandler {
         return new SearchExpression[]{SearchExpression.BT, SearchExpression.NOTNULL, SearchExpression.NULL};
     }
 
+    /** 去掉空日期并拒绝全零日期及其他无效日历日期。 */
     @Override
     public void transferValueListToSave(AttrVo attrVo, JSONArray valueList) {
         if (CollectionUtils.isNotEmpty(valueList)) {
@@ -115,7 +116,7 @@ public class DateValueHandler implements IAttrValueHandler {
         if (CollectionUtils.isNotEmpty(valueList)) {
             for (int i = 0; i < valueList.size(); i++) {
                 try {
-                    DateUtils.parseDate(valueList.getString(i), "yyyy-MM-dd");
+                    DateUtils.parseDateStrictly(valueList.getString(i), "yyyy-MM-dd");
                 } catch (ParseException e) {
                     throw new DatetimeAttrFormatIrregularException(attrVo, valueList.getString(i), "yyyy-MM-dd");
                 }

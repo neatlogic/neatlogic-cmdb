@@ -1463,7 +1463,7 @@
         <foreach collection="attrList" item="attr">
             <!-- 精简查询只投影普通动态表属性。 -->
             <if test="attr.needTargetCi == false and attr.isInvokeAttr == false">
-                ${attr.ciTableName}.`${attr.id}` AS `attr_${attr.id}`,
+                ${@neatlogic.framework.cmdb.dao.ognl.AttrColumnExpression@render(attr)} AS `attr_${attr.id}`,
             </if>
         </foreach>
         `ci_base`.`id` AS `id`,
